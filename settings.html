@@ -1,0 +1,129 @@
+<html lang="zh">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+        <title>搜索小程序选择 - by MrFly</title>
+        <style type="text/css">            
+            * {
+                overflow: hidden;
+                margin: 0;
+                padding: 0;
+                outline: 0;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+                font-family: "Noto Sans CJK SC", "Source Han Sans CN", sans-serif !important;
+            }
+        
+            body {
+                font-size: 14px;
+            }
+        
+            body, html {
+                height: 100%;
+            }
+        
+            #container {
+                overflow: auto;
+                height: 100%;
+                padding: 20px 20px 50px;
+            }
+            .item {
+                text-align: center;
+                margin-bottom: 10px;
+            }
+            .item label {
+                text-align: left;
+                display: block;
+                margin-bottom: 4px;
+            }
+        
+            select {
+                width: 100%;
+                border: 0;
+                color: var(--dark);
+                background: #f9f9f9;
+                border-radius: 10px;
+                padding: 16px 10px;
+                margin-bottom: 10px;
+            }
+        
+            button {
+                text-align: center;
+                margin: 0 auto;
+                border:0;
+                background-color: #193ee8;
+                color: #fff;
+                width: 130px;
+                height: 40px;
+                line-height: 40px;
+                border-radius: 999px;
+                margin-top: 20px;
+                font-weight: bold;
+            }        
+        </style>
+    </head>
+    <body>
+        <div id="container">
+            <div class="item">
+                <label>选择小程序</label>
+                <select id="list">
+                </select>
+            </div>
+            <div class="item">
+                <button type="button" onclick="writeConfig()">确定</button>
+            </div>
+            <p id="result"><strong id="active"></strong></p>
+            <p>*只选择<strong style="color: #f47983;">最近浏览</strong>的，<strong style="color: #f47983;">可搜索的</strong>15条小程序，默认使用海阔视界搜索</p>
+            <p id="log"></p>
+        </div>
+        <script type="text/javascript">
+            function writeConfig() {
+                const val = document.getElementById('list').value;
+                const active = rules.find(item => item.title == val);
+                fy_bridge_app.writeFile('hiker://files/rules/icy/settings.json', active ? JSON.stringify(active) : '');
+                document.getElementById('result').innerHTML = val ? '当前选择的小程序是：<strong id="active">'+ val+'</strong>' : '还没有选择小程序';
+                alert('保存成功!');
+                fy_bridge_app.back();
+            }
+        
+            function _initRuleConfig() {
+                try {
+                    var jsonfile = fy_bridge_app.fetch('hiker://files/rules/icy/settings.json');
+                    var config = (!!jsonfile && jsonfile != 'undefined'  && jsonfile != 'null' ) ? JSON.parse(jsonfile) : null;
+                    var options = '';
+                    var active = null;
+                    for(var i =0; i< rules.length; i++) {
+                        var item = rules[i];
+                        var canSearch = !!item.search_url;
+                        options += '<option value="'+item.title+'" '+ (canSearch ? '' : 'disabled')+' >'+item.title;
+                        if(config && config.title && config.title == item.title) {
+                            active = item;
+                            options += '--当前选择';
+                        }
+                        options += '</option>';
+                    }
+                    if(!active && config && config.title) {
+                        options = '<option value="'+config.title+'">'+config.title+'--当前选择</option>' + options;
+                    }
+                    var ruleName = (active ? active.title : ((config && config.title) ? config.title : ''));
+                    if(ruleName) {
+                        document.getElementById('result').innerHTML = '当前选择的小程序是：<strong id="active">'+ ruleName+'</strong>';
+                    }
+                    options = '<option value="">使用海阔视界搜索</option>' + options;
+                    document.getElementById('list').innerHTML = options;
+                    document.getElementById('list').value = ruleName;
+                } catch(e) {
+                    document.getElementById('log').innerHTML=JSON.stringify(e);
+                }
+            }
+            
+            function getVar(key) {
+                return fy_bridge_app.getVar(key);
+            }
+            
+                   
+        </script>
+    </body>
+</html>
+    
