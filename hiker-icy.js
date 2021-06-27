@@ -12,7 +12,7 @@ var icyPlayer = {
     rules: 'hiker://files/rules/icy/rules.js',
     settingHtml: 'file:///storage/emulated/0/Android/data/com.example.hikerview/files/Documents/icy-settings.html',
   },
-  forceUpdate: true,
+  forceUpdate: false,
 
   havePlugin: function() {
     return fileExist('hiker://files/cache/Parse_Dn.js') == 'true' || fileExist('hiker://files/cache/Parse_Dn.js') == true;
@@ -38,6 +38,9 @@ var icyPlayer = {
     let html = haveSettingHtml ? fetch(this.urls.settingHtml) : '';
     if(this.forceUpdate || !html) {
       html = fetch('https://gitee.com/fly1397/hiker-icy/raw/master/settings.html');
+      if(!html || !html.includes('MrFly')) {
+        html = fetch('https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings.html');
+      }
       if(!html || !html.includes('MrFly')) {
         html = fetch('http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings.html');
       }
