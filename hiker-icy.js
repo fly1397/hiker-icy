@@ -1,5 +1,5 @@
 var icyPlayer = {
-  playRule: "@lazyRule=.js:eval(fetch('hiker://files/rules/icy/hiker-icy.js'));var config=fetch('hiker://files/cache/MyParseSet.json');if(config==''||!fetch(JSON.parse(config).cj)){var jsUrl='https://code.aliyun.com/AI957/Hiker/raw/master/v/CloudParse-V2_Dn.js'}else{var jsUrl=JSON.parse(config).cj}eval(fetch(jsUrl));if(input.includes('isVip=true')){aytmParse(input)} else {var result = icyPlayer.getPlayUrls([input]); if(result && result.length) {result[0].play_url} else {aytmParse(input)}}",
+  playRule: '@lazyRule=.js:eval(fetch("hiker://files/rules/icy/hiker-icy.js"));var config=fetch("hiker://files/cache/MyParseSet.json");var userParse=!!Number(getVar("icy_userParse"));if(userParse){if(config==""||!fetch(JSON.parse(config).cj)){"toast://解析失败，没有找到插件或者还没有配置过插件!"}else{var jsUrl=JSON.parse(config).cj;eval(fetch(jsUrl));aytmParse(input)}}else{var result=icyPlayer.getPlayUrls([input]);if(result&&result.length){result[0].play_url}else{"toast://解析失败，开起插件解析试试吧!"}};',
   emptyRule: $("#noLoading#").lazyRule(()=>{return "toast://Emmm~~!"}),
   icon: {
     appset: `data:image/svg+xml;charset=utf-8;base64,PHN2ZyBzdHlsZT0nd2lkdGg6IDFlbTtoZWlnaHQ6IDFlbTt2ZXJ0aWNhbC1hbGlnbjogbWlkZGxlO2ZpbGw6IGN1cnJlbnRDb2xvcjtvdmVyZmxvdzogaGlkZGVuOycgdmlld0JveD0nMCAwIDEwMjQgMTAyNCcgdmVyc2lvbj0nMS4xJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxwYXRoIGQ9J003MjQuMTE0Mjg2IDUyNi42Mjg1NzFjLTg3Ljc3MTQyOSAwLTE2OC4yMjg1NzEgNjUuODI4NTcxLTE4Mi44NTcxNDMgMTQ2LjI4NTcxNUgxNjguMjI4NTcxYy0yMS45NDI4NTcgMC00My44ODU3MTQgMjEuOTQyODU3LTQzLjg4NTcxNCA0My44ODU3MTRzMjEuOTQyODU3IDQzLjg4NTcxNCA0My44ODU3MTQgNDMuODg1NzE0aDM3My4wMjg1NzJjMjEuOTQyODU3IDg3Ljc3MTQyOSA5NS4wODU3MTQgMTQ2LjI4NTcxNCAxODIuODU3MTQzIDE0Ni4yODU3MTUgMTAyLjQgMCAxOTAuMTcxNDI5LTg3Ljc3MTQyOSAxOTAuMTcxNDI4LTE5MC4xNzE0MjlzLTg3Ljc3MTQyOS0xOTAuMTcxNDI5LTE5MC4xNzE0MjgtMTkwLjE3MTQyOXogbTAgMjkyLjU3MTQyOWMtNTguNTE0Mjg2IDAtMTAyLjQtNDMuODg1NzE0LTEwMi40LTEwMi40czQzLjg4NTcxNC0xMDIuNCAxMDIuNC0xMDIuNCAxMDIuNCA0My44ODU3MTQgMTAyLjQgMTAyLjQtNDMuODg1NzE0IDEwMi40LTEwMi40IDEwMi40ek0yOTkuODg1NzE0IDQ5Ny4zNzE0MjljODcuNzcxNDI5IDAgMTY4LjIyODU3MS02NS44Mjg1NzEgMTgyLjg1NzE0My0xNDYuMjg1NzE1aDM3My4wMjg1NzJjMjEuOTQyODU3IDAgNDMuODg1NzE0LTIxLjk0Mjg1NyA0My44ODU3MTQtNDMuODg1NzE0cy0yMS45NDI4NTctNDMuODg1NzE0LTQzLjg4NTcxNC00My44ODU3MTRoLTM2NS43MTQyODZjLTIxLjk0Mjg1Ny04Ny43NzE0MjktOTUuMDg1NzE0LTE0Ni4yODU3MTQtMTgyLjg1NzE0My0xNDYuMjg1NzE1LTEwMi40IDAtMTkwLjE3MTQyOSA4Ny43NzE0MjktMTkwLjE3MTQyOSAxOTAuMTcxNDI5LTcuMzE0Mjg2IDEwOS43MTQyODYgODAuNDU3MTQzIDE5MC4xNzE0MjkgMTgyLjg1NzE0MyAxOTAuMTcxNDI5eiBtMC0yOTIuNTcxNDI5YzU4LjUxNDI4NiAwIDEwMi40IDQzLjg4NTcxNCAxMDIuNCAxMDIuNCAwIDU4LjUxNDI4Ni00My44ODU3MTQgMTAyLjQtMTAyLjQgMTAyLjQtNTguNTE0Mjg2IDAtMTAyLjQtNDMuODg1NzE0LTEwMi40LTEwMi40IDAtNTguNTE0Mjg2IDQzLjg4NTcxNC0xMDIuNCAxMDIuNC0xMDIuNHonIGZpbGw9JyNGRjU3NTcnPjwvcGF0aD48L3N2Zz4=`,
@@ -13,6 +13,10 @@ var icyPlayer = {
     settingHtml: 'file:///storage/emulated/0/Android/data/com.example.hikerview/files/Documents/icy-settings.html',
   },
   forceUpdate: true,
+
+  havePlugin: function() {
+    return fileExist('hiker://files/cache/Parse_Dn.js') == 'true' || fileExist('hiker://files/cache/Parse_Dn.js') == true;
+  },
   /**
    * 返回选中的规则，如果为空，则用海阔app来搜索
    * @returns null || rule
@@ -403,16 +407,27 @@ var icyPlayer = {
 
       const source = data.source_list.find(item => item.src_id == getVar("icy_src_id"));
       if(source) {
-        const userParse = Number(getVar('icy_userParse'));
-        d.push({
-            title: '““””解析切换 - 当前采用： <b><span style="color: #f47983">'+ (!userParse ? '默认地址' : '断插')+'</span></b>',
-            url: $("#noLoading#").lazyRule((val)=>{
-                  putVar("icy_userParse",val);
-                  refreshPage(false);
-                  return "hiker://empty"
-              }, Number(!userParse)),
+        if(this.havePlugin()) {
+          const userParse = Number(getVar('icy_userParse'));
+          d.push({
+              title: '““””解析切换 - 当前采用： <b><span style="color: #f47983">'+ (!userParse ? '默认地址' : '断插')+'</span></b>',
+              url: $("#noLoading#").lazyRule((val)=>{
+                    putVar("icy_userParse",val);
+                    refreshPage(false);
+                    return "hiker://empty"
+                }, Number(!userParse)),
+              col_type: 'flex_button'
+          });
+        } else {
+          putVar("icy_userParse",0);
+          d.push({
+            title: '““””解析切换 - 当前采用： <b><span style="color: #f47983">默认地址</span></b>',
+            url: $("#noLoading#").lazyRule(()=>{
+                  return "toast://还没有插件可用，先导入插件吧！"
+              }),
             col_type: 'flex_button'
-        }),
+          });
+        }
         d.push({
           title: '选择线路' + (!!Number(getVar('icy_video_sort')) ? ' - 倒序' : ' - 正序'),
           url: `@lazyRule=.js:let sort = getVar('icy_video_sort');putVar('icy_video_sort', Number(!Number(sort)));refreshPage(false);'toast://切换排序成功'`,
@@ -740,13 +755,12 @@ var icyPlayer = {
       url: 'hiker://empty@rule=js:var res={}; var d = []; d.push({desc:"100%&&float",col_type:"x5_webview_single", url:"'+this.urls.settingHtml+'"}); res.data = d;setHomeResult(res);',
       col_type: 'icon_2'
     })
-    let setUrl = 'copy://https://pasteme.cn/130704'
-    const havePlugin = fileExist('hiker://files/cache/MyParseSet.json') == 'true' || fileExist('hiker://files/cache/MyParseSet.json') == true;
-    if(havePlugin) {
+    let setUrl = 'copy://https://pasteme.cn/132680 MxJoxL';
+    if(this.havePlugin()) {
       setUrl = this.initPlugin();
     }
     d.push({
-      title: havePlugin ? '插件设置' : '导入插件',
+      title: this.havePlugin() ? '插件设置' : '导入插件',
       pic_url: this.icon.plugin,
       url: setUrl,
       col_type: 'icon_2'
