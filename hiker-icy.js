@@ -758,7 +758,7 @@ var icyPlayer = {
       url: 'hiker://empty@rule=js:var res={}; var d = []; d.push({desc:"100%&&float",col_type:"x5_webview_single", url:"'+this.urls.settingHtml+'"}); res.data = d;setHomeResult(res);',
       col_type: 'icon_2'
     })
-    let setUrl = 'copy://https://pasteme.cn/132680 MxJoxL';
+    let setUrl = 'copy://https://paste.yuchen.tech/3072';
     if(this.havePlugin()) {
       setUrl = this.initPlugin();
     }
