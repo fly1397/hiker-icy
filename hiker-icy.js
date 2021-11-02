@@ -529,7 +529,7 @@ var icyPlayer = {
        }
        if(ruleSearch.match(/set[Home|Search]*Result/)) {
          // 小程序采用行内js渲染结果 -- 返回setResult | setHomeResult | setSearchResult
-        eval(ruleSearch.replace('js:', '').replace(/set[Home|Search]*Result/, 'formatResult'));
+        eval(ruleSearch.replace('js:', '').replace(/set[Home|Search]*Result$/, 'formatResult'));
        } else {
         // 小程序引用js文件，由js文件里的 function 去渲染结果
         newRule = ruleSearch.replace(/(\w*)\(\)/g, '');
@@ -537,7 +537,7 @@ var icyPlayer = {
         ruleSearch.match(/(\w*)\(\)/g).forEach(fnName => {
           let fnStr = eval(fnName.replace('()', '')+'.toString()');
           if(fnStr.match(/set[Home|Search]*Result/)) {
-            eval(fnStr.replace(/set[Home|Search]*Result/, 'formatResult'));
+            eval(fnStr.replace(/set[Home|Search]*Result$/, 'formatResult'));
           }
           eval(fnName);
         })
@@ -585,7 +585,7 @@ var icyPlayer = {
     var res = {};
     var d = [];
     d.push({
-      title: '小程序不存在或者有错误',
+      title: '小程序不存在或者有错误\n暂不支持轻合集、子页面类规则搜索！',
       url: '',
       col_type: "long_text"
     });
