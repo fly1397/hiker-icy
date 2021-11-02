@@ -72,7 +72,7 @@ var icyPlayer = {
      */
    getPlayUrls: function(links) {
     var querys = 'method=quarkdahanghai.getPlayUrlByUrls';
-    links.map((item, index) => {
+    links.forEach((item, index) => {
       querys += '&urls['+index+']=' + item;
     })
     const res = this.fetch(querys);
@@ -137,7 +137,7 @@ var icyPlayer = {
           url: this.emptyRule,
           col_type: 'flex_button'
         });
-        hotquery.map(item => {
+        hotquery.forEach(item => {
           d.push({
             title: item,
             url: 'hiker://empty?search='+item,
@@ -159,7 +159,7 @@ var icyPlayer = {
         url: this.urls.rest +'format=json&from=&method=movieRec.filmMenu&source=',
         title: '片单'
       }];
-      fitures.map(function(item){
+      fitures.forEach(function(item){
         d.push({
           title: item.title,
           url: item.url,
@@ -172,26 +172,28 @@ var icyPlayer = {
       });
     }
     const indesRes = this.fetch(querys);
-    const indexItems = JSON.parse(indesRes).data.data;
-    indexItems.map((item) => {
-      d.push({
-        title: '‘‘’’' + item.list_name + "<small><small><font color='#f47983'>更多></font></small></small>",
-        url: this.urls.rest + "format=json&from=&method=movieRec.filmMenuList&source=&id="+item.id+"&page=fypage&limit=15",
-        col_type: "text_1"
-      }); 
-      item.video_list.map((video) => {
+    try {
+      const indexItems = JSON.parse(indesRes).data.data;
+      indexItems.forEach((item) => {
         d.push({
-          title: video.name,
-          desc: Number(video.score_avg/100).toFixed(1)+'分',
-          pic_url: this.formatPic(video.pic),
-          url: 'https://quark.sm.cn/s?q=' + video.name+'在线播放' + "@rule=js:eval(fetch('hiker://files/rules/icy/hiker-icy.js'));icyPlayer.searchVideoByName();",
-          col_type: "movie_3_marquee"
+          title: '‘‘’’' + item.list_name + "<small><small><font color='#f47983'>更多></font></small></small>",
+          url: this.urls.rest + "format=json&from=&method=movieRec.filmMenuList&source=&id="+item.id+"&page=fypage&limit=15",
+          col_type: "text_1"
         }); 
+        item.video_list.forEach((video) => {
+          d.push({
+            title: video.name,
+            desc: Number(video.score_avg/100).toFixed(1)+'分',
+            pic_url: this.formatPic(video.pic),
+            url: 'https://quark.sm.cn/s?q=' + video.name+'在线播放' + "@rule=js:eval(fetch('hiker://files/rules/icy/hiker-icy.js'));icyPlayer.searchVideoByName();",
+            col_type: "movie_3_marquee"
+          }); 
+        })
+        d.push({
+        col_type: "line_blank"
+        });
       })
-      d.push({
-      col_type: "line_blank"
-      });
-    })
+    } catch(e) {}
     setResult(d);
   },
   //二级页面
@@ -214,19 +216,21 @@ var icyPlayer = {
       var method = MY_URL.match(/method=movieRec\.(.*)&/)[1];
       
       const rendererList = (list_title,list) => {
-        list.map((item) => {
-          d.push({
-            title: item.list_name,
-            pic_url: this.formatPic(item.images[0]),
-            desc: '共'+item.video_count+'部',
-            url: this.urls.rest + 'format=json&from=&method=movieRec.filmMenuList&source=&id='+item.id+"&page=fypage&limit=15@rule=js:eval(fetch('hiker://files/rules/icy/hiker-icy.js')); icyPlayer.listPage();",
-            col_type: "movie_3_marquee"
+        if(list && list.length) {
+          list.forEach((item) => {
+            d.push({
+              title: item.list_name,
+              pic_url: this.formatPic(item.images[0]),
+              desc: '共'+item.video_count+'部',
+              url: this.urls.rest + 'format=json&from=&method=movieRec.filmMenuList&source=&id='+item.id+"&page=fypage&limit=15@rule=js:eval(fetch('hiker://files/rules/icy/hiker-icy.js')); icyPlayer.listPage();",
+              col_type: "movie_3_marquee"
+            })
           })
-        })
+        }
       }
       var json=JSON.parse(getResCode()).data;
       if(json.video_list) {
-        json.video_list.map((video) => {
+        json.video_list.forEach((video) => {
           var searchRule = 'https://quark.sm.cn/s?q=' + video.name+'在线播放' + "@rule=js:eval(fetch('hiker://files/rules/icy/hiker-icy.js'));icyPlayer.searchVideoByName();";
           d.push({
             title: video.name,
@@ -238,7 +242,7 @@ var icyPlayer = {
         })
       } else if(method === 'filmRec') {
         // 推荐
-        json.map((video) => {
+        json.forEach((video) => {
           var searchRule = 'https://quark.sm.cn/s?q=' + video.name+'在线播放' + "@rule=js:eval(fetch('hiker://files/rules/icy/hiker-icy.js'));icyPlayer.searchVideoByName();";
           d.push({
             title: video.name,
@@ -266,9 +270,11 @@ var icyPlayer = {
           url: this.emptyRule,
           col_type: "text_1"
         })
-        rendererList(list_titles[0].name, json[list_titles[0].val]);
+        if(json) {
+          rendererList(list_titles[0].name, json[list_titles[0].val]);
+        }
 
-        list_titles.map(list_title => {
+        list_titles.forEach(list_title => {
           if(list_title.val != 4) {
             d.push({
               title: active_list_val == list_title.val ?'““””<b><span style="color: #f47983">'+ list_title.name+'</span></b>' : list_title.name,
@@ -281,7 +287,9 @@ var icyPlayer = {
             });
           }
         });
-        rendererList(active_list.name, json[active_list.val]);
+        if(json) {
+          rendererList(active_list.name, json[active_list.val]);
+        }
       }
       
     }
@@ -303,7 +311,7 @@ var icyPlayer = {
       const channels = ["电影","电视剧","综艺","动漫"];
       const defaultChannel = (getVar('icy_channel') || "电影");
       const rendererFilter = (d, data, key) => {
-        data.map(item => {
+        data.forEach(item => {
           var title = item.val == getVar(key) ? "““””<b>"+'<span style="color: #f47983">'+item.name+'</span></b>' : item.name;
           d.push({
             title: title,
@@ -319,7 +327,7 @@ var icyPlayer = {
           col_type: "blank_block"
         });
       }
-      channels.map((channel, index) => {
+      channels.forEach((channel, index) => {
         var title= channel== defaultChannel ? "““””<b>"+'<span style="color: #f47983">'+channel+'</span></b>' : channel;
         d.push({
           title: title,
@@ -360,7 +368,7 @@ var icyPlayer = {
     try {
       result = JSON.parse(res).data.hits;
     } catch (e) {}
-    result.map((video) => {
+    result.forEach((video) => {
       d.push({
         title: video.title,
         desc: !!Number(video.score) ? Number(video.score/100).toFixed(1)+'分' : '',
@@ -436,7 +444,7 @@ var icyPlayer = {
           url: `@lazyRule=.js:let sort = getVar('icy_video_sort');putVar('icy_video_sort', Number(!Number(sort)));refreshPage(false);'toast://切换排序成功'`,
           col_type: "scroll_button"
         });
-        data.source_list.map(item => {
+        data.source_list.forEach(item => {
           var title= (source && item.src_id == source.src_id) ? "““””<b>"+'<span style="color: #f47983">'+item.src_name+'</span></b>' : item.src_name;
           d.push({
             title: title,
@@ -461,7 +469,7 @@ var icyPlayer = {
           var col_type = data.channel == '综艺' ? 'text_1' : 'text_3';
           const urls = this.changeSource(data.id, source.src_id, 1, source.item_total);
           let _d = [];
-          urls.map((item, index) => {
+          urls.forEach((item, index) => {
             var title = item.title.replace(data.name, '');
             if(data.channel !== '综艺') {
               title = '第'+ (index + 1) +'集'
@@ -503,14 +511,14 @@ var icyPlayer = {
         */
        const formatResult = function(res) {
         if(res.data) {
-          res.data = res.data.map(item => {
+          res.data = res.data.forEach(item => {
             if(item.url && !item.url.includes('@rule')) {
               item.url += (forSearchRule.startsWith('js') ? '@rule='+forSearchRule : '')
             }
             return item;
           })
         } else if(res instanceof Array){
-          res = res.map(item => {
+          res = res.forEach(item => {
             if(item.url && !item.url.includes('@rule')) {
               item.url += (forSearchRule.startsWith('js') ? '@rule='+forSearchRule : '')
             }
@@ -526,7 +534,7 @@ var icyPlayer = {
         // 小程序引用js文件，由js文件里的 function 去渲染结果
         newRule = ruleSearch.replace(/(\w*)\(\)/g, '');
         eval(newRule);
-        ruleSearch.match(/(\w*)\(\)/g).map(fnName => {
+        ruleSearch.match(/(\w*)\(\)/g).forEach(fnName => {
           let fnStr = eval(fnName.replace('()', '')+'.toString()');
           if(fnStr.match(/set[Home|Search]*Result/)) {
             eval(fnStr.replace(/set[Home|Search]*Result/, 'formatResult'));
@@ -551,7 +559,7 @@ var icyPlayer = {
     const html = getResCode();
     const list = parseDomForArray(html, list_css);
     if(list && list.length) {
-      list.map(item => {
+      list.forEach(item => {
         let _url = parseDomForHtml(item, link_css);
         let _pic = parseDomForHtml(item, pic_css);
         let url = (_url.startsWith('/') && host) ? host + _url : _url;
@@ -716,7 +724,7 @@ var icyPlayer = {
       /**
        * video_data 为播放数据， 一般情况下会走id渲染路径
       */
-       video_data.map(item => {
+       video_data.forEach(item => {
         d.push({
           title: item.src_name,
           url: this.emptyRule,
