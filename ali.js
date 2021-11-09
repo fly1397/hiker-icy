@@ -350,10 +350,11 @@ const ali = {
                 col_type: "blank_block"
             });
           } catch (e) {
-            d.push({
-                title: JSON.stringify(e),
-                col_type: "long_text"
-            });
+            //   log(JSON.stringify(e))
+            // d.push({
+            //     title: JSON.stringify(e),
+            //     col_type: "long_text"
+            // });
           }
     },
     homeData: function(d) {
