@@ -11,7 +11,7 @@ const ali = {
     },
     searchFetch: function(url, keyword, page, sort){
         const link = url.replace('**', keyword).replace('fypage', (((page||1) - 1) * 20)).replace('fysort', sort);
-        return fetch(link, {headers: {"Referer": link}});
+        return fetch(link, {headers: {"Referer": link, 'User-Agent': MOBILE_UA,}});
     },
     activeModel: function() {
         let model_search = getVar('icy_ali_model');
@@ -24,7 +24,7 @@ const ali = {
             name: '阿里盘搜',
             val: 'https://aliyunshare.cn',
             forHome: true,
-            searchUrl: 'https://alixiaozhan.net/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage',
+            searchUrl: 'https://aliyunshare.cn/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost%2ClastPost%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage',
             filterTags: [12, 16,17,18,19,20,21,79,89, 1,73,74,75,76,77,78,90, 80,81,82,83,84, 85,  9,28,29,30,31],
             cats: [{
                 name: '剧集',
@@ -376,7 +376,7 @@ const ali = {
         const res = fetch(url, {headers: {"Referer": url, 'User-Agent': MOBILE_UA,}});
         if(res.includes('complete a CAPTCHA')) {
             d.push({
-                title: '<div style="height: 100vh; display:flex; align-items: center;justify-content: center;"><a href="web://'+url+'"><b><span style="color: #f47983">验证码</span></b>才能继续</a></div>',
+                title: '<div style="height: 100vh; display:flex; align-items: center;justify-content: center;"><a href="web://'+url+'">需要<b><span style="color: #f47983">验证码</span></b>才能继续</a></div>',
                 url: url + "@lazyRule=.js:'x5WebView://"+url+"'",
                 col_type: 'rich_text'
             })
@@ -470,6 +470,7 @@ const ali = {
     searchPage: function(fromHikerSearch){
         var res = {};
         var d = [];
+        log(MY_URL)
         const [, _keyword, _page] = MY_URL.split('$$$');
         if(!getVar('icy_ali_model_search')) {
             putVar('icy_ali_model_search', getVar('icy_ali_model'))
@@ -533,8 +534,21 @@ const ali = {
                 if(model_search == 3) {
                     this.otherSearch(keyword, page, d, getVar('icy_ali_sort_search') || '1', getVar('icy_ali_cat_search') || '0');
                 } else {
-                    const {data, included} = JSON.parse(this.searchFetch(activeModel.searchUrl,keyword, page, getVar('icy_ali_sort_search')));
-                    this.itemData(data, included, d, page, keyword);
+                    
+                    log(this.searchFetch(activeModel.searchUrl,keyword, page, getVar('icy_ali_sort_search')))
+                    const searchResult = this.searchFetch(activeModel.searchUrl,keyword, page, getVar('icy_ali_sort_search'));
+                    if(searchResult.includes('complete a CAPTCHA')) {
+                        const link = activeModel.searchUrl.replace('**', keyword).replace('fypage', (((page||1) - 1) * 20)).replace('fysort', getVar('icy_ali_sort_search'));
+                        d.push({
+                            title: '<div style="height: 100vh; display:flex; align-items: center;justify-content: center;"><a href="web://'+link+'">需要<b><span style="color: #f47983">验证码</span></b>才能继续</a></div>',
+                            url: link + "@lazyRule=.js:'x5WebView://"+link+"'",
+                            col_type: 'rich_text'
+                        })
+                    } else {
+                        const {data, included} = JSON.parse(searchResult);
+                        this.itemData(data, included, d, page, keyword);
+                    }
+
                 }
             } catch(e) {
                 d.push({
