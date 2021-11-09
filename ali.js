@@ -160,8 +160,12 @@ const ali = {
                 ]
             }],
             sorts: [{
+                name: '相关推荐',
+                val: '',
+                forSearch: true,
+            },{
                 name: '最新回复',
-                val: ''
+                val: '-lastPostedAt'
             },{
                 name: '热门主题',
                 val: '-commentCount'
@@ -171,15 +175,6 @@ const ali = {
             },{
                 name: '陈年旧帖',
                 val: 'createdAt'
-            },{
-                name: '最多人看',
-                val: '-view_count'
-            },{
-                name: '最少人看',
-                val: 'view_count'
-            },{
-                name: '精华',
-                val: '-frontdate'
             }],
         },
         {
@@ -193,7 +188,8 @@ const ali = {
             }],
             sorts: [{
                 name: '相关推荐',
-                val: ''
+                val: '',
+                forSearch: true,
             },{
                 name: '最新回复',
                 val: '-lastPostedAt'
@@ -239,7 +235,7 @@ const ali = {
             const {cats, sorts} = ali.activeModel();
             putVar('icy_ali_cat', cats ? cats[0].val : '');
             putVar('icy_ali_subcat', (!!cats && !!cats[0].sub) ? cats[0].sub.val : '');
-            putVar('icy_ali_sort', sorts ? sorts[0].val : '');
+            putVar('icy_ali_sort', sorts ? sorts.filter(item=> !item.forSearch)[0].val : '-lastPostedAt');
             putVar("icy_ali_search", '');
         };
         evalPrivateJS('dqg3cSAIVNdEZ893gpP1/5dh3XUO1Pw8rmt0L5mCIaV9Q5fRzoR5y5NqMUzNpEyUgaUso/qwD0Bj0srFSIo59iptCv1nuZhi6WpQ2tB3gYe9PComS2eqyBzY1jrUdo4fwx7BbkfGOW57/0Ie69EJ6jmtKp1QhTzupUJtElvspiUMhhRp7UeYi1tyFA+lz/EOE3JYphFhDacNfdXSxZx7CbMBj6I0ozXKTZLYLK8Badpubt9HKO6lkNuvJQQbXW71hYOyBGozpzD4P2QEiE4HOMwUvwAL/CWzgjwyMTy250LlCTtJlJd9s/1zGckyRGMUKDFguFje+rToQ9KPljs0hDTGDnf+hhusbUF6H44lGcrEperlktf7AXKaIe5I3b6EgIFy2F/cWBMZd5ifsmA57Y+bkqMahEtYrb1YudWd7niVx7ZmV/fMkkcfCSEIxtOSNDorppTt6TkZHN2zbLtkiKZ6m0jwaGFhhOsCRy07dAOK8cbQRk+owFBAuRNiYvOknvDor6WSebb4q+NQYs5melZEcIV2p0cfFnfuLJrorKYcMJqBE1NGoKBAw1pOasoM27V1gkOmSXSK++h0G4s6BdENQ5xbOC+ECiHSiKHN19FwTRkRdA/ag/FwYvon6BMKJlU/lJT80HhFvH+/X4eU13zBIiJ4u0Ky6ZgLg1vMgVNaCypJ4xt5/y7aJkoYcEuo');
@@ -273,7 +269,7 @@ const ali = {
                 const {cats, sorts} = ali.activeModel();
                 putVar('icy_ali_cat', cats ? cats[0].val : '');
                 putVar('icy_ali_subcat', (!!cats && !!cats[0].sub) ? cats[0].sub.val : '');
-                putVar('icy_ali_sort', sorts ? sorts[0].val : '');
+                putVar('icy_ali_sort', sorts ? sorts.filter(item=> !item.forSearch)[0].val : '');
             });
             if(!!cats && cats.length) {
                 this.rendererFilter(d, cats, 'icy_ali_cat');
@@ -283,7 +279,7 @@ const ali = {
                     this.rendererFilter(d, cat.sub, 'icy_ali_subcat');
                 }
             }
-            this.rendererFilter(d, sorts, 'icy_ali_sort');
+            this.rendererFilter(d, sorts.filter(item=> !item.forSearch), 'icy_ali_sort');
     
         }
 
