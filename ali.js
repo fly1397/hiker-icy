@@ -385,8 +385,9 @@ const ali = {
             if(res) {
 
                 result = JSON.parse(res);
-                const {data, included} = result;
-                this.itemData(data, included, d, page);
+                const {data, included, links} = result;
+                const host = links.first.match(/https:\/\/(\w+\.?)+/)[0];
+                this.itemData(data, included, host, d, page);
             } else {
                 d.push({
                     title: '页面失联了💔',
@@ -400,7 +401,7 @@ const ali = {
             });
         }
     },
-    itemData: function(_data, included, d, page, keyword){
+    itemData: function(_data, included, host, d, page, keyword){
         var data = _data;
         const {filterTags} = this.activeModel();
         if(filterTags && _data) {
@@ -429,14 +430,14 @@ const ali = {
                     desc: parseDomForHtml(contentDome, '.fortext&&Text'),
                     // 优化速度， 直接打开，不再远程取数据
                     // url: 'https://aliyunshare.cn/api/discussions/'+attributes.slug+'?bySlug=true&page%5Bnear%5D=0' + lazy,
-                    url: $('hiker://empty' + postid).rule((dataitem, post) => {
-                        var items = [];
+                    url: $('hiker://empty' + postid).rule((dataitem, post, host) => {
+                        var d = [];
                         eval(fetch('hiker://files/rules/icy/ali.js'));
-                        ali.detailData(dataitem, post, items);
+                        ali.detailData(dataitem, post, host, d);
                         setHomeResult({
-                            data: items
+                            data: d
                         })
-                    }, dataitem, post),
+                    }, dataitem, post, host),
                     col_type: pic ? "movie_1_left_pic" : 'text_1'
                 })
             });
@@ -472,13 +473,13 @@ const ali = {
             putVar('icy_ali_model_search', getVar('icy_ali_model'))
         };
         let keyword = getVar('icy_ali_search') || _keyword || '';
-        var links = keyword.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
-        if(links.length) {
+        var _links = keyword.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
+        if(_links.length) {
             // 如果直接是链接
             setPageTitle('网盘链接');
-            links.forEach((link, index) => {
+            _links.forEach((link, index) => {
                 d.push({
-                    title: '🔗 ' + (links.length > 1 ? '链接'+(index+1)+'：' : '')  + link,
+                    title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link,
                     url: 'hiker://page/detail?url=' + link,
                     col_type: "text_1"
                 });
@@ -541,8 +542,10 @@ const ali = {
                             col_type: 'rich_text'
                         })
                     } else {
-                        const {data, included} = JSON.parse(searchResult);
-                        this.itemData(data, included, d, page, keyword);
+                        const {data, included, links} = JSON.parse(searchResult);
+
+                        const host = links.first.match(/https:\/\/(\w+\.?)+/)[0];
+                        this.itemData(data, included, host, d, page, keyword);
                     }
 
                 }
@@ -560,10 +563,11 @@ const ali = {
     detailPage: function() {
         var res = {};
         var d = [];
-        const {data, included} = JSON.parse(getResCode());
+        const {data, included, links} = JSON.parse(getResCode());
         const postid = relationships.posts.data[0].id;
         const post = included.find(_post => _post.id === postid);
-        this.detailData(data, post, d);
+        const host = links.first.match(/https:\/\/(\w+\.?)+/)[0];
+        this.detailData(data, post, host, d);
         res.data = d;
         setHomeResult(res);
     },
@@ -577,37 +581,45 @@ const ali = {
             })
         })
     },
-    detailData: function(data, post,d) {
-        const {attributes: {title},relationships} = data;
+    detailData: function(data, post, host,d) {
+        const {attributes: {title, slug},relationships} = data;
         d.push({
-            title: "““””<b>"+'<span style="color: #f47983">'+title+'</span></b>\n' + "““””<small>"+'<span style="color: #999999">请点击下列资源访问，\n如果有误请自行查看影片简介链接！</span></small>'+'\n请点击下列资源访问，如果有误请自行查看影片简介链接！',
-            url: this.emptyRule,
+            title: "““””<b>"+'<span style="color: #f47983">'+title+'</span></b>\n' + "““””<small>"+'<span style="color: #999999">请点击下面资源链接访问，\n如果有误请点这里查看帖子内容或原始页面！</span></small>',
+            url: host + '/d/' + slug,
             col_type: "text_1"
         });
         const {attributes: {contentHtml}} = post;
         const contentDome = '<div class="fortext">' + contentHtml || '' + '</div>';
         const texts = parseDomForHtml(contentDome, '.fortext&&Text');
-        const links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
+
+        const _links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
         const codes = texts.split(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
-        links.forEach((link, index) => {
+        _links.forEach((link, index) => {
             let code = '';
             if(codes[index]) {
                 const code_match = codes[index].match(/提取码|访问码/);
                 if(code_match && code_match[0]) {
-                    code = code_match[0].split(/提取码|访问码/)[1].match(/[a-zA-z0-9]+/)[0];
+                    code = codes[index].split(/提取码|访问码/)[1].match(/[a-zA-z0-9]+/)[0];
                 }
             }
             d.push({
-                title: '🔗 ' + (links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
+                title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
                 url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: ''),
                 col_type: "text_1"
             });
         })
+        if(!_links.length && !contentDome.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g)) {
+            d.push({
+                title: '““””<small><span style="color: #999999">没有匹配到链接？点击查看原网页内容！</span></small>',
+                url: host + '/d/' + slug,
+                col_type: "text_1"
+            });
+        }
         d.push({
             col_type: "line_blank"
         });
         d.push({
-            title: '✨ 影片简介',
+            title: '✨ 帖子内容',
             url: this.emptyRule,
             col_type: "text_1"
         });
@@ -674,9 +686,9 @@ const ali = {
         if(!!result.urls.length) {
             const arrResult = batchFetch(bfArr);
             arrResult.forEach((_item, index) => {
-                const itemData = JSON.parse(_item);
-                if(itemData.headers && itemData.headers.location) {
-                    result.urls[index] = itemData.headers.location[0]
+                const arrItemData = JSON.parse(_item);
+                if(arrItemData.headers && arrItemData.headers.location) {
+                    result.urls[index] = arrItemData.headers.location[0]
                 }
             })
             // result.urls = result.urls.map(_url => {
