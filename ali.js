@@ -9,9 +9,14 @@ const ali = {
         }
         writeFile(path, this.redirectHtml + script);
     },
-    searchFetch: function(url, keyword, page, sort){
+    searchFetch: function(host, url, keyword, page, sort){
         const link = url.replace('**', keyword).replace('fypage', (((page||1) - 1) * 20)).replace('fysort', sort);
-        return fetch(link, {headers: {"Referer": link, 'User-Agent': MOBILE_UA,}});
+        const headers = {"Referer": link, 'User-Agent': MOBILE_UA,};
+        const cookie = getItem('cookie__'+host) || '';
+        if(cookie) {
+            headers['cookie'] = cookie;
+        }
+        return fetch(link, {headers: headers});
     },
     activeModel: function() {
         let model_search = getVar('icy_ali_model');
@@ -20,6 +25,33 @@ const ali = {
     },
 
     searchModel: [
+        {
+            name: '阿里小站',
+            val: 'https://alixiaozhan.net',
+            forHome: true,
+            searchUrl : 'https://alixiaozhan.net/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage',
+            cats: [{
+                name: '影视',
+                val: 'video',
+            }],
+            sorts: [{
+                name: '相关推荐',
+                val: '',
+                forSearch: true,
+            },{
+                name: '最新回复',
+                val: '-lastPostedAt'
+            },{
+                name: '热门主题',
+                val: '-commentCount'
+            },{
+                name: '新鲜出炉',
+                val: '-createdAt'
+            },{
+                name: '陈年旧帖',
+                val: 'createdAt'
+            }],
+        },
         {
             name: '阿里盘搜',
             val: 'https://aliyunshare.cn',
@@ -178,35 +210,9 @@ const ali = {
             }],
         },
         {
-            name: '阿里小站',
-            val: 'https://alixiaozhan.net',
-            forHome: true,
-            searchUrl : 'https://alixiaozhan.net/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage',
-            cats: [{
-                name: '影视',
-                val: 'video',
-            }],
-            sorts: [{
-                name: '相关推荐',
-                val: '',
-                forSearch: true,
-            },{
-                name: '最新回复',
-                val: '-lastPostedAt'
-            },{
-                name: '热门主题',
-                val: '-commentCount'
-            },{
-                name: '新鲜出炉',
-                val: '-createdAt'
-            },{
-                name: '陈年旧帖',
-                val: 'createdAt'
-            }],
-        },
-        {
             name: '阿里盘搜',
             val: '3',
+            key: '3',
             cats: [{
                 name: '目录+文件',
                 val: '',
@@ -240,6 +246,44 @@ const ali = {
         };
         evalPrivateJS('dqg3cSAIVNdEZ893gpP1/5dh3XUO1Pw8rmt0L5mCIaV9Q5fRzoR5y5NqMUzNpEyUgaUso/qwD0Bj0srFSIo59iptCv1nuZhi6WpQ2tB3gYe9PComS2eqyBzY1jrUdo4fwx7BbkfGOW57/0Ie69EJ6jmtKp1QhTzupUJtElvspiUMhhRp7UeYi1tyFA+lz/EOE3JYphFhDacNfdXSxZx7CbMBj6I0ozXKTZLYLK8Badpubt9HKO6lkNuvJQQbXW71hYOyBGozpzD4P2QEiE4HOMwUvwAL/CWzgjwyMTy250LlCTtJlJd9s/1zGckyRGMUKDFguFje+rToQ9KPljs0hDTGDnf+hhusbUF6H44lGcrEperlktf7AXKaIe5I3b6EgIFy2F/cWBMZd5ifsmA57Y+bkqMahEtYrb1YudWd7niVx7ZmV/fMkkcfCSEIxtOSNDorppTt6TkZHN2zbLtkiKZ6m0jwaGFhhOsCRy07dAOK8cbQRk+owFBAuRNiYvOknvDor6WSebb4q+NQYs5melZEcIV2p0cfFnfuLJrorKYcMJqBE1NGoKBAw1pOasoM27V1gkOmSXSK++h0G4s6BdENQ5xbOC+ECiHSiKHN19FwTRkRdA/ag/FwYvon6BMKJlU/lJT80HhFvH+/X4eU13zBIiJ4u0Ky6ZgLg1vMgVNaCypJ4xt5/y7aJkoYcEuo');
     },
+    login: function (host){
+        const username =  getVar('username__'+host);
+        const password =  getVar('password__'+host);
+        if(!username || !password) {
+            confirm({
+                title: '请设置用户名密码',
+                content: '编辑规则，在js预处理里面输入对应的账号和密码！'
+            });
+            return false;
+        }
+        const pageResult = JSON.parse(fetch(host, {
+            headers: {'User-Agent': MOBILE_UA,},
+            withHeaders: true
+        }));
+        const cookie = pageResult.headers['set-cookie'].join(';');
+        const _token = pageResult.headers['x-csrf-token'].join(';');
+        const token = pageResult.body.match(/csrfToken":"([\w|\d]*)"/);
+        // log(token + '   \r\n ' + _token)
+        if(!token || !token[1] || !cookie) {
+            return false;
+        }
+        const login = JSON.parse(fetch(host + '/login', {
+            headers: {
+                "Content-Type": "application/json",
+                "User-Agent": MOBILE_UA,
+                "cookie": cookie,
+                "X-CSRF-Token": token[1],
+            },
+            method: 'POST',
+            body: '{"identification": "'+username+'","password": "'+password+'","remember":true}',
+            withHeaders: true
+        }));
+        if(login.headers['set-cookie'] && login.headers['set-cookie'].length) {
+            setItem('cookie__'+host,login.headers['set-cookie'].join(';'));
+            putVar('username__'+host, username);
+            putVar('password__'+host, password);
+        }
+    },
     homePage: function() {
         var d = [];
         var page = Number(MY_URL.split('$$$')[1]);
@@ -262,7 +306,7 @@ const ali = {
             });
             this.rendererSuggest(d);
 
-            const {cats, sorts} = this.activeModel();
+            const {cats, sorts, val} = this.activeModel();
             this.rendererFilter(d, this.searchModel.filter(item => !!item.forHome), 'icy_ali_model', () => {
                 // callback
                 eval(fetch('hiker://files/rules/icy/ali.js'));
@@ -369,12 +413,29 @@ const ali = {
         var sort = getVar('icy_ali_sort') || '';
         var page = Number(MY_URL.split('$$$')[1]);
         var url = val + '/api/discussions?include=user%2ClastPostedUser%2Ctags%2CfirstPost%2CfirstPost%2ClastPost&filter%5Btag%5D='+(subcat || cat)+'&sort='+sort+'&page%5Boffset%5D=' + (page - 1) * 20;
-        const res = fetch(url, {headers: {"Referer": url, 'User-Agent': MOBILE_UA,}});
+        const headers = {"Referer": url, 'User-Agent': MOBILE_UA,};
+        const cookie = getItem('cookie__'+val) || '';
+        if(cookie) {
+            headers['cookie'] = cookie
+        }
+        const res = fetch(url, {headers: headers});
         if(res.includes('complete a CAPTCHA')) {
             d.push({
                 title: '<div style="height: 100vh; display:flex; align-items: center;justify-content: center;"><a href="web://'+url+'">需要<b><span style="color: #f47983">验证码</span></b>才能继续</a></div>',
                 url: url + "@lazyRule=.js:'x5WebView://"+url+"'",
                 col_type: 'rich_text'
+            })
+        }
+        if(page == 1 && res.includes('l2sp')) {
+            d.push({
+                title: '““””需要登录才能查看链接<b><span style="color: #f47983">点击登录</span></b>',
+                url: $("hiker://empty").lazyRule((host)=>{
+                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                    ali.login(host);
+                    refreshPage(false);
+                    return "hiker://empty"
+                }, val),
+                col_type: 'text_1'
             })
         }
         var result = {
@@ -408,6 +469,10 @@ const ali = {
             data = _data.filter(item => !!item.relationships.tags.data.filter(_item => filterTags.includes(Number(_item.id))).length);
         }
         if(data && data.length) {
+            // var lazy = $('').rule(() => {
+            //     eval(fetch('hiker://files/rules/icy/ali.js'));
+            //     ali.detailPage();
+            // })
             data.forEach((dataitem) => {
                 const {attributes, relationships} = dataitem;
                 let postid = '';
@@ -467,7 +532,7 @@ const ali = {
     searchPage: function(fromHikerSearch){
         var res = {};
         var d = [];
-        log(MY_URL)
+        // log(MY_URL)
         const [, _keyword, _page] = MY_URL.split('$$$');
         if(!getVar('icy_ali_model_search')) {
             putVar('icy_ali_model_search', getVar('icy_ali_model'))
@@ -532,8 +597,8 @@ const ali = {
                     this.otherSearch(keyword, page, d, getVar('icy_ali_sort_search') || '1', getVar('icy_ali_cat_search') || '0');
                 } else {
                     
-                    log(this.searchFetch(activeModel.searchUrl,keyword, page, getVar('icy_ali_sort_search')))
-                    const searchResult = this.searchFetch(activeModel.searchUrl,keyword, page, getVar('icy_ali_sort_search'));
+                    // log(this.searchFetch(activeModel.searchUrl,keyword, page, getVar('icy_ali_sort_search')))
+                    const searchResult = this.searchFetch(activeModel.val, activeModel.searchUrl,keyword, page, getVar('icy_ali_sort_search'));
                     if(searchResult.includes('complete a CAPTCHA')) {
                         const link = activeModel.searchUrl.replace('**', keyword).replace('fypage', (((page||1) - 1) * 20)).replace('fysort', getVar('icy_ali_sort_search'));
                         d.push({
@@ -648,7 +713,11 @@ const ali = {
             if(json.code.includes('AccessTokenInvalid')) {
                 eval(fetch('hiker://files/rules/icy/ali.js'));
                 ali.preRule();
-                return "toast://TOKEN失效了， 请重新播放试试！错误信息：" + json.message;
+                confirm({
+                    title: 'TOKEN失效了',
+                    content: '重新刷新规则或页面再试试！',
+                });
+                return false;
             } else {
                 return "toast://" + json.message;
             }
@@ -685,12 +754,28 @@ const ali = {
         }
         if(!!result.urls.length) {
             const arrResult = batchFetch(bfArr);
+            const bcmArr = [];
             arrResult.forEach((_item, index) => {
                 const arrItemData = JSON.parse(_item);
                 if(arrItemData.headers && arrItemData.headers.location) {
-                    result.urls[index] = arrItemData.headers.location[0]
+                    result.urls[index] = arrItemData.headers.location[0];
+                    bcmArr.push({
+                        url: arrItemData.headers.location[0],
+                        options: {
+                            headers: {
+                                'Referer': 'https://www.aliyundrive.com/'
+                            }
+                        }
+                    })
                 }
             })
+            try {
+                const m3u8List = batchCacheM3u8(bcmArr);
+                // log(m3u8List);
+                result.urls = m3u8List;
+            } catch(e) {
+
+            }
             // result.urls = result.urls.map(_url => {
             //     return $(_url).lazyRule(() => {
             //         // TODO 多线路不支持 lazyRule ？
@@ -842,7 +927,13 @@ const ali = {
                 method: 'POST'
             });
         }
-
+        if(!sharetoken) {
+            confirm({
+                title: '稍等一会儿',
+                content: 'TOKEN还没有获取到，重新刷新再试试！'
+            });
+            return false;
+        }
         var rescod = JSON.parse(getFileList(sharetoken, shareId));
 
         const rendererList = (rescod, getFileList, rendererList, sharetoken, shareId) => {
