@@ -1,0 +1,242 @@
+
+[
+    {
+      "name": "🔥 阿里小站",
+      "val": "https://alixiaozhan.net",
+      "key": "xiaozhan",
+      "desc": "阿里云盘资源共享站",
+      "searchUrl": "https://alixiaozhan.net/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
+      "cats": [
+        { "name": "影视", "val": "video", "withType": 1}
+      ],
+      "sorts": [
+        { "name": "相关推荐", "val": "", "withType": -1},
+        { "name": "最新回复", "val": "-lastPostedAt"},
+        { "name": "热门主题", "val": "-commentCount"},
+        { "name": "新鲜出炉", "val": "-createdAt"},
+        { "name": "陈年旧帖", "val": "createdAt"}
+      ]
+    },
+    {
+      "name": "🔥 阿里大站",
+      "val": "https://pan.3636360.com/api/v3/thread.list?perPage=10&page=fypage&fyclass&fysort",
+      "key": "dazhan",
+      "desc": "阿里大站,阿里云盘资源共享站",
+      "api": "https://pan.3636360.com/api/v3/thread.list?perPage=10&page=fypage&fyclass&fysort",
+      "dataType": "json",
+      "detailLinkPre": "https://pan.3636360.com/thread/",
+      "homeDataPath": "Data&&pageData;title;threadId;content&&text;",
+      "searchUrl": "https://pan.3636360.com/api/v3/thread.list?perPage=10&page=fypage&filter[search]=**&scope=2",
+      "searchDataPath": "Data&&pageData;title;threadId;content&&text;",
+      "cats": [
+        { "name": "影视", "val": "filter[categoryids][0]=1", "withType": 1},
+        { "name": "动漫", "val": "filter[categoryids][0]=7", "withType": 1},
+        { "name": "图片", "val": "filter[categoryids][0]=3", "withType": 1}
+      ],
+      "sorts": [
+        { "name": "全部", "val": "filter[essence]=0&filter[attention]=0&filter[sort]=1&scope=0", "withType": 1},
+        { "name": "推荐", "val": "filter[essence]=0&filter[attention]=0&filter[sort]=1&scope=1", "withType": 1},
+        { "name": "精华", "val": "filter[essence]=1&filter[attention]=0&filter[sort]=1&scope=0", "withType": 1},
+        { "name": "评论时间", "val": "filter[essence]=0&filter[attention]=0&filter[sort]=2&scope=0", "withType": 1},
+        { "name": "热门内容", "val": "filter[essence]=0&filter[attention]=0&filter[sort]=3&scope=0", "withType": 1}
+      ]
+    },
+    {
+      "name": "🔑 阿里云盘小站",
+      "val": "https://aliyunshare.cn",
+      "key": "yunshare",
+      "desc": "云资源共享第一站,你想要的这里都有!",
+      "needKey": true,
+      "username": "",
+      "password": "",
+      "cookie": "",
+      "loginError": false,
+      "searchUrl": "https://aliyunshare.cn/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost%2ClastPost%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
+      "filterTags": [12,16,17,18,19,20,21,79,89,1,73,74,75,76,77,78,90,80,81,82,83,84,85,9,28,29,30,31],
+      "cats": [
+        {
+          "name": "剧集", "val": "tv", "withType": 1,
+          "sub": [
+            { "name": "全部", "val": ""},
+            { "name": "华语", "val": "china-tv"},
+            { "name": "港台", "val": "hongkong-tv"},
+            { "name": "欧美", "val": "usa-tv"},
+            { "name": "英法", "val": "english-tv"},
+            { "name": "日韩", "val": "japan-tv"},
+            { "name": "印度", "val": "india-tv"},
+            { "name": "纪录片", "val": "documentary-tv"},
+            { "name": "其它", "val": "other-tv"}
+          ]
+        },
+        {
+          "name": "电影", "val": "movie", "withType": 1,
+          "sub": [
+            { "name": "全部", "val": ""},
+            { "name": "华语", "val": "china-f"},
+            { "name": "港台", "val": "hk-f"},
+            { "name": "欧美", "val": "usa-f"},
+            { "name": "英法", "val": "english-f"},
+            { "name": "日韩", "val": "japan-f"},
+            { "name": "印度", "val": "india-f"},
+            { "name": "其它", "val": "other-f"}
+          ]
+        },
+        {
+          "name": "综艺", "val": "variety", "withType": 1,
+          "sub": [
+            { "name": "全部", "val": ""},
+            { "name": "内地", "val": "china-v"},
+            { "name": "港台", "val": "hk-v"},
+            { "name": "欧美", "val": "usa-v"},
+            { "name": "日韩", "val": "japan-v"},
+            { "name": "其它", "val": "other-v"}
+          ]
+        },
+        {
+          "name": "动漫", "val": "comic", "withType": 1,
+          "sub": [
+            { "name": "全部", "val": ""},
+            { "name": "国产", "val": "china-c"},
+            { "name": "欧美", "val": "usa-c"},
+            { "name": "日韩", "val": "Japan-c"},
+            { "name": "其它", "val": "other-c"}
+          ]
+        }
+      ],
+      "sorts": [
+        { "name": "相关推荐", "val": "", "withType": -1},
+        { "name": "最新回复", "val": "-lastPostedAt"},
+        { "name": "热门主题", "val": "-commentCount"},
+        { "name": "新鲜出炉", "val": "-createdAt"},
+        { "name": "陈年旧帖", "val": "createdAt"}
+      ]
+    },
+    {
+      "name": "🔑 爱盼小站",
+      "val": "https://www.unilei.cn/",
+      "key": "unilei",
+      "desc": "阿里云盘资源分享站，网盘资源资源分享与互助的社区",
+      "needKey": true,
+      "username": "",
+      "password": "",
+      "cookie": "",
+      "loginError": false,
+      "searchUrl": "https://www.unilei.cn/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CrecipientUsers%2CrecipientGroups%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
+      "cats": [
+        { "name": "电影", "val": "movie", "withType": 1 },
+        { "name": "剧集", "val": "tv", "withType": 1 },
+        { "name": "资源合集", "val": "ziyuanheji", "withType": 1 },
+        { "name": "动漫", "val": "dongman", "withType": 1 }
+      ],
+      "sorts": [
+        { "name": "相关推荐", "val": "", "withType": -1},
+        { "name": "最新回复", "val": "-lastPostedAt" },
+        { "name": "热门主题", "val": "-commentCount" },
+        { "name": "新鲜出炉", "val": "-createdAt" },
+        { "name": "陈年旧帖", "val": "createdAt" },
+        { "name": "最多人看", "val": "-view_count" },
+        { "name": "最少人看", "val": "view_count" }
+      ]
+    },
+    {
+      "name": "🔑 鼎天网络社区",
+      "val": "https://community.dtnetwork.top/",
+      "key": "dtnetwork",
+      "desc": "阿里云盘资源分享站，网盘资源资源分享与互助的社区",
+      "needKey": true,
+      "username": "",
+      "password": "",
+      "cookie": "",
+      "loginError": false,
+      "searchUrl": "https://community.dtnetwork.top/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
+      "cats": [
+        { "name": "阿里云盘", "val": "alidrive"}
+      ],
+      "sorts": [
+        { "name": "相关推荐", "val": "", "withType": -1},
+        { "name": "最新回复", "val": "-lastPostedAt" },
+        { "name": "热门主题", "val": "-commentCount" },
+        { "name": "新鲜出炉", "val": "-createdAt" },
+        { "name": "陈年旧帖", "val": "createdAt" },
+        { "name": "最多人看", "val": "-view_count" },
+        { "name": "最少人看", "val": "view_count" }
+      ]
+    },
+    {
+        "name": "🔥 云盘资源网",
+        "val": "https://www.yunpanziyuan.com/forum-1-fypage.htm?tagids=fyarea_fyclass_fyyear_",
+        "key": "yunpanziyuan",
+        "desc": "云盘资源网是完全免费的云盘资源分享平台！",
+        "dataType": "html",
+        "detailLinkPre": "https://www.yunpanziyuan.com/",
+        "itemsExcloudByLink": "#|https",
+        "homeDataPath": ".threadlist&&li;.subject&&a&&Text;.subject&&a&&href;.haya-post-info-username&&Text;",
+        "searchUrl": "https://www.yunpanziyuan.com/fontsearch-fypage.htm?fontname=**",
+        "searchDataPath": ".threadlist&&li;a&&Text;a&&href;;",
+        "detailPath": ".card-body&&.message.break-all&&Html",
+        "areas": [
+            { "name": "全部",  "val": "", "withType": 1},
+            { "name": "华语",  "val": "1", "withType": 1},
+            { "name": "香港",  "val": "2", "withType": 1},
+            { "name": "欧美",  "val": "3", "withType": 1},
+            { "name": "韩国",  "val": "4", "withType": 1},
+            { "name": "日本",  "val": "5", "withType": 1},
+            { "name": "印度",  "val": "6", "withType": 1},
+            { "name": "其他",  "val": "7", "withType": 1}
+        ],
+        "cats": [
+            { "name": "全部",  "val": "", "withType": 1},
+            { "name": "喜剧",  "val": "8", "withType": 1},
+            { "name": "爱情",  "val": "9", "withType": 1},
+            { "name": "动作",  "val": "10", "withType": 1},
+            { "name": "枪战",  "val": "11", "withType": 1},
+            { "name": "犯罪",  "val": "12", "withType": 1},
+            { "name": "恐怖", "val": "13", "withType": 1},
+            { "name": "动漫", "val": "14", "withType": 1},
+            { "name": "科幻", "val": "15", "withType": 1},
+            { "name": "战争", "val": "16", "withType": 1},
+            { "name": "电视剧", "val": "86", "withType": 1},
+            { "name": "其他", "val": "17", "withType": 1}
+        ],
+        "years": [
+            { "name": "全部",  "val": "", "withType": 1},
+            { "name": "2021",  "val": "18", "withType": 1},
+            { "name": "2020",  "val": "19", "withType": 1},
+            { "name": "2019",  "val": "20", "withType": 1},
+            { "name": "2018",  "val": "21", "withType": 1},
+            { "name": "2017",  "val": "22", "withType": 1},
+            { "name": "2016-2011",  "val": "23", "withType": 1},
+            { "name": "2010-2000",  "val": "24", "withType": 1},
+            { "name": "更早",  "val": "25", "withType": 1}
+        ]
+    },
+    {
+      "name": "🔍 阿里盘搜",
+      "val": "https://www.alipanso.com",
+      "key": "pansou",
+      "desc": "已收录2000w+优质资源，拥有全网90%以上的阿里云盘资源",
+      "dataType": "html",
+      "detailLinkPre": "https://www.alipanso.com/",
+      "itemsExcloudByLink": "#|https",
+      "homeDataPath": "body&&.resource-item;h1&&Text;a&&href;.resource-meta&&Text+.resource-meta,1&&.meta-item&&Text;",
+      "searchUrl": "https://www.alipanso.com/search.html?page=fypage&keyword=**&search_folder_or_file=fyclass&is_search_folder_content=1&is_search_path_title=1&category=all&file_extension=all&search_model=fysort",
+      "searchDataPath": "body&&.resource-item;h1&&Text;a&&href;.resource-meta&&Text+.resource-meta,1&&.meta-item&&Text;",
+      "cats": [
+        { "name": "线路一", "val": "", "withType": -1},
+        { "name": "线路二", "val": "2", "withType": -1}
+      ],
+      "sorts": [
+        { "name": "目录+文件", "val": "", "withType": -1},
+        { "name": "目录", "val": "1", "withType": -1},
+        { "name": "文件", "val": "2", "withType": -1}
+      ]
+    },
+    {
+      "name": "☁️ R酱-OneDriver",
+      "key": "rjiang",
+      "val": "https://share-api.rhilip.info/search?limit=50&offset=fypage",
+      "desc": "此处资源均为软件全自动搬运至OneDrive国际版分享，没有条理且未经任何整理辨别！！！！请善用搜索功能进行检索~",
+      "detailLinkPre": "https://share-api.rhilip.info/items/",
+      "searchUrl": "https://share-api.rhilip.info/search/**?limit=50&offset=fypage"
+    }
+  ]

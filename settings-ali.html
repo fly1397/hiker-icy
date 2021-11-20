@@ -1,0 +1,154 @@
+<html lang="zh">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+        <title>设置 - by MrFly</title>
+        <style type="text/css">            
+            * {
+                overflow: hidden;
+                margin: 0;
+                padding: 0;
+                outline: 0;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+                font-family: "Noto Sans CJK SC", "Source Han Sans CN", sans-serif !important;
+            }
+        
+            body {
+                font-size: 14px;
+            }
+        
+            body, html {
+                height: 100%;
+            }
+        
+            #container {
+                overflow: auto;
+                height: 100%;
+                padding: 20px 20px 50px;
+            }
+            .item {
+                text-align: center;
+                margin-bottom: 10px;
+            }
+            .item label {
+                text-align: left;
+                display: block;
+                margin-bottom: 4px;
+            }
+        
+            select, input {
+                width: 100%;
+                border: 0;
+                color: var(--dark);
+                background: #f9f9f9;
+                border-radius: 10px;
+                padding: 16px 10px;
+                margin-bottom: 10px;
+            }
+        
+            button {
+                text-align: center;
+                margin: 0 auto;
+                border:0;
+                background-color: #193ee8;
+                color: #fff;
+                width: 130px;
+                height: 40px;
+                line-height: 40px;
+                border-radius: 999px;
+                margin-top: 20px;
+                font-weight: bold;
+            }        
+        </style>
+    </head>
+    <body>
+        <div id="container">
+            <div class="item">
+                <label>选择需要登录的网站</label>
+                <select id="list">
+                </select>
+            </div>
+            <div class="item">
+                <label>用户名</label>
+                <input type="text" id="username">
+            </div>
+            <div class="item">
+                <label>密码</label>
+                <input type="password" id="password">
+            </div>
+            <div class="item">
+                <button type="button" onclick="writeConfig()">确定</button>
+            </div>
+            <div class="item" id="login">
+            </div>
+        </div>
+        <script type="text/javascript">
+            var settingsPath = 'hiker://files/rules/icy/icy-settings-ali.json';
+            function writeConfig() {
+                const key = document.getElementById('list').value;
+                var jsonfile = fy_bridge_app.fetch(settingsPath);
+                const models = (!!jsonfile && jsonfile != 'undefined'  && jsonfile != 'null' ) ? JSON.parse(jsonfile) : null;
+                const active = models.find(item => item.key == key);
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                if(!username || !password) {
+                    alert('请输入用户名或密码！');
+                    return false;
+                } else if(!key) {
+                    alert('请选择需要登录的网站！');
+                    return false;
+                }
+                if(active) {
+                    active.username = username;
+                    active.password = password;
+                    active.loginError = false;
+                    active.cookie = '';
+                }
+                fy_bridge_app.writeFile(settingsPath, models ? JSON.stringify(models) : '');
+                alert('保存成功!');
+                fy_bridge_app.back();
+            }
+        
+            function _initConfig() {
+                try {
+                    var jsonfile = fy_bridge_app.fetch(settingsPath);
+                    var models = (!!jsonfile && jsonfile != 'undefined'  && jsonfile != 'null' ) ? JSON.parse(jsonfile) : null;
+                    var options = "";
+                    for(var i =0; i< models.length; i++) {
+                        var item = models[i];
+                        var needKey = !!item.needKey;
+                        options += '<option value="'+item.key+'" '+ (needKey ? '' : 'disabled')+' >'+item.name;
+                        options += '</option>';
+                    }
+                    document.getElementById('list').innerHTML = options;
+                    const key = location.href.includes('key=') ? location.href.split('key=')[1] || '' : '';
+                    document.getElementById('list').value = key;
+                    const active = models.find(item => item.key == key);
+                    if(active) {
+                        const {username, password, val} = active;
+                        document.getElementById('username').value = username;
+                        document.getElementById('password').value = password;
+                        document.getElementById('login').innerHTML = '<p>没有账号？<a href="'+val+'">点击去注册</a></p>';
+                    }
+                    document.getElementById("list").addEventListener("change", function(){
+                        const active = models.find(item => item.key == document.getElementById("list").value);
+                        if(active) {
+                            const {username, password, val} = active;
+                            document.getElementById('username').value = username;
+                            document.getElementById('password').value = password;
+                            document.getElementById('login').innerHTML = '<p>没有账号？<a href="'+val+'">点击去注册</a></p>';
+                        }
+                    });
+                } catch(e) {
+                }
+            }
+            
+            _initConfig();
+            
+                   
+        </script>
+    </body>
+</html>
+    
