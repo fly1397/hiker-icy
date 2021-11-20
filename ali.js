@@ -8,7 +8,7 @@ const ali = {
         remoteHtml: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.html', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.html', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.html'],
     },
     // dev 模式优先从本地git获取
-    isDev: true,
+    isDev: false,
     // 强制更新html
     forceUpdate: true,
     // 强制更新config
