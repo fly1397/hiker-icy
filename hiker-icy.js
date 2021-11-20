@@ -131,18 +131,18 @@ var icyPlayer = {
         col_type: "input"
       });
       try {
-        const hotquery = JSON.parse(fetch('https://www.360kan.com/hotquery?fmt=json').replace('__jsonp0__(', '').replace(');', ''));
+        const {data} = JSON.parse(fetch('https://api.web.360kan.com/v1/query/addef?ver=2&fmt=json'));
         d.push({
           title: '大家都在搜：',
           url: this.emptyRule,
           col_type: 'flex_button'
         });
-        hotquery.forEach(item => {
-          d.push({
-            title: item,
-            url: 'hiker://empty?search='+item,
-            col_type: 'flex_button'
-          });
+          data.forEach(item => {
+            d.push({
+              title: item.title,
+              url: 'hiker://empty?search='+item.title,
+              col_type: 'flex_button'
+            });
         })
       } catch (e) {}
 
@@ -766,7 +766,7 @@ var icyPlayer = {
       url: 'hiker://empty@rule=js:var res={}; var d = []; d.push({desc:"100%&&float",col_type:"x5_webview_single", url:"'+this.urls.settingHtml+'"}); res.data = d;setHomeResult(res);',
       col_type: 'icon_2'
     })
-    let setUrl = 'copy://https://paste.yuchen.tech/3072';
+    let setUrl = 'https://haikuoshijie.cn/user/1958';
     if(this.havePlugin()) {
       setUrl = this.initPlugin();
     }
