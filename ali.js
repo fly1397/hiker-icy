@@ -156,7 +156,7 @@ const ali = {
             desc: '100%&&float',
             extra: {
                 canBack: true,
-                js: "var token_timer=function(){setTimeout(()=>{if(location.href.startsWith('https://www.aliyundrive.com/drive')){var token=JSON.parse(localStorage.getItem('token'));if(token){fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify({access_token:token.access_token,refresh_token:token.refresh_token}));alert('TOKEN获取成功，请勿泄漏个人隐私!退出该页面后重试！')}else{token_timer()}}},1000)};token_timer();"
+                js: "var token_timer=function(){setTimeout(()=>{if(location.href.startsWith('https://www.aliyundrive.com/drive')){var token=JSON.parse(localStorage.getItem('token'));if(token){fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify({access_token:token.access_token,refresh_token:token.refresh_token}));alert('TOKEN获取成功，请勿泄漏个人隐私!退出该页面后刷新重试！')}else{token_timer()}}},1000)};token_timer();"
             }
         })
         setHomeResult({
@@ -188,8 +188,10 @@ const ali = {
                 return token.access_token || token.token;
             }
         } else {
+            // log('get Token')
             this.getRefreshToken();
             return false;
+
         }
 
     },
@@ -553,7 +555,6 @@ const ali = {
                 }
                 const post = included.find(_post => _post.id == postid && _post.type == 'posts');
                 const {attributes: {contentHtml}} = post;
-                log(post)
                 const contentDome = '<div class="fortext">' + contentHtml || '' + '</div>';
                 const pic = parseDomForHtml(contentDome, '.fortext&&img&&src') || '';
                 const descStr = parseDomForHtml(contentDome, '.fortext&&Text');
@@ -948,7 +949,7 @@ const ali = {
     videoProxy: function(file_id, share_id, share_token){
         var access_token = this.getAliToken();
         if(!access_token) {
-            return '';
+            return 'toast://还没登录？';
         }
         var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_video_preview_play_info', {
             headers: {
@@ -1305,15 +1306,27 @@ const ali = {
                 let isVideo = category == 'video';
                 if (type != 'folder') {
                     title = isVideo ? '🎬 ' + title : '🌇 ' + title;
+                    const fnName = (fileExist('hiker://files/rules/icy/icy-ali-token.json') == 'true' || fileExist('hiker://files/rules/icy/icy-ali-token.json') == true) ? 'lazyRule' : 'rule';
                     if(isVideo) {
                         d.push({
                             title: title,
 
-                            url: $(file_id).lazyRule((shareId, sharetoken) => {
+                            url: $('hiker://empty' + file_id)[fnName]((shareId, sharetoken, file_id, fnName) => {
                                 eval(fetch('hiker://files/rules/icy/ali.js'));
-                                return ali.videoProxy(input, shareId, sharetoken);
-                                // return ali.lazyAli(shareId, sharetoken, input);
-                            }, shareId, sharetoken),
+                                var access_token = ali.getAliToken();
+                                if(access_token) {
+                                    if(fnName == 'rule') {
+                                        confirm({
+                                            title: '返回然后刷新一下哦',
+                                            content: '登录后需要重新刷新页面哦!'
+                                        });
+                                        return ''
+                                    }
+                                    return ali.videoProxy(file_id, shareId, sharetoken);
+                                } else {
+                                    return "toast://登录后需要重新刷新页面哦！"
+                                }
+                            }, shareId, sharetoken, file_id, fnName),
                             extra: {
                                 id: shareId + file_id
                             },
@@ -1323,24 +1336,38 @@ const ali = {
                     } else if(category == 'image') {
                         d.push({
                             title: title,
-                            url: $(file_id).lazyRule((shareId, sharetoken) => {
+                            url: $('hiker://empty'+ file_id)[fnName]((shareId, sharetoken, file_id, fnName) => {
                                 eval(fetch('hiker://files/rules/icy/ali.js'));
-                                return ali.lazyAliImage(shareId, sharetoken, input);
-                            }, shareId, sharetoken),
+                                var access_token = ali.getAliToken();
+                                if(access_token) {
+                                    if(fnName == 'rule') {
+                                        confirm({
+                                            title: '返回然后刷新一下哦',
+                                            content: '登录后需要重新刷新页面哦!'
+                                        });
+                                        return ''
+                                    }
+                                    return ali.lazyAliImage(shareId, sharetoken, file_id);
+                                } else {
+                                    return "toast://登录后需要重新刷新页面哦！"
+                                }
+                            }, shareId, sharetoken, file_id, fnName),
                             col_type: 'text_1'
     
                         });
-                    }  else if(category == 'doc') {
-                        d.push({
-                            title: title,
-                            url: $(file_id).lazyRule((shareId, sharetoken) => {
-                                eval(fetch('hiker://files/rules/icy/ali.js'));
-                                return ali.lazyAliDoc(shareId, sharetoken, input);
-                            }, shareId, sharetoken),
-                            col_type: 'text_1'
+                    }  
+                    // else if(category == 'doc') {
+                    //     d.push({
+                    //         title: title,
+                    //         url: $(file_id).lazyRule((shareId, sharetoken) => {
+                    //             eval(fetch('hiker://files/rules/icy/ali.js'));
+                    //             return ali.lazyAliDoc(shareId, sharetoken, input);
+                    //         }, shareId, sharetoken),
+                    //         col_type: 'text_1'
     
-                        });
-                    } else {
+                    //     });
+                    // } 
+                    else {
                         d.push({
                             title: title,
                             url: $(file_id).lazyRule((shareId, sharetoken) => {
