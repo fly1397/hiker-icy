@@ -10,7 +10,7 @@ const ali = {
     // dev 模式优先从本地git获取
     isDev: false,
     // 强制更新html
-    forceUpdate: true,
+    forceUpdate: false,
     // 强制更新config
     forceConfigUpdate: false,
     formatBytes: function(a, b) { 
@@ -108,7 +108,7 @@ const ali = {
           writeFile(settingPath, json);
         }
         if(json) {
-            this.searchModel = JSON.parse(json);
+            this.searchModel = JSON.parse(json).sort((a,b) => a.index - b.index);
         }
     },
     initConfig: function(){
@@ -143,7 +143,7 @@ const ali = {
         }
         if(json) {
           writeFile(settingPath, json);
-          this.searchModel = JSON.parse(json);
+          this.searchModel = JSON.parse(json).sort((a,b) => a.index - b.index);
         }
         
     },
@@ -551,13 +551,15 @@ const ali = {
                 } else if(relationships.posts) {
                     postid = relationships.posts.data[0].id;
                 }
-                const post = included.find(_post => _post.id === postid);
+                const post = included.find(_post => _post.id == postid && _post.type == 'posts');
                 const {attributes: {contentHtml}} = post;
+                log(post)
                 const contentDome = '<div class="fortext">' + contentHtml || '' + '</div>';
                 const pic = parseDomForHtml(contentDome, '.fortext&&img&&src') || '';
                 const descStr = parseDomForHtml(contentDome, '.fortext&&Text');
+                const comment = (!fromHikerSearch && attributes.commentCount > 1) ? '  <small><span style="color: #999999">💬 ' + (attributes.commentCount - 1) + '</span></small>' : '';
                 d.push({
-                    title: this.getEmptyTitle(attributes.title, descStr),
+                    title: '““””' + this.getEmptyTitle(attributes.title, descStr) + comment,
                     pic_url: pic,
                     content: descStr,
                     desc: fromHikerSearch ? name : descStr,
@@ -723,15 +725,39 @@ const ali = {
     },
     // 详细页面
     detailPage: function() {
+
+        const {cookie, val} = this.activeModel();
+        const [,slug,page] = MY_URL.split('$$')
+        const host = val.match(/https:\/\/(\w+\.?)+/)[0];
+        const headers = {"Referer": host, 'User-Agent': MOBILE_UA,};
+        if(cookie) {
+            headers['cookie'] = cookie;
+        }
+
         var res = {};
         var d = [];
-        const {data, included, links} = JSON.parse(getResCode());
-        const {relationships} = data;
-        const postid = relationships.posts.data[0].id;
-        const posts = included.filter(_post => _post.type === 'posts' && !!relationships.posts.data.find(_p => _p.id == _post.id));
-        // const post = included.find(_post => _post.id === postid);
-        const host = MY_URL.match(/https:\/\/(\w+\.?)+/)[0];
-        this.detailPostPageData(data, posts, host, d);
+        let url = host + '/api/discussions/'+slug+'?bySlug=true&page%5Bnear%5D=0';
+        let resCode = null;
+        let pageRes = null;
+        if(page == 1) {
+            resCode = JSON.parse(fetch(url, {headers: headers}));
+
+            const {data, included, links} = resCode;
+            const {relationships} = data;
+            const postid = relationships.posts.data[0].id;
+            const posts = included.filter(_post => _post.type === 'posts' && !!relationships.posts.data.find(_p => _p.id == _post.id && _p.type == 'posts'));
+            // const post = included.find(_post => _post.id === postid);
+            this.detailPostPageData(posts, d, page);
+        } else {
+            resCode = JSON.parse(fetch(url, {headers: headers}));
+            let start = (page-1)*20;
+            if(resCode.data.relationships.posts.data.length > 20) {
+                const postIds = resCode.data.relationships.posts.data.map(item => item.id).slice(start, start+20); 
+                url = host + '/api/posts?filter[id]='+postIds.join(',');
+                pageRes = JSON.parse(fetch(url, {headers: headers}));
+                this.detailPostPageData(pageRes.data, d, page);
+            }
+        }
         res.data = d;
         setHomeResult(res);
     },
@@ -747,11 +773,11 @@ const ali = {
     },
     // 详细页面数据
     detailData: function(data, post, host,d) {
-        const {attributes: {title, slug},relationships} = data;
+        const {attributes: {title, commentCount, slug},relationships} = data;
         const {attributes: {contentHtml}} = post;
         const contentDome = '<div class="fortext">' + contentHtml || '' + '</div>';
         const texts = parseDomForHtml(contentDome, '.fortext&&Text');
-        let _title = this.getEmptyTitle(title, texts)
+        let _title = this.getEmptyTitle(title, texts);
         d.push({
             title: "““””<b>"+'<span style="color: #f47983">'+_title+'</span></b>\n' + "““””<small>"+'<span style="color: #999999">请点击下面资源链接访问，\n如果有误请点这里查看帖子内容或原始页面！</span></small>',
             url: host + '/d/' + slug,
@@ -799,24 +825,27 @@ const ali = {
             eval(fetch('hiker://files/rules/icy/ali.js'));
             ali.detailPage();
         })
-        
-        d.push({
-            col_type: "line_blank"
-        });
-
-        d.push({
-            title: '✨ 更多回帖内容',
-            url: host + '/api/discussions/'+slug+'?bySlug=true&page%5Bnear%5D=0' + lazy,
-            col_type: 'text_1'
-        })
+        if(commentCount > 1) {
+            d.push({
+                col_type: "line_blank"
+            });
+            let urlMore = 'hiker://empty$$'+slug+'$$fypage$$';
+            d.push({
+                title: '✨ 点击查看全部帖子内容, 共' + (commentCount - 1) + '条回帖',
+                url: urlMore + lazy,
+                col_type: 'text_1'
+            })
+        }
     },
     // 详细帖子列表
-    detailPostPageData: function(data, posts, host, d){
-        d.push({
-            title: '✨ 回帖列表内容',
-            url: this.emptyRule,
-            col_type: "text_1"
-        });
+    detailPostPageData: function(posts, d, page){
+        if(page == 1) {
+            d.push({
+                title: '✨ 全部帖子内容',
+                url: this.emptyRule,
+                col_type: "text_1"
+            });
+        }
         posts.forEach(post => {
             const { contentHtml } = post.attributes
             if(contentHtml) {
@@ -1222,6 +1251,7 @@ const ali = {
                 title: '稍等一会儿',
                 content: 'TOKEN还没有获取到，重新刷新再试试！'
             });
+            refreshPage();
             return false;
         }
         var rescod = JSON.parse(getFileList(sharetoken, shareId));
@@ -1262,7 +1292,7 @@ const ali = {
                     col_type: "text_center_1"
                 });
             }
-            if(!rescod.items || !rescod.items.length) {
+            if(!rescod || !rescod.items || !rescod.items.length) {
                 d.push({
                     title: "““””<center style='height: 100vh; display:flex; align-items: center;justify-content: center;'><small>"+'<span style="color: #999999">空文件夹，或者分享已经失效了！</span></small></center>',
                     url: this.emptyRule,
