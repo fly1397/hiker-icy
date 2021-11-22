@@ -2,6 +2,7 @@
 [
     {
       "name": "🔥 阿里小站",
+      "index": 0,
       "val": "https://alixiaozhan.net",
       "key": "xiaozhan",
       "desc": "阿里云盘资源共享站",
@@ -19,6 +20,7 @@
     },
     {
       "name": "🔥 阿里大站",
+      "index": 1,
       "val": "https://pan.3636360.com/api/v3/thread.list?perPage=10&page=fypage&fyclass&fysort",
       "key": "dazhan",
       "desc": "阿里大站,阿里云盘资源共享站",
@@ -43,6 +45,7 @@
     },
     {
       "name": "🔑 阿里云盘小站",
+      "index": 3,
       "val": "https://aliyunshare.cn",
       "key": "yunshare",
       "desc": "云资源共享第一站,你想要的这里都有!",
@@ -113,6 +116,7 @@
     },
     {
       "name": "🔑 爱盼小站",
+      "index": 4,
       "val": "https://www.unilei.cn/",
       "key": "unilei",
       "desc": "阿里云盘资源分享站，网盘资源资源分享与互助的社区",
@@ -140,6 +144,7 @@
     },
     {
       "name": "🔑 鼎天网络社区",
+      "index": 5,
       "val": "https://community.dtnetwork.top/",
       "key": "dtnetwork",
       "desc": "阿里云盘资源分享站，网盘资源资源分享与互助的社区",
@@ -164,6 +169,7 @@
     },
     {
         "name": "🔥 云盘资源网",
+        "index": 2,
         "val": "https://www.yunpanziyuan.com/forum-1-fypage.htm?tagids=fyarea_fyclass_fyyear_",
         "key": "yunpanziyuan",
         "desc": "云盘资源网是完全免费的云盘资源分享平台！",
@@ -212,6 +218,7 @@
     },
     {
       "name": "🔍 阿里盘搜",
+      "index": 6,
       "val": "https://www.alipanso.com",
       "key": "pansou",
       "desc": "已收录2000w+优质资源，拥有全网90%以上的阿里云盘资源",
@@ -233,6 +240,7 @@
     },
     {
       "name": "☁️ R酱-OneDriver",
+      "index": 7,
       "key": "rjiang",
       "val": "https://share-api.rhilip.info/search?limit=50&offset=fypage",
       "desc": "此处资源均为软件全自动搬运至OneDrive国际版分享，没有条理且未经任何整理辨别！！！！请善用搜索功能进行检索~",
