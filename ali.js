@@ -1259,6 +1259,9 @@ const ali = {
         }
         if(!!sharetoken_res.share_token) {
             sharetoken = sharetoken_res.share_token;
+        } else if(sharetoken_res.code == 'InvalidResource.SharePwd') {
+            this.needSharePWD(link);
+            return false;
         } else if(sharetoken_res.code.includes('Cancelled') || sharetoken_res.code.includes('Expired')) {
             var d = [];
             d.push({
@@ -1272,6 +1275,19 @@ const ali = {
             return false;
         }
         const getFileList = (sharetoken, shareId, pfileid) => {
+            if(pfileid) {
+                MY_URL = MY_URL.split('/folder')[0] + '/folder/' + pfileid;
+                MY_URL = MY_URL.split('/folder')[0] + '/folder/' + pfileid;
+                const folderRes = fetch('https://api.aliyundrive.com/v2/file/get', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Share-Token': sharetoken
+                    },
+                    body: '{"share_id": "'+shareId+'","file_id": "'+pfileid+'","fields":"*","image_thumbnail_process":"image/resize,w_400/format,jpeg","image_url_process":"image/resize,w_375/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_375"}',
+                    method: 'POST'
+                });
+                setPageTitle(JSON.parse(folderRes).name);
+            } 
             return fetch('https://api.aliyundrive.com/adrive/v3/file/list', {
                 headers: {
                     'Content-Type': 'application/json',
@@ -1286,7 +1302,6 @@ const ali = {
                 title: '稍等一会儿',
                 content: 'TOKEN还没有获取到，重新刷新再试试！'
             });
-            refreshPage();
             return false;
         }
         var rescod = JSON.parse(getFileList(sharetoken, shareId));
@@ -1413,10 +1428,10 @@ const ali = {
                     } else {
                         d.push({
                             title: '🦑 ' + name,
-                            url: $('hiker://empty' + file_id).rule((shareId, sharetoken, getFileList, rendererList) => {
-                                var rescod = getFileList(sharetoken,shareId, getResCode());
+                            url: $(MY_URL).rule((shareId, sharetoken, getFileList, rendererList, file_id) => {
+                                var rescod = getFileList(sharetoken,shareId, file_id);
                                 rendererList(JSON.parse(rescod), getFileList,rendererList, sharetoken,shareId)
-                            }, shareId, sharetoken, getFileList, rendererList),
+                            }, shareId, sharetoken, getFileList, rendererList, file_id),
                             col_type: 'text_1'
     
                         });
@@ -1430,23 +1445,26 @@ const ali = {
 
         }
         if(rescod.code && rescod.code.includes('AccessTokenInvalid')) {
-            var d = [];
-            d.push({
-                url: $('').input((link)=> {
-                    if(input.trim()) {
-                        return 'hiker://page/detail?url=' + link + '?share_pwd=' + input;
-                    } else {
-                        return 'toast://请输入提取码';
-                    }
-                }, link),
-                title: '““””🔑 <b><span style="color: #f47983">请输入提取码</span></b>',
-                col_type: "text_1"
-            })
-            setHomeResult({
-                data: d
-            });
+            this.needSharePWD(link);
         }
         rendererList(rescod, getFileList, rendererList, sharetoken, shareId);
+    },
+    needSharePWD: function(link) {
+        var d = [];
+        d.push({
+            url: $('').input((link)=> {
+                if(input.trim()) {
+                    return 'hiker://page/detail?url=' + link + '?share_pwd=' + input;
+                } else {
+                    return 'toast://请输入提取码';
+                }
+            }, link),
+            title: '““””🔑 <b><span style="color: #f47983">请输入提取码</span></b>',
+            col_type: "text_1"
+        })
+        setHomeResult({
+            data: d
+        });
     },
     // 匹配 dataType = json的模式
     homeDataJSON: function(d) {
