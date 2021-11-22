@@ -1350,11 +1350,7 @@ const ali = {
                                 var access_token = ali.getAliToken();
                                 if(access_token) {
                                     if(fnName == 'rule') {
-                                        confirm({
-                                            title: '返回然后刷新一下哦',
-                                            content: '登录后需要重新刷新页面哦!'
-                                        });
-                                        return ''
+                                        back(true);
                                     }
                                     return ali.videoProxy(file_id, shareId, sharetoken);
                                 } else {
@@ -1375,11 +1371,7 @@ const ali = {
                                 var access_token = ali.getAliToken();
                                 if(access_token) {
                                     if(fnName == 'rule') {
-                                        confirm({
-                                            title: '返回然后刷新一下哦',
-                                            content: '登录后需要重新刷新页面哦!'
-                                        });
-                                        return ''
+                                        back(true);
                                     }
                                     return ali.lazyAliImage(shareId, sharetoken, file_id);
                                 } else {
