@@ -270,6 +270,15 @@ const ali = {
         var page = Number(MY_URL.split('$$$')[1]);
         const {cats, sorts, val, name, key, dataType} = this.activeModel();
         if(page == 1) {
+            if (getItem("ali-accept", "") == "") {
+                setItem("ali-accept", "1");
+                confirm({
+                    title: '温馨提示',
+                    content: '以上数据来源于网络\n如喜欢，请支持官方\n\n此规则仅限学习交流使用\n请于导入后24小时内删除!\n\n任何组织或个人不得以任何方式方法\n传播此规则的整体或部分！!\n\n感谢大佬们提供的技术支持!!!',
+                    confirm: '',
+                    cancel: ''
+                })
+            }
             d.push({
                 url: $.toString(()=> {
                     if(input.trim()) {
@@ -1221,6 +1230,31 @@ const ali = {
             method: 'POST'
         }));
         if(shareInfo_res && !!shareInfo_res.display_name) {
+            const getDateDiff = (expiration) => {
+                var minute = 1000 * 60;
+                var hour = minute * 60;
+                var day = hour * 24;
+                var month = day * 30;
+        
+                var now = new Date().getTime();
+                var diffValue = new Date(expiration).getTime() - now;
+                var monthC =diffValue/month;
+                var dayC =diffValue/day;
+                var hourC =diffValue/hour;
+                var minC =diffValue/minute;
+                if(minC<=60){
+                    result = parseInt(minC) + '分钟内有效';
+                } else if(hourC<=24){
+                     result = parseInt(hourC) + '小时内有效';
+                 } else if(dayC<=30){
+                     result = parseInt(dayC) +"天内有效";
+                 } else {
+                    result = parseInt(monthC) +"月内有效";
+                 }
+                return result;
+            }
+            let expiration_text = '' + (expiration ? getDateDiff(expiration) : '永久有效');
+            setPageTitle(shareInfo_res.display_name + '  ' + expiration_text);
             expiration = shareInfo_res.expiration;
         }
         if(!!sharetoken_res.share_token) {
@@ -1262,30 +1296,30 @@ const ali = {
             if(typeof saveLink != 'undefined' && !!saveLink) {
                 let expiration_text = '';
                 if(typeof expiration != 'undefined') {
-                    const formatDate = function(_date, _fmt) {
-                        let fmt = _fmt || "yyyy-MM-dd HH:mm:ss";
-                        const date = new Date(_date);
-                        const o = {
-                            "M+": date.getMonth() + 1, //月份
-                            "d+": date.getDate(), //日
-                            "h+": date.getHours()%12 == 0 ? 12 : date.getHours()%12,
-                            "H+": date.getHours(), //小时
-                            "m+": date.getMinutes(), //分
-                            "s+": date.getSeconds(), //秒
-                            "q+": Math.floor((date.getMonth() + 3) / 3), //季度
-                            "S": date.getMilliseconds() //毫秒
-                        };
-                        if(/(y+)/.test(fmt)) {
-                            fmt=fmt.replace(RegExp.$1, (date.getFullYear()+"").substr(4 - RegExp.$1.length));
-                        }
-                        for(let k in o) {
-                            if(new RegExp("("+ k +")").test(fmt)){
-                                fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
-                            }
-                        }
-                        return fmt;
+                    const getDateDiff = (expiration) => {
+                        var minute = 1000 * 60;
+                        var hour = minute * 60;
+                        var day = hour * 24;
+                        var month = day * 30;
+                
+                        var now = new Date().getTime();
+                        var diffValue = new Date(expiration).getTime() - now;
+                        var monthC =diffValue/month;
+                        var dayC =diffValue/day;
+                        var hourC =diffValue/hour;
+                        var minC =diffValue/minute;
+                        if(minC<=60){
+                            result = parseInt(minC) + '分钟内有效';
+                        } else if(hourC<=24){
+                             result = parseInt(hourC) + '小时内有效';
+                         } else if(dayC<=30){
+                             result = parseInt(dayC) +"天内有效";
+                         } else {
+                            result = parseInt(monthC) +"月内有效";
+                         }
+                        return result;
                     }
-                    expiration_text = '有效期限：' + (expiration ? formatDate(expiration) +'前有效，请尽快保存！' : '永久有效');
+                    expiration_text = '有效期限：' + (expiration ? getDateDiff(expiration) +'，请尽快保存！' : '永久有效');
                 }
                 d.push({
                     title: '““””<b>✨✨✨✨<span style="color: #f47983">保存到我的阿里云盘</span>✨✨✨✨</b>\n' + "““””<small>"+'<span style="color: #999999">'+expiration_text+'</span></small>',
