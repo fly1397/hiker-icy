@@ -1253,9 +1253,9 @@ const ali = {
                  }
                 return result;
             }
+            expiration = shareInfo_res.expiration;
             let expiration_text = '' + (expiration ? getDateDiff(expiration) : '永久有效');
             setPageTitle(shareInfo_res.display_name + '  ' + expiration_text);
-            expiration = shareInfo_res.expiration;
         }
         if(!!sharetoken_res.share_token) {
             sharetoken = sharetoken_res.share_token;
