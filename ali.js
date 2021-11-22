@@ -156,7 +156,7 @@ const ali = {
             desc: '100%&&float',
             extra: {
                 canBack: true,
-                js: "try{document.querySelector('.BeInvited--btn--eapb4-i').click();} catch(e){};var token_timer=function(){setTimeout(()=>{var token=JSON.parse(localStorage.getItem('token'));if(token){fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify({access_token:token.access_token,refresh_token:token.refresh_token}));alert('TOKEN获取成功，请勿泄漏个人隐私!退出该页面后刷新重试！')}else{token_timer()}},1000)};token_timer();"
+                js: "try{document.querySelector('.BeInvited--btn--eapb4-i').click();} catch(e){};var token_timer=function(){setTimeout(()=>{var token=JSON.parse(localStorage.getItem('token'));if(token){fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify({access_token:token.access_token,refresh_token:token.refresh_token}));location.href = 'https://www.aliyundrive.com/';alert('TOKEN获取成功，请勿泄漏个人隐私!退出该页面后刷新重试！')}else{token_timer()}},1000)};token_timer();"
             }
         })
         setHomeResult({
