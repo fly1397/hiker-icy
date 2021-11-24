@@ -8,7 +8,10 @@
       "desc": "阿里云盘资源共享站",
       "searchUrl": "https://alixiaozhan.net/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
       "cats": [
-        { "name": "影视", "val": "video", "withType": 1}
+        { "name": "影视", "val": "video", "withType": 1},
+        { "name": "动漫", "val": "comic", "withType": 1 },
+        { "name": "图片", "val": "picture", "withType": 1 },
+        { "name": "音乐", "val": "music", "withType": 1 }
       ],
       "sorts": [
         { "name": "相关推荐", "val": "", "withType": -1},
@@ -33,6 +36,7 @@
       "cats": [
         { "name": "影视", "val": "filter[categoryids][0]=1", "withType": 1},
         { "name": "动漫", "val": "filter[categoryids][0]=7", "withType": 1},
+        { "name": "音乐", "val": "filter[categoryids][0]=2", "withType": 1},
         { "name": "图片", "val": "filter[categoryids][0]=3", "withType": 1}
       ],
       "sorts": [
@@ -104,6 +108,33 @@
             { "name": "日韩", "val": "Japan-c"},
             { "name": "其它", "val": "other-c"}
           ]
+        },
+        {
+          "name": "图片", "val": "photo", "withType": 1,
+          "sub": [
+            { "name": "全部", "val": ""},
+            { "name": "美女/人物", "val": "people"},
+            { "name": "游戏/动漫", "val": "game-p"},
+            { "name": "风景/植物", "val": "scenery"},
+            { "name": "动物", "val": "animal"},
+            { "name": "汽车", "val": "car"},
+            { "name": "其他", "val": "other-p"}
+          ]
+        },
+        {
+          "name": "音乐", "val": "music", "withType": 1,
+          "sub": [
+            { "name": "全部", "val": ""},
+            { "name": "华语", "val": "china-m"},
+            { "name": "港台", "val": "hk-m"},
+            { "name": "欧美", "val": "usa-m"},
+            { "name": "日韩", "val": "japan-m"},
+            { "name": "轻音乐", "val": "light-m"},
+            { "name": "摇滚", "val": "rock-m"},
+            { "name": "DJ", "val": "dj-m"},
+            { "name": "广播剧", "val": "redio"},
+            { "name": "其它", "val": "other-m"}
+          ]
         }
       ],
       "sorts": [
@@ -130,7 +161,9 @@
         { "name": "电影", "val": "movie", "withType": 1 },
         { "name": "剧集", "val": "tv", "withType": 1 },
         { "name": "资源合集", "val": "ziyuanheji", "withType": 1 },
-        { "name": "动漫", "val": "dongman", "withType": 1 }
+        { "name": "动漫", "val": "dongman", "withType": 1 },
+        { "name": "图片", "val": "picture", "withType": 1 },
+        { "name": "音乐", "val": "music", "withType": 1 }
       ],
       "sorts": [
         { "name": "相关推荐", "val": "", "withType": -1},
@@ -155,7 +188,10 @@
       "loginError": false,
       "searchUrl": "https://community.dtnetwork.top/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
       "cats": [
-        { "name": "阿里云盘", "val": "alidrive"}
+        { "name": "阿里云盘", "val": "alidrive", "withType": 1},
+        { "name": "影视", "val": "video", "withType": 1},
+        { "name": "资料", "val": "material", "withType": 1},
+        { "name": "其他", "val": "others", "withType": 1}
       ],
       "sorts": [
         { "name": "相关推荐", "val": "", "withType": -1},
