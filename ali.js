@@ -564,7 +564,7 @@ const ali = {
                 const descStr = parseDomForHtml(contentDome, '.fortext&&Text');
                 const comment = (!fromHikerSearch && attributes.commentCount > 1) ? '  <small><span style="color: #999999">💬 ' + (attributes.commentCount - 1) + '</span></small>' : '';
                 d.push({
-                    title: '““””' + this.getEmptyTitle(attributes.title, descStr) + comment,
+                    title: fromHikerSearch ? this.getEmptyTitle(attributes.title, descStr) : '““””' + this.getEmptyTitle(attributes.title, descStr) + comment,
                     pic_url: pic,
                     content: descStr,
                     desc: fromHikerSearch ? name : descStr,
