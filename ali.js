@@ -37,7 +37,7 @@ const ali = {
     },
     formatDate: function(_date, _fmt) {
         let fmt = _fmt || "yyyy-MM-dd HH:mm:ss";
-        const date = new Date(_date*1000);
+        const date = !isNaN(_date) ? new Date(_date*1000) : new Date(_date);
         const o = {
             "M+": date.getMonth() + 1, //月份 
             "d+": date.getDate(), //日 
@@ -180,7 +180,6 @@ const ali = {
                 var access_token = tokenRes.access_token;
                 var refresh_token = tokenRes.refresh_token;
                 putVar("access_token", access_token);
-                log('new token: ' + access_token)
                 writeFile(tokenPath,JSON.stringify({access_token: access_token, refresh_token: refresh_token}));
                 return access_token;
             } else {
@@ -546,10 +545,6 @@ const ali = {
     itemData: function(activeModel, fromHikerSearch, data, included, host, d, page, keyword){
         const {name} = activeModel;
         if(data && data.length) {
-            // var lazy = $('').rule(() => {
-            //     eval(fetch('hiker://files/rules/icy/ali.js'));
-            //     ali.detailPage();
-            // })
             data.forEach((dataitem) => {
                 const {attributes, relationships} = dataitem;
                 let postid = '';
@@ -573,8 +568,6 @@ const ali = {
                     pic_url: pic,
                     content: descStr,
                     desc: fromHikerSearch ? name : descStr,
-                    // 优化速度， 直接打开，不再远程取数据
-                    // url: 'https://aliyunshare.cn/api/discussions/'+attributes.slug+'?bySlug=true&page%5Bnear%5D=0' + lazy,
                     url: $('hiker://empty' + postid).rule((dataitem, post, host) => {
                         var d = [];
                         eval(fetch('hiker://files/rules/icy/ali.js'));
@@ -634,7 +627,7 @@ const ali = {
             _links.forEach((link, index) => {
                 d.push({
                     title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link,
-                    url: 'hiker://page/detail?url=' + link,
+                    url: 'hiker://page/detail?url=' + link + '$$fypage',
                     col_type: "text_1"
                 });
             })
@@ -733,12 +726,11 @@ const ali = {
         res.data = d;
         setHomeResult(res);
     },
-    // 详细页面
+    // 资源站点详细页面
     detailPage: function() {
-
         const {cookie, val} = this.activeModel();
-        const [,slug,page] = MY_URL.split('$$')
-        const host = val.match(/https:\/\/(\w+\.?)+/)[0];
+        const [host, _query] = MY_URL.split('?host=')[1].split('/d/');
+        const [,slug, page] = _query.split(/[##|$$]/).filter(item => !!item);
         const headers = {"Referer": host, 'User-Agent': MOBILE_UA,};
         if(cookie) {
             headers['cookie'] = cookie;
@@ -746,26 +738,49 @@ const ali = {
 
         var res = {};
         var d = [];
-        let url = host + '/api/discussions/'+slug+'?bySlug=true&page%5Bnear%5D=0';
+        let url = host + '/api/discussions/'+slug;
         let resCode = null;
         let pageRes = null;
         if(page == 1) {
             resCode = JSON.parse(fetch(url, {headers: headers}));
-
-            const {data, included, links} = resCode;
-            const {relationships} = data;
-            const postid = relationships.posts.data[0].id;
-            const posts = included.filter(_post => _post.type === 'posts' && !!relationships.posts.data.find(_p => _p.id == _post.id && _p.type == 'posts'));
-            // const post = included.find(_post => _post.id === postid);
-            this.detailPostPageData(posts, d, page);
+            if(resCode.errors) {
+                d.push({
+                    title: '页面失联了💔',
+                    col_type: "text_1"
+                });
+            } else {
+                const {data, included, links} = resCode;
+                const {relationships, attributes: {title, createdAt}} = data;
+                setPageTitle(title);
+                const postid = relationships.posts.data[0].id;
+                const posts = included.filter(_post => _post.type === 'posts' && !!relationships.posts.data.find(_p => _p.id == _post.id && _p.type == 'posts'));
+                const post = included.find(_post => _post.id === postid);
+                const {attributes: {contentHtml}} = post;
+                const contentDome = '<div class="fortext">' + contentHtml || '' + '</div>';
+                const texts = parseDomForHtml(contentDome, '.fortext&&Text');
+                let _title = this.getEmptyTitle(title, texts);
+                d.push({
+                    title: "““””<b>"+'<span style="color: #f47983">'+_title+'</span></b>\n' + "““””<small>"+'<span style="color: #999999">创建于：'+this.formatDate(createdAt)+'</span></small>',
+                    url: host + '/d/' + slug,
+                    col_type: "text_1"
+                });
+                this.detailPostPageData(posts, d, page);
+            }
         } else {
             resCode = JSON.parse(fetch(url, {headers: headers}));
-            let start = (page-1)*20;
-            if(resCode.data.relationships.posts.data.length > 20) {
-                const postIds = resCode.data.relationships.posts.data.map(item => item.id).slice(start, start+20); 
-                url = host + '/api/posts?filter[id]='+postIds.join(',');
-                pageRes = JSON.parse(fetch(url, {headers: headers}));
-                this.detailPostPageData(pageRes.data, d, page);
+            if(resCode.errors) {
+                d.push({
+                    title: '页面失联了💔',
+                    col_type: "text_1"
+                });
+            } else {
+                let start = (page-1)*20;
+                if(resCode.data.relationships.posts.data.length > 20) {
+                    const postIds = resCode.data.relationships.posts.data.map(item => item.id).slice(start, start+20); 
+                    url = host + '/api/posts?filter[id]='+postIds.join(',');
+                    pageRes = JSON.parse(fetch(url, {headers: headers}));
+                    this.detailPostPageData(pageRes.data, d, page);
+                }
             }
         }
         res.data = d;
@@ -788,14 +803,22 @@ const ali = {
         const contentDome = '<div class="fortext">' + contentHtml || '' + '</div>';
         const texts = parseDomForHtml(contentDome, '.fortext&&Text');
         let _title = this.getEmptyTitle(title, texts);
+        let expand = !!Number(getVar('icy_ali_expand'+slug , ''));
         d.push({
             title: "““””<b>"+'<span style="color: #f47983">'+_title+'</span></b>\n' + "““””<small>"+'<span style="color: #999999">请点击下面资源链接访问，\n如果有误请点这里查看帖子内容或原始页面！</span></small>',
             url: host + '/d/' + slug,
             col_type: "text_1"
         });
 
-        const _links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
+        let _linksArr = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
+        let _links = [];
         const codes = texts.split(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
+        const siteReg = new RegExp('href="('+host+'\/d\/(-|\\w|\\d)*)"', 'ig');
+        if(!expand && _linksArr.length > 5) {
+            _links = _linksArr.slice(0, 5);
+        } else {
+            _links = _linksArr;
+        }
         _links.forEach((link, index) => {
             let code = '';
             if(codes[index]) {
@@ -806,7 +829,7 @@ const ali = {
             }
             d.push({
                 title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
-                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: ''),
+                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '$$fypage',
                 col_type: "text_1"
             });
         })
@@ -815,6 +838,16 @@ const ali = {
                 title: '““””<small><span style="color: #999999">没有匹配到链接？点击查看原网页内容！</span></small>',
                 url: host + '/d/' + slug,
                 col_type: "text_1"
+            });
+        } else if(_linksArr.length > 5){
+            d.push({
+                title: expand ? '收起' : '展开',
+                url: $("#noLoading#").lazyRule((slug)=>{
+                    putVar('icy_ali_expand'+slug, Number(!Number(getVar('icy_ali_expand'+slug))));
+                    refreshPage(false);
+                    return "hiker://empty"
+                }, slug),
+                col_type: "text_center_1"
             });
         }
         d.push({
@@ -827,22 +860,20 @@ const ali = {
         });
         d.push({
             title: contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
-                return 'href="hiker://page/detail?url=' + e.split('href="')[1];
+                return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '$$fypage';
+            }).replace(siteReg, function(e,t) {
+                return 'href="hiker://page/site-detail?host=' + t+'$$'+t.split('/d/')[1].split('-')[0] +'$$fypage"';
             }),
             col_type: "rich_text"
-        })
-        var lazy = $('').rule(() => {
-            eval(fetch('hiker://files/rules/icy/ali.js'));
-            ali.detailPage();
         })
         if(commentCount > 1) {
             d.push({
                 col_type: "line_blank"
             });
-            let urlMore = 'hiker://empty$$'+slug+'$$fypage$$';
+            let urlMore = 'hiker://page/site-detail?host='+host+'/d/'+slug+'$$'+slug+'$$fypage';
             d.push({
                 title: '✨ 点击查看全部帖子内容, 共' + (commentCount - 1) + '条回帖',
-                url: urlMore + lazy,
+                url: urlMore,
                 col_type: 'text_1'
             })
         }
@@ -856,12 +887,22 @@ const ali = {
                 col_type: "text_1"
             });
         }
+        const {val} = this.activeModel();
+        const host = val.match(/https:\/\/(\w+\.?)+/)[0];
+        const siteReg = new RegExp('href="('+host+'\/d\/(-|\\w|\\d)*)"', 'ig');
         posts.forEach(post => {
             const { contentHtml } = post.attributes
             if(contentHtml) {
+                // log(contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
+                //     return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '$$fypage';
+                // }).replace(siteReg, function(e,t) {
+                //     return 'href="hiker://page/site-detail?host=' + t+'$$'+t.split('/d/')[1] +'$$fypage"';
+                // }))
                 d.push({
                     title: contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
-                        return 'href="hiker://page/detail?url=' + e.split('href="')[1];
+                        return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '$$fypage';
+                    }).replace(siteReg, function(e,t) {
+                        return 'href="hiker://page/site-detail?host=' + t+'$$'+t.split('/d/')[1].split('-')[0] +'$$fypage"';
                     }),
                     col_type: "rich_text"
                 })
@@ -1189,16 +1230,87 @@ const ali = {
                 return "toast://" + json.message;
             }
         }
-        return  json.preview_url+';{Referer@https://www.aliyundrive.com/&&Cookie@lang=zh-CN; weboffice_cdn=1; wwo_token='+json.access_token+'}';
+        let d = [];
+        d.push({
+            url: json.preview_url + '$$' +json.access_token,
+            col_type: 'x5_webview_single',
+            desc: '100%&&float',
+            extra: {
+                canBack: true,
+                js: "var token =location.href.split('$$')[1]; if(!document.cookie.includes(token)) {document.cookie = 'wwo_token=' + location.href.split('$$')[1];location.reload();}"
+            }
+        })
+        setHomeResult({
+            data: d
+        })
     },
-    aliRule: function(share_pwd) {
-        var link = MY_URL;
+    get_share_link_download_url: function(shareId, sharetoken, file_id){
+        var access_token = this.getAliToken(true);
+        if(!access_token) {
+            return '';
+        }
+        const data = {"expire_sec":600,"file_id":file_id ,"share_id": shareId};
+        var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_download_url', {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': access_token,
+                'X-Share-Token': sharetoken
+            },
+            body: JSON.stringify(data),
+            method: 'POST'
+        }));
+        if(json.code && json.message) {
+            if(json.code.includes('AccessTokenInvalid')) {
+                eval(fetch('hiker://files/rules/icy/ali.js'));
+                var access_token = ali.getAliToken(true);
+                refreshPage();
+                return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
+            } else {
+                return "toast://" + json.message;
+            }
+        }
+        var link = json.download_url;
+        var _play = JSON.parse(fetch(link, {
+            headers: {
+                'User-Agent': MOBILE_UA,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Referer': 'https://www.aliyundrive.com/'
+            },
+            redirect: false,
+            withStatusCode: true
+        })).headers;
+        if(_play && _play.location) {
+            return 'pics://'+_play.location[0]
+        } else {
+            return "toast://" + _play.body;
+        }
+    },
+    aliRule: function() {
+        const [shareLink, _page] = MY_URL.split('$$');
+        const [link, _share_pwd] = shareLink.split('?share_pwd=');
+        const [_link, _folderID] = link.split('/folder/');
         var shareId = '';
-        var share_pwd = share_pwd || '';
-        if (/aliyundrive/.test(link)) {
-            shareId = link.split('com/s/')[1];
-        } else if (/alywp/.test(link)) {
-            var result_link = JSON.parse(fetch(link, {
+        var share_pwd = _share_pwd || '';
+        var folderID = _folderID || '';
+        var page = _page || 1;
+        if(page == 1) {
+            putVar('icy_ali_next_marker', '');
+            putVar('icy_ali_folder', '');
+        } else {
+            folderID = getVar('icy_ali_folder', '')
+        }
+
+        var next_marker = getVar('icy_ali_next_marker', '');
+        if(page != 1 && !next_marker) {
+            setHomeResult({
+                data: [{title: "““””<center><small>"+'<span style="color: #999999">～～～我是有底线的～～～</span></small></center>', url: this.emptyRule, col_type: 'text_center_1'}]
+            });
+            return 'toast://到底了！';
+        }
+        if (/aliyundrive/.test(_link)) {
+            shareId = _link.split('com/s/')[1];
+        } else if (/alywp/.test(_link)) {
+            var result_link = JSON.parse(fetch(_link, {
                 headers: {
                     'User-Agent': MOBILE_UA,
                 },
@@ -1206,11 +1318,6 @@ const ali = {
                 withHeaders: true
             })).headers.location[0];
             shareId = result_link.split('com/s/')[1];
-        }
-        if(shareId.includes('?share_pwd=')) {
-            let share_link = shareId.split('?share_pwd=');
-            shareId = share_link[0];
-            share_pwd = share_link[1];
         }
         var saveLink = 'smartdrive://share/browse?shareId='+shareId+'&sharePwd='+share_pwd;
         var sharetoken = '';
@@ -1222,6 +1329,7 @@ const ali = {
             body: '{"share_id":"' + shareId + '"}',
             method: 'POST'
         }));
+
         var sharetoken_res = JSON.parse(fetch('https://api.aliyundrive.com/v2/share_link/get_share_token', {
             headers: {
                 'Content-Type': 'application/json'
@@ -1229,30 +1337,30 @@ const ali = {
             body: '{"share_pwd":"'+share_pwd+'","share_id":"' + shareId + '"}',
             method: 'POST'
         }));
+        var getDateDiff = (expiration) => {
+            var minute = 1000 * 60;
+            var hour = minute * 60;
+            var day = hour * 24;
+            var month = day * 30;
+    
+            var now = new Date().getTime();
+            var diffValue = new Date(expiration).getTime() - now;
+            var monthC =diffValue/month;
+            var dayC =diffValue/day;
+            var hourC =diffValue/hour;
+            var minC =diffValue/minute;
+            if(minC<=60){
+                result = parseInt(minC) + '分钟内有效';
+            } else if(hourC<=24){
+                 result = parseInt(hourC) + '小时内有效';
+             } else if(dayC<=30){
+                 result = parseInt(dayC) +"天内有效";
+             } else {
+                result = parseInt(monthC) +"月内有效";
+             }
+            return result;
+        }
         if(shareInfo_res && !!shareInfo_res.display_name) {
-            const getDateDiff = (expiration) => {
-                var minute = 1000 * 60;
-                var hour = minute * 60;
-                var day = hour * 24;
-                var month = day * 30;
-        
-                var now = new Date().getTime();
-                var diffValue = new Date(expiration).getTime() - now;
-                var monthC =diffValue/month;
-                var dayC =diffValue/day;
-                var hourC =diffValue/hour;
-                var minC =diffValue/minute;
-                if(minC<=60){
-                    result = parseInt(minC) + '分钟内有效';
-                } else if(hourC<=24){
-                     result = parseInt(hourC) + '小时内有效';
-                 } else if(dayC<=30){
-                     result = parseInt(dayC) +"天内有效";
-                 } else {
-                    result = parseInt(monthC) +"月内有效";
-                 }
-                return result;
-            }
             expiration = shareInfo_res.expiration;
             let expiration_text = '' + (expiration ? getDateDiff(expiration) : '永久有效');
             setPageTitle(shareInfo_res.display_name + '  ' + expiration_text);
@@ -1265,37 +1373,25 @@ const ali = {
         } else if(sharetoken_res.code.includes('Cancelled') || sharetoken_res.code.includes('Expired')) {
             var d = [];
             d.push({
-                title: "““””<center style='height: 100vh; display:flex; align-items: center;justify-content: center;'><small>"+'<span style="color: #999999">来晚啦，该分享已失效!</span></small></center>',
+                title: "““””<center><small>"+'<span style="color: #999999">来晚啦，该分享已失效!</span></small></center>',
                 url: this.emptyRule,
-                col_type: "text_1"
+                col_type: "text_center_1"
             });
             setHomeResult({
                 data: d
             });
             return false;
-        }
-        const getFileList = (sharetoken, shareId, pfileid) => {
-            if(pfileid) {
-                MY_URL = MY_URL.split('/folder')[0] + '/folder/' + pfileid;
-                MY_URL = MY_URL.split('/folder')[0] + '/folder/' + pfileid;
-                const folderRes = fetch('https://api.aliyundrive.com/v2/file/get', {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Share-Token': sharetoken
-                    },
-                    body: '{"share_id": "'+shareId+'","file_id": "'+pfileid+'","fields":"*","image_thumbnail_process":"image/resize,w_400/format,jpeg","image_url_process":"image/resize,w_375/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_375"}',
-                    method: 'POST'
-                });
-                setPageTitle(JSON.parse(folderRes).name);
-            } 
-            return fetch('https://api.aliyundrive.com/adrive/v3/file/list', {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Share-Token': sharetoken
-                },
-                body: '{"share_id":"' + shareId + '","parent_file_id":"' + (pfileid ? pfileid : 'root') + '","limit":100,"image_thumbnail_process":"image/resize,w_160/format,jpeg","image_url_process":"image\/resize,w_1920/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_300","order_by":"name","order_direction":"DESC"}',
-                method: 'POST'
+        } else if(sharetoken_res.code.includes('Forbidden')) {
+            var d = [];
+            d.push({
+                title: "““””<center><b>"+'<span style="color: #f47983">文件违规\n根据相关法律法规要求，该文件已禁止访问</span></b></center>',
+                url: this.emptyRule,
+                col_type: "text_center_1"
             });
+            setHomeResult({
+                data: d
+            });
+            return false;
         }
         if(!sharetoken) {
             confirm({
@@ -1304,36 +1400,66 @@ const ali = {
             });
             return false;
         }
-        var rescod = JSON.parse(getFileList(sharetoken, shareId));
+        const getFileList = (sharetoken, shareId, folderID, next_marker) => {
+            var order_by = getVar('icy_ali_order_by', 'name');
+            var order_direction = getVar('icy_ali_order_direction', 'DESC');
+            var folderRes = null;
+            if(folderID) {
+                let [_myUrl, _fypage] = MY_URL.split('$$');
+                MY_URL = _myUrl.split('/folder')[0] + '/folder/' + folderID + '$$' +_fypage;
+                // MY_URL = MY_URL.split('/folder')[0] + '/folder/' + folderID;
+                folderRes = fetch('https://api.aliyundrive.com/v2/file/get', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Share-Token': sharetoken
+                    },
+                    body: '{"share_id": "'+shareId+'","file_id": "'+folderID+'","fields":"*","image_thumbnail_process":"image/resize,w_400/format,jpeg","image_url_process":"image/resize,w_375/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_375"}',
+                    method: 'POST'
+                });
+                setPageTitle(JSON.parse(folderRes).name);
+            }
+            const data = {"share_id": shareId,"parent_file_id": (folderID ? folderID : 'root'),"limit":100,"image_thumbnail_process":"image/resize,w_160/format,jpeg","image_url_process":"image/resize,w_1920/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_300","order_by": order_by,"order_direction": order_direction}
+            if(next_marker) {
+                data.marker = next_marker;
+            }
+            if(page > 1 && next_marker && folderRes) {
+                data.parent_file_id = JSON.parse(folderRes).file_id;
+            }
+            return fetch('https://api.aliyundrive.com/adrive/v3/file/list', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Share-Token': sharetoken
+                },
+                body: JSON.stringify(data),
+                method: 'POST'
+            });
+        }
 
-        const rendererList = (rescod, getFileList, rendererList, sharetoken, shareId) => {
-            var d = [];
+        var viewName = Number(getVar('icy_ali_view', ''));
+        if(!getVar('icy_ali_order_by')) {
+            putVar('icy_ali_order_by', 'name');
+        }
+        if(!getVar('icy_ali_order_direction')) {
+            putVar('icy_ali_order_direction', 'DESC');
+        }
+        var d = [];
+        if(page == 1) {
+            var order_by_arr = [{name: '名称', val: 'name'},{name: '修改时间', val: 'updated_at'}];
+            var order_direction_arr = [{name: '升序', val: 'ASC'},{name: '降序', val: 'DESC'}];
+            this.rendererFilter(d, order_by_arr, 'icy_ali_order_by');
+            this.rendererFilter(d, order_direction_arr, 'icy_ali_order_direction');
+            d.push({
+                title: !viewName ? '列表' : '图文',
+                url: $("#noLoading#").lazyRule(()=>{
+                    putVar('icy_ali_view', Number(!Number(getVar('icy_ali_view'))));
+                    refreshPage(false);
+                    return "hiker://empty"
+                }),
+                col_type: 'text_1'
+            })
             if(typeof saveLink != 'undefined' && !!saveLink) {
                 let expiration_text = '';
                 if(typeof expiration != 'undefined') {
-                    const getDateDiff = (expiration) => {
-                        var minute = 1000 * 60;
-                        var hour = minute * 60;
-                        var day = hour * 24;
-                        var month = day * 30;
-                
-                        var now = new Date().getTime();
-                        var diffValue = new Date(expiration).getTime() - now;
-                        var monthC =diffValue/month;
-                        var dayC =diffValue/day;
-                        var hourC =diffValue/hour;
-                        var minC =diffValue/minute;
-                        if(minC<=60){
-                            result = parseInt(minC) + '分钟内有效';
-                        } else if(hourC<=24){
-                             result = parseInt(hourC) + '小时内有效';
-                         } else if(dayC<=30){
-                             result = parseInt(dayC) +"天内有效";
-                         } else {
-                            result = parseInt(monthC) +"月内有效";
-                         }
-                        return result;
-                    }
                     expiration_text = '有效期限：' + (expiration ? getDateDiff(expiration) +'，请尽快保存！' : '永久有效');
                 }
                 d.push({
@@ -1342,119 +1468,149 @@ const ali = {
                     col_type: "text_center_1"
                 });
             }
-            if(!rescod || !rescod.items || !rescod.items.length) {
-                d.push({
-                    title: "““””<center style='height: 100vh; display:flex; align-items: center;justify-content: center;'><small>"+'<span style="color: #999999">空文件夹，或者分享已经失效了！</span></small></center>',
-                    url: this.emptyRule,
-                    col_type: "text_1"
-                });
-            }
-            rescod.items.forEach(_item => {
-                const {type, category, name, file_id} = _item;
-                let title = name;
-                let isVideo = category == 'video';
-                if (type != 'folder') {
-                    title = isVideo ? '🎬 ' + title : '🌇 ' + title;
-                    const fnName = (fileExist('hiker://files/rules/icy/icy-ali-token.json') == 'true' || fileExist('hiker://files/rules/icy/icy-ali-token.json') == true) ? 'lazyRule' : 'rule';
-                    if(isVideo) {
-                        d.push({
-                            title: title,
-
-                            url: $('hiker://empty' + file_id)[fnName]((shareId, sharetoken, file_id, fnName) => {
-                                eval(fetch('hiker://files/rules/icy/ali.js'));
-                                var access_token = ali.getAliToken();
-                                if(access_token) {
-                                    if(fnName == 'rule') {
-                                        back(true);
-                                    }
-                                    return ali.videoProxy(file_id, shareId, sharetoken);
-                                } else {
-                                    return "toast://登录后需要重新刷新页面哦！"
-                                }
-                            }, shareId, sharetoken, file_id, fnName),
-                            extra: {
-                                id: shareId + file_id
-                            },
-                            col_type: 'text_1'
-    
-                        });
-                    } else if(category == 'image') {
-                        d.push({
-                            title: title,
-                            url: $('hiker://empty'+ file_id)[fnName]((shareId, sharetoken, file_id, fnName) => {
-                                eval(fetch('hiker://files/rules/icy/ali.js'));
-                                var access_token = ali.getAliToken();
-                                if(access_token) {
-                                    if(fnName == 'rule') {
-                                        back(true);
-                                    }
-                                    return ali.lazyAliImage(shareId, sharetoken, file_id);
-                                } else {
-                                    return "toast://登录后需要重新刷新页面哦！"
-                                }
-                            }, shareId, sharetoken, file_id, fnName),
-                            col_type: 'text_1'
-    
-                        });
-                    }  
-                    // else if(category == 'doc') {
-                    //     d.push({
-                    //         title: title,
-                    //         url: $(file_id).lazyRule((shareId, sharetoken) => {
-                    //             eval(fetch('hiker://files/rules/icy/ali.js'));
-                    //             return ali.lazyAliDoc(shareId, sharetoken, input);
-                    //         }, shareId, sharetoken),
-                    //         col_type: 'text_1'
-    
-                    //     });
-                    // } 
-                    else {
-                        d.push({
-                            title: title,
-                            url: $(file_id).lazyRule((shareId, sharetoken) => {
-                                return "toast://暂不支持查看该文件！"
-                            }, shareId, sharetoken),
-                            col_type: 'text_1'
-
-                        });
-                    }
-                } else {
-                    // 如果只包含一个文件夹， 直接取内容
-                    if(rescod.items.length === 1) {
-                        var result = getFileList(sharetoken,shareId, file_id);
-                        if(result) {
-                            rendererList(JSON.parse(result), getFileList,rendererList, sharetoken,shareId)
-                        }
-                    } else {
-                        d.push({
-                            title: '🦑 ' + name,
-                            url: $(MY_URL).rule((shareId, sharetoken, getFileList, rendererList, file_id) => {
-                                var rescod = getFileList(sharetoken,shareId, file_id);
-                                rendererList(JSON.parse(rescod), getFileList,rendererList, sharetoken,shareId)
-                            }, shareId, sharetoken, getFileList, rendererList, file_id),
-                            col_type: 'text_1'
-    
-                        });
-                    }
-
-                }
-            });
-            setHomeResult({
-                data: d
-            });
-
         }
+
+        var rescod = null;
+        try {
+            rescod = JSON.parse(getFileList(sharetoken, shareId, folderID, next_marker));
+        } catch (e){
+            confirm({
+                title: '出错了',
+                content: '获取数据出了点问题, 刷新页面试试！',
+                confirm: 'refreshPage()'
+            })
+        }
+        // if((page != 1 && !next_marker) || !rescod) {
+        //     setHomeResult({
+        //         data: d
+        //     });
+        //     return 'toast://到底了！';
+        // }
         if(rescod.code && rescod.code.includes('AccessTokenInvalid')) {
             this.needSharePWD(link);
         }
-        rendererList(rescod, getFileList, rendererList, sharetoken, shareId);
+
+
+        
+        if(!!rescod && (!rescod.items || !rescod.items.length)) {
+            d.push({
+                title: "““””<center><small>"+'<span style="color: #999999">空文件夹</span></small></center>',
+                url: this.emptyRule,
+                col_type: "text_center_1"
+            });
+        }
+        const col_type = !viewName ? 'avatar' : 'movie_3_marquee';
+        // 如果只包含一个文件夹， 直接取内容
+        if(rescod.items.length === 1 && rescod.items[0].type == 'folder') {
+            const folderItem = rescod.items[0];
+            try {
+                rescod = JSON.parse(getFileList(sharetoken, shareId, folderItem.file_id, next_marker));
+
+                putVar('icy_ali_folder', folderItem.file_id);
+            } catch (e){
+                confirm({
+                    title: '出错了',
+                    content: '获取数据出了点问题, 刷新页面试试！',
+                    confirm: 'refreshPage()'
+                })
+            }
+            
+        }
+        putVar('icy_ali_next_marker', rescod.next_marker || '');
+        
+        rescod.items.forEach((_item, index) => {
+            const {type, category, name, file_id, thumbnail, updated_at} = _item;
+            let title = name
+            let desc = this.formatDate(updated_at, 'MM/dd HH:mm');
+            let isVideo = category == 'video';
+            let pic_url = thumbnail;
+            const fnName = (fileExist(this.urls.tokenPath) == 'true' || fileExist(this.urls.tokenPath) == true) ? 'lazyRule' : 'rule';
+            switch(category || type){
+                case 'video':
+                    d.push({
+                        title: title,
+                        pic_url: pic_url,
+                        desc: desc,
+                        url: $('hiker://empty' + file_id)[fnName]((shareId, sharetoken, file_id, fnName) => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            if(access_token) {
+                                if(fnName == 'rule') {
+                                    back(true);
+                                }
+                                return ali.videoProxy(file_id, shareId, sharetoken);
+                            } else {
+                                return "toast://登录后需要重新刷新页面哦！"
+                            }
+                        }, shareId, sharetoken, file_id, fnName),
+                        extra: {
+                            id: shareId + file_id
+                        },
+                        col_type: col_type
+
+                    });
+                break;
+                case 'image':
+                    d.push({
+                        title: title,
+                        desc: desc,
+                        pic_url: pic_url,
+                        url: $('hiker://empty'+ file_id)[fnName]((shareId, sharetoken, file_id, fnName) => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            if(access_token) {
+                                if(fnName == 'rule') {
+                                    back(true);
+                                }
+                                return ali.lazyAliImage(shareId, sharetoken, file_id);
+                            } else {
+                                return "toast://登录后需要重新刷新页面哦！"
+                            }
+                        }, shareId, sharetoken, file_id, fnName),
+                        col_type: col_type
+
+                    });
+                break;
+                case 'folder':
+                    d.push({
+                        title: title,
+                        desc: desc,
+                        pic_url: thumbnail || 'https://img.alicdn.com/imgextra/i3/O1CN01qSxjg71RMTCxOfTdi_!!6000000002097-2-tps-80-80.png',
+                        url: 'hiker://page/detail?url=https://www.aliyundrive.com/s/'+shareId+'/folder/'+file_id + '?share_pwd='+share_pwd+'$$fypage',
+                        col_type: col_type
+
+                    });
+                break;
+                default: 
+                    pic_url = category == 'doc' ? 'https://img.alicdn.com/imgextra/i2/O1CN01kHskgT2ACzipXL4Ra_!!6000000008168-2-tps-80-80.png' : 'https://img.alicdn.com/imgextra/i1/O1CN01mhaPJ21R0UC8s9oik_!!6000000002049-2-tps-80-80.png';
+                    const docLazy = $('hiker://empty'+file_id).lazyRule((shareId, sharetoken, file_id) => {
+                        eval(fetch('hiker://files/rules/icy/ali.js'));
+                        return ali.get_share_link_download_url(shareId, sharetoken, file_id);
+                    }, shareId, sharetoken, file_id);
+                    d.push({
+                        title: title,
+                        pic_url: thumbnail || pic_url,
+                        desc: desc,
+                        url: category != 'doc' ? this.emptyRule : $('hiker://empty'+file_id).rule((shareId, sharetoken, file_id) => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            ali.lazyAliDoc(shareId, sharetoken, file_id);
+                        }, shareId, sharetoken, file_id),
+                        col_type: col_type
+
+                    });
+            }
+
+        });
+        setHomeResult({
+            data: d
+        });
     },
     needSharePWD: function(link) {
         var d = [];
         d.push({
             url: $('').input((link)=> {
                 if(input.trim()) {
-                    return 'hiker://page/detail?url=' + link + '?share_pwd=' + input;
+                    return 'hiker://page/detail?url=' + link + '?share_pwd=' + input + '$$fypage';
                 } else {
                     return 'toast://请输入提取码';
                 }
@@ -1542,7 +1698,7 @@ const ali = {
             }
             d.push({
                 title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
-                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: ''),
+                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '$$fypage',
                 col_type: "text_1"
             });
         })
@@ -1617,7 +1773,7 @@ const ali = {
                     const res = fetch(input); 
                     var link = parseDomForHtml(res, 'a&&href').match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g)[0];
                     if(link) {
-                        return 'hiker://page/detail?url=' + link;
+                        return 'hiker://page/detail?url=' + link + '$$fypage';
                     } else {
                         return "toast://好像出错了！"
                     }
@@ -1670,7 +1826,7 @@ const ali = {
             }
             d.push({
                 title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
-                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: ''),
+                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '$$fypage',
                 col_type: "text_1"
             });
         })
@@ -1691,7 +1847,7 @@ const ali = {
         });
         d.push({
             title: contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
-                return 'href="hiker://page/detail?url=' + e.split('href="')[1];
+                return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '$$fypage';
             }),
             col_type: "rich_text"
         })
