@@ -9,13 +9,13 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '2020112401',
+    version: '20201125',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
-    isDev: true,
+    isDev: false,
 
     // 强制更新config
-    forceConfigUpdate: true,
+    forceConfigUpdate: false,
     // 阿里共享账号设置
     usePublicToken: false,
     publicToken: '',
@@ -187,13 +187,13 @@ const ali = {
             })
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新爱盼小站地址\n2,增加对音乐支持\n3,分类更新，部分站点开放图片音乐类\n\n注意：本次更新会重置数据文件，会导致资源网站登录失效，需要重新登录',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,增加优聚搜站点\n2,增加个人设置页面，更新规则版本\n3,增加共享阿里账号代码输入\n\n注意：本次更新会重置数据文件，会导致资源网站登录失效，需要重新登录',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
     },
     updateRule: function(){
-        let ruleCode = "海阔视界规则分享，当前分享的是：小程序￥home_rule_v2￥base64://@云盘汇影@eyJsYXN0X2NoYXB0ZXJfcnVsZSI6IiIsInRpdGxlIjoi5LqR55uY5rGH5b2xIiwiYXV0aG9yIjoiTXJGbHkiLCJ1cmwiOiJoaWtlcjovL2VtcHR5JCQkZnlwYWdlIiwidmVyc2lvbiI6NCwiY29sX3R5cGUiOiJ0ZXh0XzEiLCJjbGFzc19uYW1lIjoiIiwiY2xhc3NfdXJsIjoiIiwiYXJlYV9uYW1lIjoiIiwiYXJlYV91cmwiOiIiLCJzb3J0X25hbWUiOiIiLCJ5ZWFyX25hbWUiOiIiLCJzb3J0X3VybCI6IiIsInllYXJfdXJsIjoiIiwiZmluZF9ydWxlIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuaG9tZVBhZ2UoKTsiLCJzZWFyY2hfdXJsIjoiaGlrZXI6Ly9lbXB0eSQkJCoqJCQkZnlwYWdlJCQkIiwiZ3JvdXAiOiLikaDmjqjojZAiLCJzZWFyY2hGaW5kIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuc2VhcmNoUGFnZSh0cnVlKTtcbiIsImRldGFpbF9jb2xfdHlwZSI6Im1vdmllXzEiLCJkZXRhaWxfZmluZF9ydWxlIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuZGV0YWlsUGFnZSgpOyIsInNkZXRhaWxfY29sX3R5cGUiOiJtb3ZpZV8xIiwic2RldGFpbF9maW5kX3J1bGUiOiIiLCJ1YSI6Im1vYmlsZSIsInByZVJ1bGUiOiIvKlxu6YOo5YiG5Luj56CB5Y+C6ICD5LqGWVlEU++8jOaEn+iwoummmeS9rFxuKi9cbi8vdmFyIGFsaWpzID0gZmV0Y2goJ2h0dHBzOi8vZ2l0ZWUuY29tL2ZseTEzOTcvaGlrZXItaWN5L3Jhdy9tYXN0ZXIvYWxpLmpzJyk7XG52YXIgYWxpanMgPSBmZXRjaCgnaHR0cDovL2xmaWN5LmNvbTozMDAwMC9tcmZseS9oaWtlci1pY3kvcmF3L21hc3Rlci9hbGkuanMnKTtcbmlmKCFhbGlqcyB8fCAhYWxpanMuaW5jbHVkZXMoJ2FsaScpKXtcblx0YWxpanMgPSBmZXRjaCgnaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL2ZseTEzOTcvaGlrZXItaWN5L2FsaS5qcycpXG59XG5pZighYWxpanMgfHwgIWFsaWpzLmluY2x1ZGVzKCdhbGknKSl7XG5cdGFsaWpzID0gZmV0Y2goJ2h0dHA6Ly9sZmljeS5jb206MzAwMDAvbXJmbHkvaGlrZXItaWN5L3Jhdy9tYXN0ZXIvYWxpLmpzJylcbn1cbmlmKGFsaWpzKSB7XG5cdHdyaXRlRmlsZShcImhpa2VyOi8vZmlsZXMvcnVsZXMvaWN5L2FsaS5qc1wiLGFsaWpzKTtcblx0ZXZhbChhbGlqcyk7XG5cdGFsaS5wcmVSdWxlKCk7XG59XG4iLCJwYWdlcyI6Ilt7XCJjb2xfdHlwZVwiOlwibW92aWVfM1wiLFwibmFtZVwiOlwi572R55uY6K+m5oOFXCIsXCJwYXRoXCI6XCJkZXRhaWxcIixcInJ1bGVcIjpcImpzOlxcbmV2YWwoZmV0Y2goJ2hpa2VyOi8vZmlsZXMvcnVsZXMvaWN5L2FsaS5qcycpKTtcXG5hbGkuYWxpUnVsZSgpO1wifSx7XCJjb2xfdHlwZVwiOlwibW92aWVfMV9sZWZ0X3BpY1wiLFwibmFtZVwiOlwi6LWE5rqQ572R6aG16K+m5oOFXCIsXCJwYXRoXCI6XCJzaXRlLWRldGFpbFwiLFwicnVsZVwiOlwianM6XFxuZXZhbChmZXRjaCgnaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzJykpO1xcbmFsaS5kZXRhaWxQYWdlKCk7XCJ9XSIsImljb24iOiJodHRwczovL2dpdGVlLmNvbS9mbHkxMzk3L2hpa2VyLWljeS9yYXcvbWFzdGVyL2FsaXl1bi5wbmcifQ==";
+        let ruleCode = "海阔视界规则分享，当前分享的是：小程序￥home_rule_v2￥base64://@云盘汇影@eyJsYXN0X2NoYXB0ZXJfcnVsZSI6IiIsInRpdGxlIjoi5LqR55uY5rGH5b2xIiwiYXV0aG9yIjoiTXJGbHkiLCJ1cmwiOiJoaWtlcjovL2VtcHR5JCQkZnlwYWdlIiwidmVyc2lvbiI6NCwiY29sX3R5cGUiOiJ0ZXh0XzEiLCJjbGFzc19uYW1lIjoiIiwiY2xhc3NfdXJsIjoiIiwiYXJlYV9uYW1lIjoiIiwiYXJlYV91cmwiOiIiLCJzb3J0X25hbWUiOiIiLCJ5ZWFyX25hbWUiOiIiLCJzb3J0X3VybCI6IiIsInllYXJfdXJsIjoiIiwiZmluZF9ydWxlIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuaG9tZVBhZ2UoKTsiLCJzZWFyY2hfdXJsIjoiaGlrZXI6Ly9lbXB0eSQkJCoqJCQkZnlwYWdlJCQkIiwiZ3JvdXAiOiLikaDmjqjojZAiLCJzZWFyY2hGaW5kIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuc2VhcmNoUGFnZSh0cnVlKTtcbiIsImRldGFpbF9jb2xfdHlwZSI6Im1vdmllXzEiLCJkZXRhaWxfZmluZF9ydWxlIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuZGV0YWlsUGFnZSgpOyIsInNkZXRhaWxfY29sX3R5cGUiOiJtb3ZpZV8xIiwic2RldGFpbF9maW5kX3J1bGUiOiIiLCJ1YSI6Im1vYmlsZSIsInByZVJ1bGUiOiIvKlxu6YOo5YiG5Luj56CB5Y+C6ICD5LqGWVlEU++8jOaEn+iwoummmeS9rFxuKi9cbnZhciBhbGlqcyA9IGZldGNoKCdodHRwczovL2dpdGVlLmNvbS9mbHkxMzk3L2hpa2VyLWljeS9yYXcvbWFzdGVyL2FsaS5qcycpO1xuaWYoIWFsaWpzIHx8ICFhbGlqcy5pbmNsdWRlcygnYWxpJykpe1xuXHRhbGlqcyA9IGZldGNoKCdodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvZ2gvZmx5MTM5Ny9oaWtlci1pY3kvYWxpLmpzJylcbn1cbmlmKCFhbGlqcyB8fCAhYWxpanMuaW5jbHVkZXMoJ2FsaScpKXtcblx0YWxpanMgPSBmZXRjaCgnaHR0cDovL2xmaWN5LmNvbTozMDAwMC9tcmZseS9oaWtlci1pY3kvcmF3L21hc3Rlci9hbGkuanMnKVxufVxuaWYoYWxpanMpIHtcblx0d3JpdGVGaWxlKFwiaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzXCIsYWxpanMpO1xuXHRldmFsKGFsaWpzKTtcblx0YWxpLnByZVJ1bGUoKTtcbn1cbiIsInBhZ2VzIjoiW3tcImNvbF90eXBlXCI6XCJtb3ZpZV8zXCIsXCJuYW1lXCI6XCLnvZHnm5jor6bmg4VcIixcInBhdGhcIjpcImRldGFpbFwiLFwicnVsZVwiOlwianM6XFxuZXZhbChmZXRjaCgnaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzJykpO1xcbmFsaS5hbGlSdWxlKCk7XCJ9LHtcImNvbF90eXBlXCI6XCJtb3ZpZV8xX2xlZnRfcGljXCIsXCJuYW1lXCI6XCLotYTmupDnvZHpobXor6bmg4VcIixcInBhdGhcIjpcInNpdGUtZGV0YWlsXCIsXCJydWxlXCI6XCJqczpcXG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XFxuYWxpLmRldGFpbFBhZ2UoKTtcIn1dIiwiaWNvbiI6Imh0dHBzOi8vZ2l0ZWUuY29tL2ZseTEzOTcvaGlrZXItaWN5L3Jhdy9tYXN0ZXIvYWxpeXVuLnBuZyJ9";
         let importUrl = "rule://" + base64Encode(ruleCode);
         return importUrl;
     },
