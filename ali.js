@@ -9,7 +9,7 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '20201125',
+    version: '2021112502',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -185,9 +185,10 @@ const ali = {
                     content:"最新版本：" + ali.version
                 })
             })
+            // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,增加优聚搜站点\n2,增加个人设置页面，更新规则版本\n3,增加共享阿里账号代码输入\n\n注意：本次更新会重置数据文件，会导致资源网站登录失效，需要重新登录',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,增加优聚搜站点\n2,增加个人设置页面，更新规则版本\n3,增加共享阿里账号代码输入\n4,优化阿里账号设置页面',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -278,6 +279,7 @@ const ali = {
         }
         const {tokenPath} = this.urls;
         const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
+        
         if(haveToken) {
             let token = JSON.parse(fetch(tokenPath));
             if(!!needRefresh) {
@@ -300,8 +302,39 @@ const ali = {
             }
         } else {
             // log('get Token')
-            this.getRefreshToken();
-            return false;
+            let d = []
+            setPageTitle('账号设置')
+            d.push({
+                title: '还没有设置阿里云盘账号信息',
+                desc: '阿里云盘在线观看需要设置登录信息，\n您可以选择登录/注册账号，或者他人共享的账号！',
+                url: this.emptyRule,
+                col_type: 'text_1'
+            })
+            d.push({
+                col_type: "line_blank"
+            });
+            d.push({
+                title: '登录/注册阿里云盘',
+                desc: '后面会加入个人云盘文件功能，\n注册账号转存文件，开发者需要你的支持！',
+                url: $('hiker://empty').rule(() => {
+                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                    ali.getRefreshToken();
+                }),
+                col_type: 'text_1'
+            })
+            d.push({
+                col_type: "line_blank"
+            });
+            d.push({
+                title: '去启用共享账号',
+                desc: '随时可以在设置页面启用或关闭共享账号',
+                url: $('hiker://empty').rule(() => {
+                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                    ali.settingPage();
+                }),
+                col_type: 'text_1'
+            })
+            setResult({data: d})
 
         }
 
