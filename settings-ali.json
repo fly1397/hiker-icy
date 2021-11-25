@@ -27,7 +27,6 @@
       "val": "https://pan.3636360.com/api/v3/thread.list?perPage=10&page=fypage&fyclass&fysort",
       "key": "dazhan",
       "desc": "阿里大站,阿里云盘资源共享站",
-      "api": "https://pan.3636360.com/api/v3/thread.list?perPage=10&page=fypage&fyclass&fysort",
       "dataType": "json",
       "detailLinkPre": "https://pan.3636360.com/thread/",
       "homeDataPath": "Data&&pageData;title;threadId;content&&text;",
@@ -275,8 +274,26 @@
       ]
     },
     {
-      "name": "☁️ R酱-OneDriver",
+      "name": "🔍 优聚搜",
       "index": 7,
+      "val": "https://api.ujuso.com/v1/api_search/vite?page=fypage&size=15&kid=LWsgYmiMxSVPpmwodIlkonoFPmYbcVJl&time=fysort&type=ALY&kw=%E5%BD%B1%E8%A7%86",
+      "key": "ujuso",
+      "desc": "优聚搜 ujuso.com",
+      "dataType": "json",
+      "detailLinkPre": "https://www.aliyundrive.com/s/",
+      "homeDataPath": "data&&data;disk_name;disk_id;other_info;",
+      "searchUrl": "https://api.ujuso.com/v1/api_search/vite?page=fypage&size=15&kid=LWsgYmiMxSVPpmwodIlkonoFPmYbcVJl&time=fysort&type=ALY&kw=**",
+      "searchDataPath": "data&&data;disk_name;disk_id;other_info;",
+      "sorts": [
+        { "name": "不限时间", "val": ""},
+        { "name": "最近一周", "val": "LAST_WEEK"},
+        { "name": "最近一月", "val": "LAST_MONTH"},
+        { "name": "最近一年", "val": "LAST_YEAR"}
+      ]
+    },
+    {
+      "name": "☁️ R酱-OneDriver",
+      "index": 8,
       "key": "rjiang",
       "val": "https://share-api.rhilip.info/search?limit=50&offset=fypage",
       "desc": "此处资源均为软件全自动搬运至OneDrive国际版分享，没有条理且未经任何整理辨别！！！！请善用搜索功能进行检索~",
