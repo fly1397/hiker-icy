@@ -30,23 +30,31 @@ const ali = {
         var c = 1024, d = b || 2, e = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"], f = Math.floor(Math.log(a) / Math.log(c)); 
         return parseFloat((a / Math.pow(c, f)).toFixed(d)) + " " + e[f];
     },
-    getEmptyTitle: function(_title, desc){
+    getEmptyTitle: function(_title, _desc){
         // 修复部分贴没有标题，提取「分享主题」作为标题
+        let desc = _desc.trim();
         let title = _title;
         if(!title){
-            const maDesc = desc.match(/「(.*)」，/);
+            const maDesc = desc.match(/「(.*)」，?/);
+            const maDesc_2 = desc.match(/『(.*)』/);
             if(maDesc) {
                 title = maDesc[1].split('」')[0];
+            } else if(maDesc_2) {
+                title = maDesc_2[1];
             } else {
                 if(desc.includes('，')){
                     title = desc.split(/，/)[0];
                 } else {
-                    title = desc.split(/\s/)[0];
+                    title = desc.split(/\s+/)[0];
                 }
             }
         }
         const titleDom = '<div class="fortext">' + title || '' + '</div>';
-        return parseDomForHtml(titleDom, '.fortext&&Text');
+        let result = parseDomForHtml(titleDom, '.fortext&&Text');
+        if(result.length > 20) {
+            result = result.substr(0, 20) + '...'
+        }
+        return result;
     },
     formatDate: function(_date, _fmt) {
         let fmt = _fmt || "yyyy-MM-dd HH:mm:ss";
@@ -272,7 +280,11 @@ const ali = {
         if(this.usePublicToken && this.publicToken) {
             try {
                 eval('function tokenFunction(){\n'+this.publicToken+'\n};');
-                return tokenFunction().replace('Bearer ', '');
+                if(tokenFunction().replace('Bearer ', '')) {
+                    return tokenFunction().replace('Bearer ', '');
+                } else {
+                    return 'toast://共享TOKEN获取失败，建议重启app再试试！'
+                }
             } catch(e){
                 return 'toast://共享TOKEN代码运行失败了'
             }
@@ -506,7 +518,7 @@ const ali = {
         });
         d.push({
             title: '🔍 海阔搜索设置 hiker://search',
-            desc: '默认为当前资源网站, 可以多选',
+            desc: '默认为当前/排序第一的资源网站, 可以多选',
             url: 'hiker://search',
             col_type: 'text_1'
         })
@@ -542,7 +554,7 @@ const ali = {
         });
         d.push({
             title: '🔓 资源网站登录设置',
-            desc: selectLoginName || '请选择资源网站',
+            desc: (selectLoginName || '⛏️ 请选择资源网站') + '   ❗保存时会重置登录信息',
             url: loginlazy,
             col_type: 'text_1'
         })
@@ -570,7 +582,7 @@ const ali = {
                 }
             })
             d.push({
-                title: '保存',
+                title: '保存账号',
                 col_type: 'text_center_1',
                 url: $()
                     .lazyRule((key, customerSettings) => {
@@ -580,7 +592,7 @@ const ali = {
                     item.loginError = false;
                     item.cookie = '';
                     writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
-                    return 'toast://保存成功'
+                    return 'toast://保存成功，需要返回刷新登录'
                 }, selectLogin.key, customerSettings)
             })
             d.push({
@@ -671,7 +683,7 @@ const ali = {
         });
         d.push({
             title: '☢️ 恢复默认设置',
-            desc: '清楚所有用户设置，包括用户名密码等',
+            desc: '清除所有用户设置，包括用户名密码等',
             url: $("确定要恢复？")
                 .confirm(() => {
                 deleteFile(getVar('icy_ali_customer'));
@@ -1246,7 +1258,7 @@ const ali = {
 
         let _linksArr = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
         let _links = [];
-        const codes = texts.split(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
+        const codes = texts.split(/(?:https:\/\/www\.aliyundrive\.com\/s[\/\w*]*)|(?:https:\/\/alywp\.net[\/\w*]*)/ig) || [];
         const siteReg = new RegExp('href="('+host+'\/d\/(-|\\w|\\d)*)"', 'ig');
         if(!expand && _linksArr.length > 5) {
             _links = _linksArr.slice(0, 5);
@@ -1255,14 +1267,18 @@ const ali = {
         }
         _links.forEach((link, index) => {
             let code = '';
+            let item_title = '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '链接：');
             if(codes[index]) {
                 const code_match = codes[index].match(/提取码|访问码/);
                 if(code_match && code_match[0]) {
                     code = codes[index].split(/提取码|访问码/)[1].match(/[a-zA-z0-9]+/)[0];
                 }
+                item_title = this.getEmptyTitle('', codes[index]) || item_title || _title;
             }
             d.push({
-                title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
+                // title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
+                title: '““””' + item_title + '\n<small><span style="color: #999999">'+link + (code ? '  提取码：' + code : '')+'</span></small>',
+                // desc: link + (code ? '  提取码：' + code : ''),
                 url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '??fypage',
                 col_type: "text_1"
             });
@@ -2290,17 +2306,20 @@ const ali = {
         const texts = parseDomForHtml(contentDome, '.fortext&&Text');
 
         const _links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
-        const codes = texts.split(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
+        const codes = texts.split(/(?:https:\/\/www\.aliyundrive\.com\/s[\/\w*]*)|(?:https:\/\/alywp\.net[\/\w*]*)/ig) || [];
         _links.forEach((link, index) => {
             let code = '';
+            let item_title = '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '链接：');
             if(codes[index]) {
                 const code_match = codes[index].match(/提取码|访问码/);
                 if(code_match && code_match[0]) {
                     code = codes[index].split(/提取码|访问码/)[1].match(/[a-zA-z0-9]+/)[0];
                 }
+                item_title = this.getEmptyTitle('', codes[index]) || item_title || _title;
             }
             d.push({
-                title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
+                // title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
+                title: '““””' + item_title + '\n<small><span style="color: #999999">'+link + (code ? '  提取码：' + code : '')+'</span></small>',
                 url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '??fypage',
                 col_type: "text_1"
             });
@@ -2427,17 +2446,20 @@ const ali = {
         const texts = parseDomForHtml(contentDome, '.fortext&&Text');
 
         const _links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
-        const codes = texts.split(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
+        const codes = texts.split(/(?:https:\/\/www\.aliyundrive\.com\/s[\/\w*]*)|(?:https:\/\/alywp\.net[\/\w*]*)/ig) || [];
         _links.forEach((link, index) => {
             let code = '';
+            let item_title = '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '链接：');
             if(codes[index]) {
                 const code_match = codes[index].match(/提取码|访问码/);
                 if(code_match && code_match[0]) {
                     code = codes[index].split(/提取码|访问码/)[1].match(/[a-zA-z0-9]+/)[0];
+                    item_title = this.getEmptyTitle('', codes[index]) || item_title || _title;
                 }
             }
             d.push({
-                title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
+                // title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
+                title: '““””' + item_title + '\n<small><span style="color: #999999">'+link + (code ? '  提取码：' + code : '')+'</span></small>',
                 url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '??fypage',
                 col_type: "text_1"
             });
