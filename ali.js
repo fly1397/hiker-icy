@@ -2191,20 +2191,22 @@ const ali = {
             const items = this.objData(JSON.parse(fetch(url)), listPath);
             this.listPageJSON(items, homeDataPath, d, activeModel, page);
         } catch(e) {
-            if(key == 'ujuso') {
-                d.push({
-                    title: '可能需要验证',
-                    url: $('hiker://empty').rule(() => {
-                        eval(fetch('hiker://files/rules/icy/ali.js'));
-                        ali.pageVerify();
-                    }),
-                    col_type: 'text_1'
-                })
-            } else {
-                d.push({
-                    title: '页面失联了💔',
-                    col_type: "text_1"
-                });
+            if(page == 1) {
+                if(key == 'ujuso') {
+                    d.push({
+                        title: '可能需要验证',
+                        url: $('hiker://empty').rule(() => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            ali.pageVerify();
+                        }),
+                        col_type: 'text_1'
+                    })
+                } else {
+                    d.push({
+                        title: '页面失联了💔',
+                        col_type: "text_1"
+                    });
+                }
             }
         }
     },
@@ -2238,7 +2240,7 @@ const ali = {
             desc: '100%&&float',
             extra: {
                 canBack: true,
-                js: "var tip=false;var token_timer=function(){setTimeout(()=>{var verify=document.getElementById('rc-anchor-container');var kid=JSON.parse(localStorage.getItem('kid'));if(!verify&&kid){fy_bridge_app.putVar('ujuso',kid);if(!tip){alert('验证码刷新成功，退出该页面后刷新重试！');tip=true}}else{token_timer()}},500)};token_timer();"
+                js: "var tip=false;var token_timer=function(){setTimeout(()=>{var verify=document.getElementById('rc-anchor-container');var kid=JSON.parse(localStorage.getItem('kid'));if(!verify&&kid){fy_bridge_app.putVar('ujuso',kid);if(!tip){alert('验证码刷新成功，退出该页面后刷新重试！');tip=true}}else{token_timer()}},2000)};token_timer();"
             }
         })
         setHomeResult({
@@ -2261,20 +2263,22 @@ const ali = {
             const items = this.objData(JSON.parse(fetch(url)), listPath);
             this.listPageJSON(items, searchDataPath, d, activeModel, page, keyword, fromHikerSearch);
         } catch(e) {
-            if(key == 'ujuso') {
-                d.push({
-                    title: '可能需要验证',
-                    url: $('hiker://empty').rule(() => {
-                        eval(fetch('hiker://files/rules/icy/ali.js'));
-                        ali.pageVerify();
-                    }),
-                    col_type: 'text_1'
-                })
-            } else {
-                d.push({
-                    title: '页面失联了💔',
-                    col_type: "text_1"
-                });
+            if(page == 1) {
+                if(key == 'ujuso') {
+                    d.push({
+                        title: '可能需要验证',
+                        url: $('hiker://empty').rule(() => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            ali.pageVerify();
+                        }),
+                        col_type: 'text_1'
+                    })
+                } else {
+                    d.push({
+                        title: '页面失联了💔',
+                        col_type: "text_1"
+                    });
+                }
             }
         }
     },
@@ -2373,10 +2377,12 @@ const ali = {
             const items = parseDomForArray(fetch(val.replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page)), listPath);
             this.listPageHTML(items, homeDataPath, d, page, activeModel);
         } catch(e) {
-            d.push({
-                title: '页面失联了💔',
-                col_type: "text_1"
-            });
+            if(page == 1) {
+                d.push({
+                    title: '页面失联了💔',
+                    col_type: "text_1"
+                });
+            }
         }
     },
     searchHTML: function(activeModel, fromHikerSearch, keyword, page, d) {
@@ -2389,10 +2395,12 @@ const ali = {
             const items = parseDomForArray(searchResult, listPath);
             this.listPageHTML(items, _path, d, page, activeModel, keyword, fromHikerSearch);
         } catch(e) {
-            d.push({
-                title: '页面失联了💔',
-                col_type: "text_1"
-            });
+            if(page == 1) {
+                d.push({
+                    title: '页面失联了💔',
+                    col_type: "text_1"
+                });
+            }
         }
     },
     listPageHTML: function(items, dataPath, d, page, activeModel, keyword, fromHikerSearch) {
@@ -2469,8 +2477,8 @@ const ali = {
                 const code_match = codes[index].match(/提取码|访问码/);
                 if(code_match && code_match[0]) {
                     code = codes[index].split(/提取码|访问码/)[1].match(/[a-zA-z0-9]+/)[0];
-                    item_title = this.getEmptyTitle('', codes[index]) || item_title || _title;
                 }
+                item_title = this.getEmptyTitle('', codes[index]) || item_title || _title;
             }
             d.push({
                 // title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
