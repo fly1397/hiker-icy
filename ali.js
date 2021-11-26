@@ -1175,7 +1175,7 @@ const ali = {
     detailPage: function() {
         const {cookie, val} = this.activeModel();
         const [host, _query] = MY_URL.split('?host=')[1].split('/d/');
-        const [,slug, page] = _query.split(/[??|$$]/).filter(item => !!item);
+        const [,slug, page] = _query.split(/[?|$|#]{2}/).filter(item => !!item);
         const headers = {"Referer": host, 'User-Agent': MOBILE_UA,};
         if(cookie) {
             headers['cookie'] = cookie;
@@ -1805,7 +1805,7 @@ const ali = {
     },
     aliRule: function() {
         this.getConfig();
-        const [shareLink, _page] = MY_URL.split('??');
+        const [shareLink, _page] = MY_URL.split(/[?|$|#]{2}/).filter(item => !!item);
         const [link, _share_pwd] = shareLink.split('?share_pwd=');
         const [_link, _folderID] = link.split('/folder/');
         var shareId = '';
