@@ -1505,8 +1505,11 @@ const ali = {
     },
     lazyAli: function(shareId, sharetoken, input){
         var access_token = this.getAliToken();
+        if(access_token.startsWith('toast')) {
+            return access_token;
+        }
         if(!access_token) {
-            return '';
+            return 'toast://还没登录？';
         }
         var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_video_preview_play_info', {
             headers: {
@@ -1627,8 +1630,11 @@ const ali = {
     },
     lazyAliImage: function(shareId, sharetoken, input){
         var access_token = this.getAliToken();
+        if(access_token.startsWith('toast')) {
+            return access_token;
+        }
         if(!access_token) {
-            return '';
+            return 'toast://还没登录？';
         }
         var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_download_url', {
             headers: {
@@ -1666,9 +1672,12 @@ const ali = {
         }
     },
     lazyAliDoc: function(shareId, sharetoken, input){
-        var access_token = this.getAliToken(true);
+        var access_token = this.getAliToken();
+        if(access_token.startsWith('toast')) {
+            return access_token;
+        }
         if(!access_token) {
-            return '';
+            return 'toast://还没登录？';
         }
         var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_office_preview_url', {
             headers: {
@@ -1705,8 +1714,11 @@ const ali = {
     },
     get_share_link_download_url: function(shareId, sharetoken, file_id){
         var access_token = this.getAliToken();
+        if(access_token.startsWith('toast')) {
+            return access_token;
+        }
         if(!access_token) {
-            return '';
+            return 'toast://还没登录？';
         }
         const data = {"expire_sec":600,"file_id":file_id ,"share_id": shareId};
         var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_download_url', {
@@ -1746,8 +1758,11 @@ const ali = {
     },
     lazyAliAudio: function(shareId, sharetoken, input){
         var access_token = this.getAliToken();
+        if(access_token.startsWith('toast')) {
+            return access_token;
+        }
         if(!access_token) {
-            return '';
+            return 'toast://还没登录？';
         }
         var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_download_url', {
             headers: {
