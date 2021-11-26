@@ -577,6 +577,8 @@ const ali = {
                     const item = customerSettings.customerResouce.find(item => item.key == key);
                     item.username = getVar(key + '_username','');
                     item.password = getVar(key + '_password','');
+                    item.loginError = false;
+                    item.cookie = '';
                     writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
                     return 'toast://保存成功'
                 }, selectLogin.key, customerSettings)
