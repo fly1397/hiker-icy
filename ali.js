@@ -1054,7 +1054,7 @@ const ali = {
             _links.forEach((link, index) => {
                 d.push({
                     title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link,
-                    url: 'hiker://page/detail?url=' + link + '$$fypage',
+                    url: 'hiker://page/detail?url=' + link + '??fypage',
                     col_type: "text_1"
                 });
             })
@@ -1161,7 +1161,7 @@ const ali = {
     detailPage: function() {
         const {cookie, val} = this.activeModel();
         const [host, _query] = MY_URL.split('?host=')[1].split('/d/');
-        const [,slug, page] = _query.split(/[##|$$]/).filter(item => !!item);
+        const [,slug, page] = _query.split(/[??|$$]/).filter(item => !!item);
         const headers = {"Referer": host, 'User-Agent': MOBILE_UA,};
         if(cookie) {
             headers['cookie'] = cookie;
@@ -1261,7 +1261,7 @@ const ali = {
             }
             d.push({
                 title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
-                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '$$fypage',
+                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '??fypage',
                 col_type: "text_1"
             });
         })
@@ -1292,9 +1292,9 @@ const ali = {
         });
         d.push({
             title: contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
-                return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '$$fypage';
+                return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '??fypage';
             }).replace(siteReg, function(e,t) {
-                return 'href="hiker://page/site-detail?host=' + t+'$$'+t.split('/d/')[1].split('-')[0] +'$$fypage"';
+                return 'href="hiker://page/site-detail?host=' + t+'??'+t.split('/d/')[1].split('-')[0] +'??fypage"';
             }),
             col_type: "rich_text"
         })
@@ -1302,7 +1302,7 @@ const ali = {
             d.push({
                 col_type: "line_blank"
             });
-            let urlMore = 'hiker://page/site-detail?host='+host+'/d/'+slug+'$$'+slug+'$$fypage';
+            let urlMore = 'hiker://page/site-detail?host='+host+'/d/'+slug+'??'+slug+'??fypage';
             d.push({
                 title: '✨ 点击查看全部帖子内容, 共' + (commentCount - 1) + '条回帖',
                 url: urlMore,
@@ -1326,15 +1326,15 @@ const ali = {
             const { contentHtml } = post.attributes
             if(contentHtml) {
                 // log(contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
-                //     return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '$$fypage';
+                //     return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '??fypage';
                 // }).replace(siteReg, function(e,t) {
-                //     return 'href="hiker://page/site-detail?host=' + t+'$$'+t.split('/d/')[1] +'$$fypage"';
+                //     return 'href="hiker://page/site-detail?host=' + t+'??'+t.split('/d/')[1] +'??fypage"';
                 // }))
                 d.push({
                     title: contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
-                        return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '$$fypage';
+                        return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '??fypage';
                     }).replace(siteReg, function(e,t) {
-                        return 'href="hiker://page/site-detail?host=' + t+'$$'+t.split('/d/')[1].split('-')[0] +'$$fypage"';
+                        return 'href="hiker://page/site-detail?host=' + t+'??'+t.split('/d/')[1].split('-')[0] +'??fypage"';
                     }),
                     col_type: "rich_text"
                 })
@@ -1673,12 +1673,12 @@ const ali = {
         }
         let d = [];
         d.push({
-            url: json.preview_url + '$$' +json.access_token,
+            url: json.preview_url + '??' +json.access_token,
             col_type: 'x5_webview_single',
             desc: '100%&&float',
             extra: {
                 canBack: true,
-                js: "var token =location.href.split('$$')[1]; if(!document.cookie.includes(token)) {document.cookie = 'wwo_token=' + location.href.split('$$')[1];location.reload();}"
+                js: "var token =location.href.split('??')[1]; if(!document.cookie.includes(token)) {document.cookie = 'wwo_token=' + location.href.split('??')[1];location.reload();}"
             }
         })
         setHomeResult({
@@ -1772,7 +1772,7 @@ const ali = {
     },
     aliRule: function() {
         this.getConfig();
-        const [shareLink, _page] = MY_URL.split('$$');
+        const [shareLink, _page] = MY_URL.split('??');
         const [link, _share_pwd] = shareLink.split('?share_pwd=');
         const [_link, _folderID] = link.split('/folder/');
         var shareId = '';
@@ -1890,8 +1890,8 @@ const ali = {
             var order_direction = getVar('icy_ali_order_direction', 'DESC');
             var folderRes = null;
             if(folderID) {
-                let [_myUrl, _fypage] = MY_URL.split('$$');
-                MY_URL = _myUrl.split('/folder')[0] + '/folder/' + folderID + '$$' +_fypage;
+                let [_myUrl, _fypage] = MY_URL.split('??');
+                MY_URL = _myUrl.split('/folder')[0] + '/folder/' + folderID + '??' +_fypage;
                 // MY_URL = MY_URL.split('/folder')[0] + '/folder/' + folderID;
                 folderRes = fetch('https://api.aliyundrive.com/v2/file/get', {
                     headers: {
@@ -2069,7 +2069,7 @@ const ali = {
                         title: '📂 ' + title,
                         desc: desc,
                         pic_url: 'https://img.alicdn.com/imgextra/i3/O1CN01qSxjg71RMTCxOfTdi_!!6000000002097-2-tps-80-80.png',
-                        url: 'hiker://page/detail?url=https://www.aliyundrive.com/s/'+shareId+'/folder/'+file_id + '?share_pwd='+share_pwd+'$$fypage',
+                        url: 'hiker://page/detail?url=https://www.aliyundrive.com/s/'+shareId+'/folder/'+file_id + '?share_pwd='+share_pwd+'??fypage',
                         col_type: col_type
 
                     });
@@ -2124,7 +2124,7 @@ const ali = {
         d.push({
             url: $('').input((link)=> {
                 if(input.trim()) {
-                    return 'hiker://page/detail?url=' + link + '?share_pwd=' + input + '$$fypage';
+                    return 'hiker://page/detail?url=' + link + '?share_pwd=' + input + '??fypage';
                 } else {
                     return 'toast://请输入提取码';
                 }
@@ -2217,7 +2217,7 @@ const ali = {
             const {searchUrl, searchDataPath, key} = activeModel;
             const [listPath, , , ] = searchDataPath.split(';')
             const {fyarea, fyclass, fyyear, fysort} = this.getFilter(true);
-            let url = searchUrl.replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page);
+            let url = searchUrl.replace('**', keyword).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page);
             if(key == 'ujuso') {
                 let kid = getVar('ujuso', '') || getItem('ujuso', '');
                 if(kid) {
@@ -2263,7 +2263,7 @@ const ali = {
                     pic_url: pic,
                     desc: fromHikerSearch ? name : descStr,
                     content: descStr,
-                    url: isShareLink ? 'hiker://page/detail?url=' + link + '$$fypage' : $('hiker://empty' + link).rule((title, link, desc) => {
+                    url: isShareLink ? 'hiker://page/detail?url=' + link + '??fypage' : $('hiker://empty' + link).rule((title, link, desc) => {
                         var d = [];
                         eval(fetch('hiker://files/rules/icy/ali.js'));
                         ali.detailDataJSON(title, link , desc, d);
@@ -2299,7 +2299,7 @@ const ali = {
             }
             d.push({
                 title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
-                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '$$fypage',
+                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '??fypage',
                 col_type: "text_1"
             });
         })
@@ -2383,15 +2383,15 @@ const ali = {
                     const res = fetch(input); 
                     var link = parseDomForHtml(res, 'a&&href').match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g)[0];
                     if(link) {
-                        return 'hiker://page/detail?url=' + link + '$$fypage';
+                        return 'hiker://page/detail?url=' + link + '??fypage';
                     } else {
                         return "toast://好像出错了！"
                     }
                 })
                 if(!!detailPath) {
-                    link += '$$' + title + '$$' + detailPath + '$$';
+                    link += '??' + title + '??' + detailPath + '??';
                     lazy = $('').rule(() => {
-                        const [_url, title,detailPath,] = MY_URL.split('$$');
+                        const [_url, title,detailPath,] = MY_URL.split('??');
                         const res = fetch(_url); 
                         const content = parseDomForHtml(res, detailPath).split('<div class="card-body">')[0].replace(/<style.*\/style>/g, '').replace(/<script.*\/script>/g, '').replace(/\s*fr\s*om\s*w\s*ww\.yun\s*pan\s*zi\s*yuan\.co\s*m/g, '');
                         var d = [];
@@ -2436,7 +2436,7 @@ const ali = {
             }
             d.push({
                 title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
-                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '$$fypage',
+                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '??fypage',
                 col_type: "text_1"
             });
         })
@@ -2457,7 +2457,7 @@ const ali = {
         });
         d.push({
             title: contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
-                return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '$$fypage';
+                return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '??fypage';
             }),
             col_type: "rich_text"
         })
