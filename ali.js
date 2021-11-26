@@ -460,8 +460,8 @@ const ali = {
 
         let primaryColor = customerSettings.primaryColor;
         const customerResouce = customerSettings.customerResouce.sort((a,b) => a.index - b.index)
-        const loginList = customerResouce.filter(item => item.needKey).map(item => item.name.split(' ')[1].trim());
-        const selectLoginName = customerResouce.find(item => item.key == key) ? customerResouce.find(item => item.key == key).name : getVar("login", '');
+        const loginList = customerResouce.filter(item => item.needKey).map(item => item.name);
+        const selectLoginName = getVar("login", '') || (customerResouce.find(item => item.key == key) ? customerResouce.find(item => item.key == key).name : getVar("login", ''));
         const selectLogin = customerResouce.filter(item => item.needKey).find(item => item.name == selectLoginName);
         d.push({
             title: '💘 排序',
