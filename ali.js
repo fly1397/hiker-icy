@@ -1010,7 +1010,7 @@ const ali = {
                     pic_url: pic,
                     content: descStr,
                     desc: fromHikerSearch ? name : descStr,
-                    url: $('hiker://empty' + postid).rule((dataitem, post, host) => {
+                    url: $(host + '/d/' + attributes.slug).rule((dataitem, post, host) => {
                         var d = [];
                         eval(fetch('hiker://files/rules/icy/ali.js'));
                         ali.detailData(dataitem, post, host, d);
@@ -1174,7 +1174,15 @@ const ali = {
     // 资源站点详细页面
     detailPage: function() {
         const {cookie, val} = this.activeModel();
-        const [host, _query] = MY_URL.split('?host=')[1].split('/d/');
+        let host = val;
+        let _query = '';
+        if(MY_URL.includes('?host=')) {
+            // host = MY_URL.split('?host=')[1].split('/d/') [0];
+            [host, _query] = MY_URL.split('?host=')[1].split('/d/');
+        } else {
+            [,_query] = MY_URL.split(/[?|$|#]{2}/).filter(item => !!item);
+        }
+        // const [host, _query] = MY_URL.split('?host=')[1].split('/d/');
         const [,slug, page] = _query.split(/[?|$|#]{2}/).filter(item => !!item);
         const headers = {"Referer": host, 'User-Agent': MOBILE_UA,};
         if(cookie) {
@@ -1920,7 +1928,7 @@ const ali = {
         }
         const getFileList = (sharetoken, shareId, folderID, next_marker) => {
             var order_by = getVar('icy_ali_order_by', 'name');
-            var order_direction = getVar('icy_ali_order_direction', 'DESC');
+            var order_direction = getVar('icy_ali_order_direction', 'ASC');
             var folderRes = null;
             if(folderID) {
                 let [_myUrl, _fypage] = MY_URL.split('??');
@@ -1958,7 +1966,7 @@ const ali = {
             putVar('icy_ali_order_by', 'name');
         }
         if(!getVar('icy_ali_order_direction')) {
-            putVar('icy_ali_order_direction', 'DESC');
+            putVar('icy_ali_order_direction', 'ASC');
         }
         var d = [];
         if(page == 1) {
@@ -2217,7 +2225,7 @@ const ali = {
             var tip = false;
             var token_timer= function(){
                 setTimeout(()=>{
-                    var verify = document.getElementById('rc-anchor-container');
+                    var verify = document.querySelector('.recaptcha');
                     var kid = JSON.parse(localStorage.getItem('kid'));
                     if(
                         !verify && kid
@@ -2229,7 +2237,7 @@ const ali = {
                         }
                     }else{
                         token_timer();
-                    }},500)
+                    }},3000)
             };
             token_timer();
 
@@ -2240,7 +2248,7 @@ const ali = {
             desc: '100%&&float',
             extra: {
                 canBack: true,
-                js: "var tip=false;var token_timer=function(){setTimeout(()=>{var verify=document.getElementById('rc-anchor-container');var kid=JSON.parse(localStorage.getItem('kid'));if(!verify&&kid){fy_bridge_app.putVar('ujuso',kid);if(!tip){alert('验证码刷新成功，退出该页面后刷新重试！');tip=true}}else{token_timer()}},2000)};token_timer();"
+                js: "var tip=false;var token_timer=function(){setTimeout(()=>{var verify=document.querySelector('.recaptcha');var kid=JSON.parse(localStorage.getItem('kid'));if(!verify&&kid){fy_bridge_app.putVar('ujuso',kid);if(!tip){alert('验证码刷新成功，退出该页面后刷新重试！');tip=true}}else{token_timer()}},3000)};token_timer();"
             }
         })
         setHomeResult({
@@ -2300,7 +2308,7 @@ const ali = {
                     pic_url: pic,
                     desc: fromHikerSearch ? name : descStr,
                     content: descStr,
-                    url: isShareLink ? 'hiker://page/detail?url=' + link + '??fypage' : $('hiker://empty' + link).rule((title, link, desc) => {
+                    url: isShareLink ? 'hiker://page/detail?url=' + link + '??fypage' : $(link).rule((title, link, desc) => {
                         var d = [];
                         eval(fetch('hiker://files/rules/icy/ali.js'));
                         ali.detailDataJSON(title, link , desc, d);
@@ -2433,16 +2441,21 @@ const ali = {
                     }
                 })
                 if(!!detailPath) {
-                    link += '??' + title + '??' + detailPath + '??';
-                    lazy = $('').rule(() => {
-                        const [_url, title,detailPath,] = MY_URL.split('??');
+                    lazy = $('').rule((_title, _detailPath) => {
+                        let _url = MY_URL;
+                        let title = _title;                        
+                        let detailPath = _detailPath;
+                        if(MY_URL.includes('??')) {
+                            [_url, title,detailPath,] = MY_URL.split('??');
+                        }
+                        
                         const res = fetch(_url); 
                         const content = parseDomForHtml(res, detailPath).split('<div class="card-body">')[0].replace(/<style.*\/style>/g, '').replace(/<script.*\/script>/g, '').replace(/\s*fr\s*om\s*w\s*ww\.yun\s*pan\s*zi\s*yuan\.co\s*m/g, '');
                         var d = [];
                         eval(fetch('hiker://files/rules/icy/ali.js'));
                         ali.detailPageHTML(title, _url, content, d);
                         setHomeResult({data: d});
-                    })
+                    }, title, detailPath)
                 }
                 d.push({
                     title: title,
