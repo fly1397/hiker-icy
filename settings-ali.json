@@ -49,7 +49,7 @@
     {
       "name": "🔑 阿里云盘小站",
       "index": 3,
-      "val": "https://aliyunshare.cn",
+      "val": "https://aliyunshare.org",
       "key": "yunshare",
       "desc": "云资源共享第一站,你想要的这里都有!",
       "needKey": true,
@@ -57,7 +57,7 @@
       "password": "",
       "cookie": "",
       "loginError": false,
-      "searchUrl": "https://aliyunshare.cn/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost%2ClastPost%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
+      "searchUrl": "https://aliyunshare.org/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost%2ClastPost%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
       "filterTags": [12,16,17,18,19,20,21,79,89,1,73,74,75,76,77,78,90,80,81,82,83,84,85,9,28,29,30,31],
       "cats": [
         {
