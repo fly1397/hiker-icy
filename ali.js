@@ -9,7 +9,7 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '2021112610',
+    version: '2021121110',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -173,6 +173,19 @@ const ali = {
             writeFile(settingPath, json);            
             this.searchModel = JSON.parse(json).sort((a,b) => a.index - b.index);
         }
+        const haveCustomerSetting = fileExist(customerSettingPath) == 'true' || fileExist(customerSettingPath) == true;
+        if(haveCustomerSetting) {
+            const customerSetting = JSON.parse(fetch(getVar('icy_ali_customer')));
+            if(customerSetting.customerResouce) {
+                this.searchModel.forEach(item => {
+                    const customer = customerSetting.customerResouce.find(_customer => _customer.key == item.key);
+                    customer.val = item.val;
+                    customer.name = item.name;
+                    
+                });
+            }
+            writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSetting));
+        }
         
     },
     mergeObj: function(targt, source){
@@ -196,7 +209,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新优聚搜站点, 支持验证码\n2,增加云盘文件类型emoji',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新阿里云盘小站地址',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
