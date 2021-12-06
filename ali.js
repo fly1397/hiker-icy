@@ -1013,7 +1013,7 @@ const ali = {
                     postid = relationships.posts.data[0].id;
                 }
                 const post = included.find(_post => _post.id == postid && _post.type == 'posts');
-                if(post) {
+                if(!post) {
                     return false;
                 }
                 const {attributes: {contentHtml}} = post;
