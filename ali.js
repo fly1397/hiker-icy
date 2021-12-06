@@ -1013,6 +1013,9 @@ const ali = {
                     postid = relationships.posts.data[0].id;
                 }
                 const post = included.find(_post => _post.id == postid && _post.type == 'posts');
+                if(post) {
+                    return false;
+                }
                 const {attributes: {contentHtml}} = post;
                 const contentDome = '<div class="fortext">' + contentHtml || '' + '</div>';
                 const pic = parseDomForHtml(contentDome, '.fortext&&img&&src') || '';
@@ -1488,14 +1491,16 @@ const ali = {
         var tidName = ["全高清", "高清", "标清", "流畅"];
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
-                eval(fetch('hiker://files/rules/icy/ali.js'));
-                var access_token = ali.getAliToken(true);
-                // confirm({
-                //     title: 'TOKEN失效了',
-                //     content: '重新刷新规则或页面再试试！',
-                // });
-                refreshPage();
-                return "toast://token 失效了，再点击试试！";
+                this.getAliToken(true);
+                this.videoProxy(file_id, share_id, share_token);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken(true);
+                // // confirm({
+                // //     title: 'TOKEN失效了',
+                // //     content: '重新刷新规则或页面再试试！',
+                // // });
+                // refreshPage();
+                // return "toast://token 失效了，再点击试试！";
             } else if(json.code.includes('NotFound.VideoPreviewInfo')) {
                 const result_link = this.get_share_link_download_url(share_id, share_token, file_id);
                 if(result_link.includes('.wmv')) {
@@ -1546,14 +1551,16 @@ const ali = {
         var bfArr = [];
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
-                eval(fetch('hiker://files/rules/icy/ali.js'));
-                var access_token = ali.getAliToken();
-                confirm({
-                    title: 'TOKEN失效了',
-                    content: '重新刷新规则或页面再试试！',
-                });
-                refreshPage();
-                return false;
+                this.getAliToken(true);
+                this.lazyAli(shareId, sharetoken, input);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken();
+                // confirm({
+                //     title: 'TOKEN失效了',
+                //     content: '重新刷新规则或页面再试试！',
+                // });
+                // refreshPage();
+                // return false;
             } else {
                 return "toast://" + json.message;
             }
@@ -1668,10 +1675,12 @@ const ali = {
         }));
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
-                eval(fetch('hiker://files/rules/icy/ali.js'));
-                var access_token = ali.getAliToken(true);
-                refreshPage();
-                return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
+                this.getAliToken(true);
+                this.lazyAliImage(shareId, sharetoken, input);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken(true);
+                // refreshPage();
+                // return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
             } else {
                 return "toast://" + json.message;
             }
@@ -1711,10 +1720,12 @@ const ali = {
         }));
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
-                eval(fetch('hiker://files/rules/icy/ali.js'));
-                var access_token = ali.getAliToken(true);
-                refreshPage();
-                return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
+                this.getAliToken(true);
+                this.lazyAliDoc(shareId, sharetoken, input);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken(true);
+                // refreshPage();
+                // return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
             } else {
                 return "toast://" + json.message;
             }
@@ -1753,10 +1764,12 @@ const ali = {
         }));
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
-                eval(fetch('hiker://files/rules/icy/ali.js'));
-                var access_token = ali.getAliToken(true);
-                refreshPage();
-                return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
+                this.getAliToken(true);
+                this.get_share_link_download_url(shareId, sharetoken, input);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken(true);
+                // refreshPage();
+                // return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
             } else {
                 return "toast://" + json.message;
             }
@@ -1796,10 +1809,12 @@ const ali = {
         }));
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
-                eval(fetch('hiker://files/rules/icy/ali.js'));
-                var access_token = ali.getAliToken(true);
-                refreshPage();
-                return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
+                this.getAliToken(true);
+                this.lazyAliAudio(shareId, sharetoken, input);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken(true);
+                // refreshPage();
+                // return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
             } else {
                 return "toast://" + json.message;
             }
