@@ -225,8 +225,9 @@ const ali = {
         setPageTitle('阿里云盘');
         let d = [];
         let url = 'https://www.aliyundrive.com/sign/in';
-        if(!getItem('haveShared', '') && !haveToken) {
-            url = 'https://www.aliyundrive.com/s/BFiLLN5Uu58';
+        if(getItem('haveShared', '') && !haveToken) {
+            url = 'https://pages.aliyundrive.com/mobile-page/web/beinvited.html?code=a283707';
+            // url = 'https://www.aliyundrive.com/s/BFiLLN5Uu58';
             setItem('haveShared', '1')
         }
         var js = $.toString(()=> {
@@ -235,12 +236,20 @@ const ali = {
             var token_timer= function(){
                 setTimeout(()=>{
                     try{
-                        if(!click && isShare){
-                            var btn = document.querySelector('.btn--2uN28');
-                            if(btn) {
-                                btn.click(); 
+                        if(!click){
+                            if(isShare) {
+                                var btn = document.querySelector('.btn--2uN28');
+                                if(btn) {
+                                    btn.click(); 
+                                }
+                                click=true;
+                            } else {
+                                var btn = document.querySelector('.BeInvited--btn--eapb4-i');
+                                if(btn) {
+                                    btn.click(); 
+                                }
+                                click=true;
                             }
-                            click=true;
                         }
                     } catch(e){};
                     var saved = false;
@@ -262,11 +271,11 @@ const ali = {
                             nick_name: token.nick_name,
                             avatar: token.avatar,
                         }));
-                        if(isShare) {
+                        alert('TOKEN获取成功，感谢支持！请勿泄漏个人隐私!退出该页面后刷新重试！');
+                        if(location.href.includes('beinvited')) {
+                            fy_bridge_app.back();
+                        } else if(!location.href.includes('#token') && isShare) {
                             location.href = 'https://www.aliyundrive.com/drive#token';
-                        }
-                        if(!location.href.includes('#token')) {
-                            alert('TOKEN获取成功，感谢支持！请勿泄漏个人隐私!退出该页面后刷新重试！');
                         }
                     }else{
                         token_timer();
@@ -281,7 +290,7 @@ const ali = {
             desc: '100%&&float',
             extra: {
                 canBack: true,
-                js: "var click=false;var isShare=location.href.startsWith('https://www.aliyundrive.com/s/');var token_timer=function(){setTimeout(()=>{try{if(!click&&isShare){var btn=document.querySelector('.btn--2uN28');if(btn){btn.click()}click=true}}catch(e){};var saved=false;var savetext=document.querySelector('.title--lRzap');if(savetext){saved=savetext.innerText=='转存成功'}var token=JSON.parse(localStorage.getItem('token'));if(token&&((saved&&isShare)||(!isShare))){fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify({access_token:token.access_token,refresh_token:token.refresh_token,nick_name:token.nick_name,avatar:token.avatar,}));if(isShare){location.href='https://www.aliyundrive.com/drive#token'}if(!location.href.includes('#token')){alert('TOKEN获取成功，感谢支持！请勿泄漏个人隐私!退出该页面后刷新重试！')}}else{token_timer()}},500)};token_timer();"
+                js: "var click=false;var isShare=location.href.startsWith('https://www.aliyundrive.com/s/');var token_timer=function(){setTimeout(()=>{try{if(!click){if(isShare){var btn=document.querySelector('.btn--2uN28');if(btn){btn.click()}click=true}else{var btn=document.querySelector('.BeInvited--btn--eapb4-i');if(btn){btn.click()}click=true}}}catch(e){};var saved=false;var savetext=document.querySelector('.title--lRzap');if(savetext){saved=savetext.innerText=='转存成功'}var token=JSON.parse(localStorage.getItem('token'));if(token&&((saved&&isShare)||(!isShare))){fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify({access_token:token.access_token,refresh_token:token.refresh_token,nick_name:token.nick_name,avatar:token.avatar,}));alert('TOKEN获取成功，感谢支持！请勿泄漏个人隐私!退出该页面后刷新重试！');if(location.href.includes('beinvited')){fy_bridge_app.back()}else if(!location.href.includes('#token')&&isShare){location.href='https://www.aliyundrive.com/drive#token'}}else{token_timer()}},500)};token_timer();"
             }
         })
         setHomeResult({
