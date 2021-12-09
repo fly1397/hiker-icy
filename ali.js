@@ -1510,6 +1510,7 @@ const ali = {
                 // // });
                 // refreshPage();
                 // return "toast://token 失效了，再点击试试！";
+                return false;
             } else if(json.code.includes('NotFound.VideoPreviewInfo')) {
                 const result_link = this.get_share_link_download_url(share_id, share_token, file_id);
                 if(result_link.includes('.wmv')) {
@@ -1562,6 +1563,7 @@ const ali = {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
                 this.lazyAli(shareId, sharetoken, input);
+                return false;
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken();
                 // confirm({
@@ -1686,6 +1688,7 @@ const ali = {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
                 this.lazyAliImage(shareId, sharetoken, input);
+                return false;
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // refreshPage();
@@ -1731,6 +1734,7 @@ const ali = {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
                 this.lazyAliDoc(shareId, sharetoken, input);
+                return false;
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // refreshPage();
@@ -1775,6 +1779,7 @@ const ali = {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
                 this.get_share_link_download_url(shareId, sharetoken, input);
+                return false;
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // refreshPage();
@@ -1820,6 +1825,7 @@ const ali = {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
                 this.lazyAliAudio(shareId, sharetoken, input);
+                return false;
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // refreshPage();
