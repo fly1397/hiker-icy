@@ -24,6 +24,8 @@ const ali = {
 
     // 颜色
     primaryColor: '#f47983',
+    // 第三方搜索小程序
+    searchRule: '',
     
     formatBytes: function(a, b) { 
         if (0 == a) return "0 B"; 
@@ -146,6 +148,7 @@ const ali = {
                 this.publicToken = customerSetting.publicToken;
                 this.useSuggestQuery = customerSetting.useSuggestQuery;
                 this.primaryColor = customerSetting.primaryColor;
+                this.searchRule = customerSetting.searchRule;
             }
         }
     },
@@ -486,7 +489,7 @@ const ali = {
                 }
                 customer.push(config)
             })
-            customerSettings = {customerResouce:customer, usePublicToken: false, publicToken: '', useSuggestQuery: true, primaryColor: '#f47983'};
+            customerSettings = {customerResouce:customer, usePublicToken: false, publicToken: '', useSuggestQuery: true, primaryColor: '#f47983', searchRule: ''};
             writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
         }
 
@@ -565,6 +568,20 @@ const ali = {
                 }, item.key, customerSettings, activeModel.key),
                 col_type: 'text_3'
             })
+        })
+        const ruleName = customerSettings.searchRule;
+        d.push({
+            title: '““””🔍 规则搜索设置     <b>' + (ruleName ? '搜索小程序：' + '<span style="color: '+ primaryColor +'">' + ruleName + '</span>' : '还没有启用哦') + '</b>',
+            desc: '在阿里云盘页面可以采用其他规则搜索影片信息',
+            url: $(ruleName, '请输入小程序名称 eq: 青豆')
+                .input(() => {
+                let customerSettings = JSON.parse(fetch(getVar('icy_ali_customer')));
+                customerSettings.searchRule = input;
+                writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
+                refreshPage();
+                return "toast://保存成功";
+            }),
+            col_type: 'text_1'
         })
         d.push({
             col_type: "line_blank"
@@ -1501,7 +1518,7 @@ const ali = {
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
-                this.videoProxy(file_id, share_id, share_token);
+                return this.videoProxy(file_id, share_id, share_token);
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // // confirm({
@@ -1510,7 +1527,6 @@ const ali = {
                 // // });
                 // refreshPage();
                 // return "toast://token 失效了，再点击试试！";
-                return false;
             } else if(json.code.includes('NotFound.VideoPreviewInfo')) {
                 const result_link = this.get_share_link_download_url(share_id, share_token, file_id);
                 if(result_link.includes('.wmv')) {
@@ -1562,8 +1578,7 @@ const ali = {
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
-                this.lazyAli(shareId, sharetoken, input);
-                return false;
+                return this.lazyAli(shareId, sharetoken, input);
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken();
                 // confirm({
@@ -1687,8 +1702,7 @@ const ali = {
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
-                this.lazyAliImage(shareId, sharetoken, input);
-                return false;
+                return this.lazyAliImage(shareId, sharetoken, input);
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // refreshPage();
@@ -1733,8 +1747,7 @@ const ali = {
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
-                this.lazyAliDoc(shareId, sharetoken, input);
-                return false;
+                return this.lazyAliDoc(shareId, sharetoken, input);
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // refreshPage();
@@ -1778,8 +1791,7 @@ const ali = {
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
-                this.get_share_link_download_url(shareId, sharetoken, input);
-                return false;
+                return this.get_share_link_download_url(shareId, sharetoken, input);
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // refreshPage();
@@ -1824,8 +1836,7 @@ const ali = {
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
-                this.lazyAliAudio(shareId, sharetoken, input);
-                return false;
+                return this.lazyAliAudio(shareId, sharetoken, input);
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // refreshPage();
@@ -2013,18 +2024,57 @@ const ali = {
         }
         var d = [];
         if(page == 1) {
-            var order_by_arr = [{name: '名称', val: 'name'},{name: '修改时间', val: 'updated_at'}];
-            var order_direction_arr = [{name: '升序', val: 'ASC'},{name: '降序', val: 'DESC'}];
-            this.rendererFilter(d, order_by_arr, 'icy_ali_order_by');
-            this.rendererFilter(d, order_direction_arr, 'icy_ali_order_direction');
+            const searchRule = this.searchRule;
+            if(searchRule) {
+                d.push({
+                    title: '搜索',
+                    // url: "'hiker://search?s=' + input + '&rule='" + searchRule,
+                    url: $.toString((searchRule)=> {
+                        if(input.trim()) {
+                            var link = 'hiker://search?s=' + input + '&rule=' + searchRule;
+                            return link;
+                        } else {
+                            return 'toast://请输入影片名称';
+                        }
+                    }, searchRule),
+                    col_type: "input",
+                    desc: '使用其他规则搜索影片信息'
+                });
+            }
+            const sortLazy = $(['按名称正序', '按名称倒序', '按时间正序', '按时间倒序'], 1)
+            .select(() => {
+                putVar("icy_ali_order",input);
+                if(input.includes('名称')) {
+                    putVar('icy_ali_order_by', 'name');
+                } else {
+                    putVar('icy_ali_order_by', 'updated_at');
+                }
+                if(input.includes('正序')) {
+                    putVar('icy_ali_order_direction', 'ASC');
+                } else {
+                    putVar('icy_ali_order_direction', 'DESC');
+                }
+                refreshPage(false);
+            });
+            var sort = getVar('icy_ali_order', '按名称正序');
+
             d.push({
-                title: !viewName ? '列表' : '图文',
+                title: '⭐' + sort,
+                url: sortLazy,
+                col_type: 'text_2'
+            })
+            // var order_by_arr = [{name: '名称', val: 'name'},{name: '修改时间', val: 'updated_at'}];
+            // var order_direction_arr = [{name: '升序', val: 'ASC'},{name: '降序', val: 'DESC'}];
+            // this.rendererFilter(d, order_by_arr, 'icy_ali_order_by');
+            // this.rendererFilter(d, order_direction_arr, 'icy_ali_order_direction');
+            d.push({
+                title: '⭐' + (!viewName ? '列表' : '图文'),
                 url: $("#noLoading#").lazyRule(()=>{
                     putVar('icy_ali_view', Number(!Number(getVar('icy_ali_view'))));
                     refreshPage(false);
                     return "hiker://empty"
                 }),
-                col_type: 'text_1'
+                col_type: 'text_2'
             })
             if(typeof saveLink != 'undefined' && !!saveLink) {
                 let expiration_text = '';
