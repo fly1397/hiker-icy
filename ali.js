@@ -9,7 +9,7 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '2021121110',
+    version: '2021121410',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -212,7 +212,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新阿里云盘小站地址',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复部分bug\n2,增加阿里云盘同文件夹下视频字幕支持',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -1496,7 +1496,7 @@ const ali = {
             setHomeResult(res);
         }
     },
-    videoProxy: function(file_id, share_id, share_token){
+    videoProxy: function(file_id, share_id, share_token, zimuItem){
         var access_token = this.getAliToken();
         if(access_token.startsWith('toast')) {
             return access_token;
@@ -1537,8 +1537,12 @@ const ali = {
                 return "toast://" + json.message;
             }
         }
+        let zimu = '';
+        if(zimuItem) {
+            zimu = this.get_share_link_download_url(share_id, share_token, zimuItem.file_id);
+        }
         var link = "";
-        var result = {urls: [], names: []};
+        var result = {urls: [], headers:[], names: [], subtitle: ''};
         try {
             var playList = json.video_preview_play_info.live_transcoding_task_list;
             tid.forEach((value, index) => {
@@ -1547,7 +1551,11 @@ const ali = {
                     // 多线路
                     const playLink = 'http://116.85.31.19:3000/apis/yun-play/'+file_id+'/'+share_id+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
                     result.urls.push(playLink);
+                    result.headers.push({'Referer': 'https://www.aliyundrive.com/'})
                     result.names.push(tidName[index]);
+                    if(zimu && zimu.startsWith('http')) {
+                        result.subtitle = zimu;
+                    }
                 }
             });
         } catch (err) {
@@ -1866,6 +1874,11 @@ const ali = {
         }
     },
     aliRule: function() {
+        addListener('onClose', $.toString((params) => {
+            params.forEach(item => {
+                clearVar(item)
+            })
+        }, ["folderName"]))
         this.getConfig();
         const [shareLink, _page] = MY_URL.split(/[?|$|#]{2}/).filter(item => !!item);
         const [link, _share_pwd] = shareLink.split('?share_pwd=');
@@ -1996,7 +2009,9 @@ const ali = {
                     body: '{"share_id": "'+shareId+'","file_id": "'+folderID+'","fields":"*","image_thumbnail_process":"image/resize,w_400/format,jpeg","image_url_process":"image/resize,w_375/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_375"}',
                     method: 'POST'
                 });
-                setPageTitle(JSON.parse(folderRes).name);
+                let folderName = JSON.parse(folderRes).name;
+                // putVar('folderName', folderName);
+                setPageTitle(folderName);
             }
             const data = {"share_id": shareId,"parent_file_id": (folderID ? folderID : 'root'),"limit":100,"image_thumbnail_process":"image/resize,w_160/format,jpeg","image_url_process":"image/resize,w_1920/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_300","order_by": order_by,"order_direction": order_direction}
             if(next_marker) {
@@ -2026,6 +2041,16 @@ const ali = {
         if(page == 1) {
             const searchRule = this.searchRule;
             if(searchRule) {
+                let folderName = getVar('folderName', '');
+
+                d.push({
+                    title: '““””使用小程序：<b><span style="color: '+ this.primaryColor +'">' + searchRule + '</span></b> 搜索',
+                    url: $('hiker://empty').rule(() => {
+                        eval(fetch('hiker://files/rules/icy/ali.js'));
+                        ali.settingPage();
+                    }),
+                    col_type: 'text_1'
+                })
                 d.push({
                     title: '搜索',
                     // url: "'hiker://search?s=' + input + '&rule='" + searchRule,
@@ -2038,7 +2063,10 @@ const ali = {
                         }
                     }, searchRule),
                     col_type: "input",
-                    desc: '使用其他规则搜索影片信息'
+                    desc: '使用其他规则搜索影片信息',
+                    extra: {
+                        defaultValue: folderName,
+                    }
                 });
             }
             const sortLazy = $(['按名称正序', '按名称倒序', '按时间正序', '按时间倒序'], 1)
@@ -2146,6 +2174,8 @@ const ali = {
 
         
         const fnName = (fileExist(this.urls.tokenPath) == 'true' || fileExist(this.urls.tokenPath) == true || this.usePublicToken) ? 'lazyRule' : 'rule';
+        const zimuExtension = ['srt', 'vtt', 'ass'];
+        const zimuList = rescod.items.filter(_item => zimuExtension.includes(_item.file_extension));
         rescod.items.forEach((_item, index) => {
             const {type, category, name, file_id, thumbnail, updated_at} = _item;
             let title = name
@@ -2154,22 +2184,55 @@ const ali = {
 
             switch(category || type){
                 case 'video':
+                    let zimuItemList = null;
+                    let videoName = name.split('.'+_item.file_extension)[0];
+                    if(zimuList.length) {
+                        zimuItemList = zimuList.filter(_zimu => _zimu.name.startsWith(videoName));
+                    }
+                    let videolazy = '';
+                    let _zimuList = (zimuItemList || zimuList);
+                    if(fnName == 'rule') {
+                        videolazy = $('hiker://empty' + file_id).rule(() => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            if(access_token) {
+                                back(true);
+                            }
+                            return "toast://登录后需要重新刷新页面哦！"
+                        })
+                    } else if(_zimuList && _zimuList.length > 1) {
+                        videolazy = $(_zimuList.map(_zimu => _zimu.name), 1)
+                        .select((file_id, shareId, sharetoken, list) => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            if(access_token) {
+                                let zimuItem = list.find(_zimu => _zimu.name == input);
+                                return ali.videoProxy(file_id, shareId, sharetoken, zimuItem);
+                            } else {
+                                return "toast://登录后需要重新刷新页面哦！"
+                            }
+
+                        }, file_id, shareId, sharetoken, _zimuList);
+                    } else {
+                        videolazy = $('hiker://empty' + file_id).lazyRule((shareId, sharetoken, file_id, fnName, zimuItemList) => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            if(access_token) {
+                                let zimuItem = null;
+                                if(zimuItemList && zimuItemList.length == 1) {
+                                    zimuItem = zimuItemList[0]
+                                }
+                                return ali.videoProxy(file_id, shareId, sharetoken, zimuItem);
+                            } else {
+                                return "toast://登录后需要重新刷新页面哦！"
+                            }
+                        }, shareId, sharetoken, file_id, fnName, zimuItemList)
+                    }
                     d.push({
                         title: '🎬 ' + title,
                         pic_url: pic_url,
                         desc: desc,
-                        url: $('hiker://empty' + file_id)[fnName]((shareId, sharetoken, file_id, fnName) => {
-                            eval(fetch('hiker://files/rules/icy/ali.js'));
-                            var access_token = ali.getAliToken();
-                            if(access_token) {
-                                if(fnName == 'rule') {
-                                    back(true);
-                                }
-                                return ali.videoProxy(file_id, shareId, sharetoken);
-                            } else {
-                                return "toast://登录后需要重新刷新页面哦！"
-                            }
-                        }, shareId, sharetoken, file_id, fnName),
+                        url: videolazy,
                         extra: {
                             id: shareId + file_id
                         },
@@ -2235,8 +2298,16 @@ const ali = {
                         eval(fetch('hiker://files/rules/icy/ali.js'));
                         return ali.get_share_link_download_url(shareId, sharetoken, file_id);
                     }, shareId, sharetoken, file_id);
+                    let _title = title;
+                    if(category == 'doc') {
+                        _title = '📙 ' + title;
+                    } else if(zimuExtension.includes(_item.file_extension)) {
+                        _title = '🕸️ ' + title;
+                    } else {
+                        _title = '❓ ' + title;
+                    }
                     d.push({
-                        title: (category == 'doc' ? '📙 ' : '❓ ') + title,
+                        title: _title,
                         pic_url: thumbnail || pic_url,
                         desc: desc,
                         url: category != 'doc' ? 'toast://该文件不支持在线预览！' : $('hiker://empty'+file_id).rule((shareId, sharetoken, file_id) => {
