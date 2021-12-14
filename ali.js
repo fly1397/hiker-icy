@@ -2201,18 +2201,23 @@ const ali = {
                             return "toast://登录后需要重新刷新页面哦！"
                         })
                     } else if(_zimuList && _zimuList.length > 1) {
-                        videolazy = $(_zimuList.map(_zimu => _zimu.name), 1)
-                        .select((file_id, shareId, sharetoken, list) => {
+                        videolazy = $(_zimuList.map(_zimu => '字幕'+_zimu.name.split(videoName)[1]), 1)
+                        .select((file_id, shareId, sharetoken, list, videoName) => {
+                            showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
                             if(access_token) {
-                                let zimuItem = list.find(_zimu => _zimu.name == input);
+                                let name = input;
+                                if(name.startsWith('字幕')){
+                                    name = name.replace('字幕', videoName);
+                                }
+                                let zimuItem = list.find(_zimu => _zimu.name == name);
                                 return ali.videoProxy(file_id, shareId, sharetoken, zimuItem);
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
 
-                        }, file_id, shareId, sharetoken, _zimuList);
+                        }, file_id, shareId, sharetoken, _zimuList, videoName);
                     } else {
                         videolazy = $('hiker://empty' + file_id).lazyRule((shareId, sharetoken, file_id, fnName, zimuItemList) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
