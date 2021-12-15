@@ -1542,6 +1542,20 @@ const ali = {
         // let zimu = 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/test.srt';
         if(zimuItem) {
             zimu = this.get_share_link_download_url(share_id, share_token, zimuItem.file_id);
+            let zimuStr = fetch(zimu, {
+                headers: {
+                    'Referer': 'https://www.aliyundrive.com/'
+                }
+            });
+            try {
+                let path = 'hiker://files/rules/icy/cache/cache.' + zimuItem.file_extension;
+                let realPath = 'file:///storage/emulated/0/Android/data/com.example.hikerview/files/Documents/rules/icy/cache/cache.' + zimuItem.file_extension;
+                deleteFile(path);
+                if(zimuStr) {
+                    writeFile(path, zimuStr);
+                    zimu = realPath
+                }
+            } catch (e){}
         }
         var link = "";
         var result = {urls: [], headers:[], names: [], subtitle: ''};
@@ -1555,7 +1569,7 @@ const ali = {
                     result.urls.push(playLink);
                     result.headers.push({'Referer': 'https://www.aliyundrive.com/'})
                     result.names.push(tidName[index]);
-                    if(zimu && zimu.startsWith('http')) {
+                    if(zimu && (zimu.startsWith('http') || zimu.includes('icy/cache'))) {
                         result.subtitle = zimu;
                     }
                 }
