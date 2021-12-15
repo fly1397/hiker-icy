@@ -2192,7 +2192,7 @@ const ali = {
                         zimuItemList = zimuList.filter(_zimu => _zimu.name.startsWith(videoName));
                     }
                     let videolazy = '';
-                    let _zimuList = zimuItemList.length ? zimuItemList : zimuList;
+                    let _zimuList = (zimuItemList && zimuItemList.length) ? zimuItemList : zimuList;
                     if(fnName == 'rule') {
                         videolazy = $('hiker://empty' + file_id).rule(() => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
