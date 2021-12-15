@@ -9,7 +9,7 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '2021121515',
+    version: '2021121518',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -46,6 +46,9 @@ const ali = {
                     title = desc.split(/，/)[0];
                 } else {
                     title = desc.split(/\s+/)[0];
+                    if(title.length < 2) {
+                        title = desc
+                    }
                 }
             }
         }
@@ -210,13 +213,13 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复部分bug\n2,优化字幕选择',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修改网盘详情页，方便其他程序调用',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
     },
     updateRule: function(){
-        let ruleCode = "海阔视界规则分享，当前分享的是：小程序￥home_rule_v2￥base64://@云盘汇影@eyJsYXN0X2NoYXB0ZXJfcnVsZSI6IiIsInRpdGxlIjoi5LqR55uY5rGH5b2xIiwiYXV0aG9yIjoiTXJGbHkiLCJ1cmwiOiJoaWtlcjovL2VtcHR5JCQkZnlwYWdlIiwidmVyc2lvbiI6NCwiY29sX3R5cGUiOiJ0ZXh0XzEiLCJjbGFzc19uYW1lIjoiIiwiY2xhc3NfdXJsIjoiIiwiYXJlYV9uYW1lIjoiIiwiYXJlYV91cmwiOiIiLCJzb3J0X25hbWUiOiIiLCJ5ZWFyX25hbWUiOiIiLCJzb3J0X3VybCI6IiIsInllYXJfdXJsIjoiIiwiZmluZF9ydWxlIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuaG9tZVBhZ2UoKTsiLCJzZWFyY2hfdXJsIjoiaGlrZXI6Ly9lbXB0eSQkJCoqJCQkZnlwYWdlJCQkIiwiZ3JvdXAiOiLikaDmjqjojZAiLCJzZWFyY2hGaW5kIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuc2VhcmNoUGFnZSh0cnVlKTtcbiIsImRldGFpbF9jb2xfdHlwZSI6Im1vdmllXzEiLCJkZXRhaWxfZmluZF9ydWxlIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuZGV0YWlsUGFnZSgpOyIsInNkZXRhaWxfY29sX3R5cGUiOiJtb3ZpZV8xIiwic2RldGFpbF9maW5kX3J1bGUiOiIiLCJ1YSI6Im1vYmlsZSIsInByZVJ1bGUiOiIvKlxu6YOo5YiG5Luj56CB5Y+C6ICD5LqGWVlEU++8jOaEn+iwoummmeS9rFxuKi9cbnZhciBhbGlqcyA9IGZldGNoKCdodHRwczovL2dpdGVlLmNvbS9mbHkxMzk3L2hpa2VyLWljeS9yYXcvbWFzdGVyL2FsaS5qcycpO1xuaWYoIWFsaWpzIHx8ICFhbGlqcy5pbmNsdWRlcygnYWxpJykpe1xuXHRhbGlqcyA9IGZldGNoKCdodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvZ2gvZmx5MTM5Ny9oaWtlci1pY3kvYWxpLmpzJylcbn1cbmlmKCFhbGlqcyB8fCAhYWxpanMuaW5jbHVkZXMoJ2FsaScpKXtcblx0YWxpanMgPSBmZXRjaCgnaHR0cDovL2xmaWN5LmNvbTozMDAwMC9tcmZseS9oaWtlci1pY3kvcmF3L21hc3Rlci9hbGkuanMnKVxufVxuaWYoYWxpanMpIHtcblx0d3JpdGVGaWxlKFwiaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzXCIsYWxpanMpO1xuXHRldmFsKGFsaWpzKTtcblx0YWxpLnByZVJ1bGUoKTtcbn1cbiIsInBhZ2VzIjoiW3tcImNvbF90eXBlXCI6XCJtb3ZpZV8zXCIsXCJuYW1lXCI6XCLnvZHnm5jor6bmg4VcIixcInBhdGhcIjpcImRldGFpbFwiLFwicnVsZVwiOlwianM6XFxuZXZhbChmZXRjaCgnaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzJykpO1xcbmFsaS5hbGlSdWxlKCk7XCJ9LHtcImNvbF90eXBlXCI6XCJtb3ZpZV8xX2xlZnRfcGljXCIsXCJuYW1lXCI6XCLotYTmupDnvZHpobXor6bmg4VcIixcInBhdGhcIjpcInNpdGUtZGV0YWlsXCIsXCJydWxlXCI6XCJqczpcXG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XFxuYWxpLmRldGFpbFBhZ2UoKTtcIn1dIiwiaWNvbiI6Imh0dHBzOi8vZ2l0ZWUuY29tL2ZseTEzOTcvaGlrZXItaWN5L3Jhdy9tYXN0ZXIvYWxpeXVuLnBuZyJ9";
+        let ruleCode = "海阔视界规则分享，当前分享的是：小程序￥home_rule_v2￥base64://@云盘汇影@eyJsYXN0X2NoYXB0ZXJfcnVsZSI6IiIsInRpdGxlIjoi5LqR55uY5rGH5b2xIiwiYXV0aG9yIjoiTXJGbHkiLCJ1cmwiOiJoaWtlcjovL2VtcHR5JCQkZnlwYWdlIiwidmVyc2lvbiI6NSwiY29sX3R5cGUiOiJ0ZXh0XzEiLCJjbGFzc19uYW1lIjoiIiwiY2xhc3NfdXJsIjoiIiwiYXJlYV9uYW1lIjoiIiwiYXJlYV91cmwiOiIiLCJzb3J0X25hbWUiOiIiLCJ5ZWFyX25hbWUiOiIiLCJzb3J0X3VybCI6IiIsInllYXJfdXJsIjoiIiwiZmluZF9ydWxlIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuaG9tZVBhZ2UoKTsiLCJzZWFyY2hfdXJsIjoiaGlrZXI6Ly9lbXB0eSQkJCoqJCQkZnlwYWdlJCQkIiwiZ3JvdXAiOiLikaDmjqjojZAiLCJzZWFyY2hGaW5kIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuc2VhcmNoUGFnZSh0cnVlKTtcbiIsImRldGFpbF9jb2xfdHlwZSI6Im1vdmllXzEiLCJkZXRhaWxfZmluZF9ydWxlIjoianM6XG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XG5hbGkuZGV0YWlsUGFnZSgpOyIsInNkZXRhaWxfY29sX3R5cGUiOiJtb3ZpZV8xIiwic2RldGFpbF9maW5kX3J1bGUiOiIiLCJ1YSI6Im1vYmlsZSIsInByZVJ1bGUiOiIvKlxu6YOo5YiG5Luj56CB5Y+C6ICD5LqGWVlEU++8jOaEn+iwoummmeS9rFxuKi9cbnZhciBhbGlqcyA9IGZldGNoKCdodHRwczovL2dpdGVlLmNvbS9mbHkxMzk3L2hpa2VyLWljeS9yYXcvbWFzdGVyL2FsaS5qcycpO1xuaWYoIWFsaWpzIHx8ICFhbGlqcy5pbmNsdWRlcygnYWxpJykpe1xuXHRhbGlqcyA9IGZldGNoKCdodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvZ2gvZmx5MTM5Ny9oaWtlci1pY3kvYWxpLmpzJylcbn1cbmlmKCFhbGlqcyB8fCAhYWxpanMuaW5jbHVkZXMoJ2FsaScpKXtcblx0YWxpanMgPSBmZXRjaCgnaHR0cDovL2xmaWN5LmNvbTozMDAwMC9tcmZseS9oaWtlci1pY3kvcmF3L21hc3Rlci9hbGkuanMnKVxufVxuaWYoYWxpanMpIHtcblx0d3JpdGVGaWxlKFwiaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzXCIsYWxpanMpO1xuXHRldmFsKGFsaWpzKTtcblx0YWxpLnByZVJ1bGUoKTtcbn1cbiIsInBhZ2VzIjoiW3tcImNvbF90eXBlXCI6XCJtb3ZpZV8zXCIsXCJuYW1lXCI6XCLnvZHnm5jor6bmg4VcIixcInBhdGhcIjpcImRldGFpbFwiLFwicnVsZVwiOlwianM6XFxuZXZhbChmZXRjaCgnaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzJykpO1xcbmFsaS5pbml0Q29uZmlnKCk7XFxuYWxpLmFsaVJ1bGUoKTtcIn0se1wiY29sX3R5cGVcIjpcIm1vdmllXzFfbGVmdF9waWNcIixcIm5hbWVcIjpcIui1hOa6kOe9kemhteivpuaDhVwiLFwicGF0aFwiOlwic2l0ZS1kZXRhaWxcIixcInJ1bGVcIjpcImpzOlxcbmV2YWwoZmV0Y2goJ2hpa2VyOi8vZmlsZXMvcnVsZXMvaWN5L2FsaS5qcycpKTtcXG5hbGkuZGV0YWlsUGFnZSgpO1wifV0iLCJpY29uIjoiaHR0cHM6Ly9naXRlZS5jb20vZmx5MTM5Ny9oaWtlci1pY3kvcmF3L21hc3Rlci9hbGl5dW4ucG5nIn0=";
         let importUrl = "rule://" + base64Encode(ruleCode);
         return importUrl;
     },
@@ -332,8 +335,9 @@ const ali = {
                 writeFile(tokenPath,JSON.stringify({access_token: access_token, refresh_token: refresh_token}));
                 return access_token;
             } else {
-                putVar("access_token", token.access_token);
-                return token.access_token || token.token;
+                let _access_token = token.access_token || token.token;
+                putVar("access_token", _access_token);
+                return _access_token;
             }
         } else {
             let d = []
@@ -1540,6 +1544,8 @@ const ali = {
                 }
             } catch (e){}
         }
+        // 原始文件播放 4k有问题，存在无声音的情况
+        // return this.get_share_link_download_url(share_id, share_token, file_id) + '#isVideo=true#;{Referer@https://www.aliyundrive.com/}';
         var link = "";
         var result = {urls: [], headers:[], names: [], subtitle: ''};
         try {
