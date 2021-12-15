@@ -53,8 +53,9 @@ const ali = {
         }
         const titleDom = '<div class="fortext">' + title || '' + '</div>';
         let result = parseDomForHtml(titleDom, '.fortext&&Text');
-        if(result.length > 20) {
-            result = result.substr(0, 20) + '...'
+        let len = 26;
+        if(result.length > len) {
+            result = result.substr(0, len) + '...'
         }
         return result;
     },
@@ -1538,6 +1539,7 @@ const ali = {
             }
         }
         let zimu = '';
+        // let zimu = 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/test.srt';
         if(zimuItem) {
             zimu = this.get_share_link_download_url(share_id, share_token, zimuItem.file_id);
         }
@@ -2190,7 +2192,7 @@ const ali = {
                         zimuItemList = zimuList.filter(_zimu => _zimu.name.startsWith(videoName));
                     }
                     let videolazy = '';
-                    let _zimuList = (zimuItemList || zimuList);
+                    let _zimuList = zimuItemList.length ? zimuItemList : zimuList;
                     if(fnName == 'rule') {
                         videolazy = $('hiker://empty' + file_id).rule(() => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
@@ -2201,17 +2203,20 @@ const ali = {
                             return "toast://登录后需要重新刷新页面哦！"
                         })
                     } else if(_zimuList && _zimuList.length > 1) {
-                        videolazy = $(_zimuList.map(_zimu => '字幕'+_zimu.name.split(videoName)[1]), 1)
+                        videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
                         .select((file_id, shareId, sharetoken, list, videoName) => {
                             showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
                             if(access_token) {
                                 let name = input;
-                                if(name.startsWith('字幕')){
-                                    name = name.replace('字幕', videoName);
+                                let zimuItem = null;
+                                if(input != '不需要字幕') {
+                                    if(name.startsWith('字幕')){
+                                        name = name.replace('字幕', videoName);
+                                    }
+                                    zimuItem = list.find(_zimu => _zimu.name == name);
                                 }
-                                let zimuItem = list.find(_zimu => _zimu.name == name);
                                 return ali.videoProxy(file_id, shareId, sharetoken, zimuItem);
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
