@@ -9,7 +9,7 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '2021121410',
+    version: '2021121515',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -24,8 +24,6 @@ const ali = {
 
     // 颜色
     primaryColor: '#f47983',
-    // 第三方搜索小程序
-    searchRule: '',
     
     formatBytes: function(a, b) { 
         if (0 == a) return "0 B"; 
@@ -149,7 +147,6 @@ const ali = {
                 this.publicToken = customerSetting.publicToken;
                 this.useSuggestQuery = customerSetting.useSuggestQuery;
                 this.primaryColor = customerSetting.primaryColor;
-                this.searchRule = customerSetting.searchRule;
             }
         }
     },
@@ -213,7 +210,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复部分bug\n2,增加阿里云盘同文件夹下视频字幕支持',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复部分bug\n2,优化字幕选择',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -490,7 +487,7 @@ const ali = {
                 }
                 customer.push(config)
             })
-            customerSettings = {customerResouce:customer, usePublicToken: false, publicToken: '', useSuggestQuery: true, primaryColor: '#f47983', searchRule: ''};
+            customerSettings = {customerResouce:customer, usePublicToken: false, publicToken: '', useSuggestQuery: true, primaryColor: '#f47983'};
             writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
         }
 
@@ -569,20 +566,6 @@ const ali = {
                 }, item.key, customerSettings, activeModel.key),
                 col_type: 'text_3'
             })
-        })
-        const ruleName = customerSettings.searchRule;
-        d.push({
-            title: '““””🔍 规则搜索设置     <b>' + (ruleName ? '搜索小程序：' + '<span style="color: '+ primaryColor +'">' + ruleName + '</span>' : '还没有启用哦') + '</b>',
-            desc: '在阿里云盘页面可以采用其他规则搜索影片信息',
-            url: $(ruleName, '请输入小程序名称 eq: 青豆')
-                .input(() => {
-                let customerSettings = JSON.parse(fetch(getVar('icy_ali_customer')));
-                customerSettings.searchRule = input;
-                writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
-                refreshPage();
-                return "toast://保存成功";
-            }),
-            col_type: 'text_1'
         })
         d.push({
             col_type: "line_blank"
@@ -2055,27 +2038,37 @@ const ali = {
         }
         var d = [];
         if(page == 1) {
-            const searchRule = this.searchRule;
-            if(searchRule) {
-                let folderName = getVar('folderName', '');
+            const searchRule = getItem('icy_ali_searchRule', '青豆');
+            let folderName = getVar('folderName', '');
 
-                d.push({
-                    title: '““””使用小程序：<b><span style="color: '+ this.primaryColor +'">' + searchRule + '</span></b> 搜索',
-                    url: $('hiker://empty').rule(() => {
-                        eval(fetch('hiker://files/rules/icy/ali.js'));
-                        ali.settingPage();
-                    }),
-                    col_type: 'text_1'
-                })
+            d.push({
+                title: '““””使用小程序：<b><span style="color: '+ this.primaryColor +'">' + searchRule + '</span></b> 搜索  <small><span style="color: #999999">点击设置</span></small>',
+                url: $(searchRule, '请输入小程序名称 eq: 青豆')
+                    .input(() => {
+                    setItem('icy_ali_searchRule', input);
+                    refreshPage();
+                    return "toast://保存成功";
+                }),
+                // url: $('hiker://empty').rule(() => {
+                //     eval(fetch('hiker://files/rules/icy/ali.js'));
+                //     ali.settingPage();
+                // }),
+                col_type: 'text_1'
+            })
+            if(searchRule) {
                 d.push({
                     title: '搜索',
                     // url: "'hiker://search?s=' + input + '&rule='" + searchRule,
                     url: $.toString((searchRule)=> {
-                        if(input.trim()) {
-                            var link = 'hiker://search?s=' + input + '&rule=' + searchRule;
-                            return link;
+                        if(searchRule) {
+                            if(input.trim()) {
+                                var link = 'hiker://search?s=' + input + '&rule=' + searchRule;
+                                return link;
+                            } else {
+                                return 'toast://请输入影片名称';
+                            }
                         } else {
-                            return 'toast://请输入影片名称';
+                            return 'toast://请先设置小程序吧';
                         }
                     }, searchRule),
                     col_type: "input",
