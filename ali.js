@@ -2148,8 +2148,30 @@ const ali = {
         //     });
         //     return 'toast://到底了！';
         // }
-        if(rescod.code && rescod.code.includes('AccessTokenInvalid')) {
-            this.needSharePWD(link);
+        if(rescod.code) {
+            if(rescod.code.includes('AccessTokenInvalid')) {
+                this.needSharePWD(link);
+            } else if(rescod.code.includes('ForbiddenNoPermission')) {
+                d.push({
+                    title: "““””<center><b>"+'<span style="color: #ff0000">打开的链接有误，请重试</span></b></center>',
+                    url: this.emptyRule,
+                    col_type: "text_center_1"
+                });
+                setHomeResult({
+                    data: d
+                });
+                return false;
+            } else {
+                d.push({
+                    title: "““””<center><b>"+'<span style="color: #ff0000">'+rescod.message+'</span></b></center>',
+                    url: this.emptyRule,
+                    col_type: "text_center_1"
+                });
+                setHomeResult({
+                    data: d
+                });
+                return false;
+            }
         }
 
         
