@@ -117,6 +117,7 @@ const ali = {
     emptyRule: $("#noLoading#").lazyRule(()=>{return "toast://Emmm~~!"}),
     getConfig: function(){
         const {settingPath, remoteConfig, customerSettingPath} = this.urls;
+        putVar('icy_ali_customer', customerSettingPath);
         const haveSetting = fileExist(settingPath) == 'true' || fileExist(settingPath) == true;
         let json = haveSetting ? fetch(settingPath) : '';
         const firstConfigPath = this.isDev ? remoteConfig[2] : remoteConfig[0];
@@ -138,7 +139,7 @@ const ali = {
             
             this.searchModel = JSON.parse(json).sort((a,b) => a.index - b.index);
             if(haveCustomerSetting) {
-                const customerSetting = JSON.parse(fetch(getVar('icy_ali_customer')));
+                const customerSetting = JSON.parse(fetch(customerSettingPath));
                 if(customerSetting.customerResouce) {
                     this.searchModel = JSON.parse(json).map(item => {
                         const customer = customerSetting.customerResouce.find(_customer => _customer.key == item.key);
@@ -179,7 +180,7 @@ const ali = {
         }
         const haveCustomerSetting = fileExist(customerSettingPath) == 'true' || fileExist(customerSettingPath) == true;
         if(haveCustomerSetting) {
-            const customerSetting = JSON.parse(fetch(getVar('icy_ali_customer')));
+            const customerSetting = JSON.parse(fetch(customerSettingPath));
             if(customerSetting.customerResouce) {
                 this.searchModel.forEach(item => {
                     const customer = customerSetting.customerResouce.find(_customer => _customer.key == item.key);
@@ -188,7 +189,7 @@ const ali = {
                     
                 });
             }
-            writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSetting));
+            writeFile(customerSettingPath, JSON.stringify(customerSetting));
         }
         
     },
@@ -473,6 +474,9 @@ const ali = {
         setPageTitle('设置');
         const haveCustomerSetting = fileExist(customerSettingPath) == 'true' || fileExist(customerSettingPath) == true;
         let customerSettings = null;
+        if(!getVar('icy_ali_customer','')) {
+            putVar('icy_ali_customer', customerSettingPath)
+        }
         if(!haveCustomerSetting || (haveCustomerSetting && !JSON.parse(fetch(customerSettingPath)).customerResouce)) {
             const customer = [];
             const settings = JSON.parse(fetch(settingPath)).sort((a,b) => a.index - b.index);
