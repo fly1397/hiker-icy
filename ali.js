@@ -9,7 +9,7 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '2021121519',
+    version: '2021121711',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -214,7 +214,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修改网盘详情页，方便其他程序调用,请在设置页面更新规则',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,其他小程序调用方法：hiker://page/detail?rule=云盘汇影&url=[you link]??fypage\n2,修复在未打开过云盘汇影情况下外部调用失败的问题',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
