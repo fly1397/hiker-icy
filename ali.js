@@ -261,7 +261,7 @@ const ali = {
                     var savetext = document.querySelector('.title--lRzap');
                     if(savetext) {
                         saved = savetext.innerText=='转存成功';
-                    } 
+                    }
                     var token=JSON.parse(localStorage.getItem('token'));
                     if(
                         token && 
@@ -321,6 +321,10 @@ const ali = {
         
         if(haveToken) {
             let token = JSON.parse(fetch(tokenPath));
+            if(!token.access_token) {
+                deleteFile(tokenPath);
+                return 'toast://TOKEN获取失败，请尝试删除软件缓存，重启海阔，重新登录试试'
+            }
             if(!!needRefresh) {
                 const tokenRes = JSON.parse(fetch('https://api.aliyundrive.com/token/refresh', {
                     headers: {
