@@ -9,7 +9,7 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '2021122309',
+    version: '2021122320',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -166,6 +166,7 @@ const ali = {
         const haveSetting = fileExist(settingPath) == 'true' || fileExist(settingPath) == true;
         let json = haveSetting ? fetch(settingPath) : '';
         if(!json || forceConfigUpdate) {
+            log(firstConfigPath)
             json = fetch(firstConfigPath);
           if(!json || !json.includes('name')) {
             json = fetch(remoteConfig[1]);
