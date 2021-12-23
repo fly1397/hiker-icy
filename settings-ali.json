@@ -147,7 +147,7 @@
     {
       "name": "🔑 爱盼小站",
       "index": 4,
-      "val": "https://pan.unilei.cn",
+      "val": "https://bbs.unilei.cn",
       "key": "unilei",
       "desc": "阿里云盘资源分享站，网盘资源资源分享与互助的社区",
       "needKey": true,
@@ -155,7 +155,7 @@
       "password": "",
       "cookie": "",
       "loginError": false,
-      "searchUrl": "https://pan.unilei.cn/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CrecipientUsers%2CrecipientGroups%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
+      "searchUrl": "https://bbs.unilei.cn/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CrecipientUsers%2CrecipientGroups%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
       "cats": [
         { "name": "电影", "val": "movie", "withType": 1 },
         { "name": "剧集", "val": "tv", "withType": 1 },
@@ -187,9 +187,9 @@
       "loginError": false,
       "searchUrl": "https://community.dtnetwork.top/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
       "cats": [
-        { "name": "阿里云盘", "val": "alidrive", "withType": 1},
         { "name": "影视", "val": "video", "withType": 1},
         { "name": "资料", "val": "material", "withType": 1},
+        { "name": "音乐", "val": "music", "withType": 1},
         { "name": "其他", "val": "others", "withType": 1}
       ],
       "sorts": [
