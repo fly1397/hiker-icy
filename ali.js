@@ -9,7 +9,7 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '2021121711',
+    version: '2021122309',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -214,7 +214,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,其他小程序调用方法：hiker://page/detail?rule=云盘汇影&url=[you link]??fypage\n2,修复在未打开过云盘汇影情况下外部调用失败的问题',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复阿里云盘翻页问题',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -2014,16 +2014,16 @@ const ali = {
                 let [_myUrl, _fypage] = MY_URL.split('??');
                 MY_URL = _myUrl.split('/folder')[0] + '/folder/' + folderID + '??' +_fypage;
                 // MY_URL = MY_URL.split('/folder')[0] + '/folder/' + folderID;
-                folderRes = fetch('https://api.aliyundrive.com/v2/file/get', {
+                folderRes = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get', {
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Share-Token': sharetoken
                     },
                     body: '{"share_id": "'+shareId+'","file_id": "'+folderID+'","fields":"*","image_thumbnail_process":"image/resize,w_400/format,jpeg","image_url_process":"image/resize,w_375/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_375"}',
                     method: 'POST'
-                });
-                let folderName = JSON.parse(folderRes).name;
-                // putVar('folderName', folderName);
+                }));
+                let folderName = folderRes.name;
+                putVar('icy_ali_folder', folderRes.file_id);
                 setPageTitle(folderName);
             }
             const data = {"share_id": shareId,"parent_file_id": (folderID ? folderID : 'root'),"limit":100,"image_thumbnail_process":"image/resize,w_160/format,jpeg","image_url_process":"image/resize,w_1920/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_300","order_by": order_by,"order_direction": order_direction}
@@ -2031,7 +2031,7 @@ const ali = {
                 data.marker = next_marker;
             }
             if(page > 1 && next_marker && folderRes) {
-                data.parent_file_id = JSON.parse(folderRes).file_id;
+                data.parent_file_id = folderRes.file_id;
             }
             return fetch('https://api.aliyundrive.com/adrive/v3/file/list', {
                 headers: {
@@ -2196,7 +2196,6 @@ const ali = {
             const folderItem = rescod.items[0];
             try {
                 rescod = JSON.parse(getFileList(sharetoken, shareId, folderItem.file_id, next_marker));
-
                 putVar('icy_ali_folder', folderItem.file_id);
             } catch (e){
                 confirm({
