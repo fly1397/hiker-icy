@@ -772,6 +772,15 @@ const ali = {
         var page = Number(MY_URL.split('$$$')[1]);
         const {cats, sorts, val, name, key, dataType} = this.activeModel();
         if(page == 1) {
+            if(MY_RULE.version != '6' && !Number(getVar('newVersion', ''))) {
+                confirm({
+                    title: '温馨提示',
+                    content: '小程序有最新版本了，为保障正常使用，请更新小程序至最新版本。',
+                    confirm: '',
+                    cancel: ''
+                })
+                putVar('newVersion', '1');
+            }
             if (getItem("ali-accept", "") == "") {
                 setItem("ali-accept", "1");
                 confirm({
