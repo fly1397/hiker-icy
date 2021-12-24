@@ -2481,7 +2481,7 @@ const ali = {
             params.forEach(item => {
                 clearVar(item)
             })
-        }, ["folderName"]))
+        }, ["folderName", 'icy_ali_next_marker', 'icy_ali_folder']))
         this.getConfig();
         var access_token = this.getAliToken();
         if(!access_token) {
@@ -2546,6 +2546,7 @@ const ali = {
                 "order_by": order_by,
                 "order_direction": order_direction
             }
+            putVar('icy_ali_folder', folderID);
             if(next_marker) {
                 data.marker = next_marker;
             }
