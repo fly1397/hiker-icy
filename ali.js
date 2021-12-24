@@ -215,7 +215,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,增加个人云盘功能，以前的登录信息不可用，需要重新登录后使用\n2,更新设置页面部分功能',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,增加个人云盘功能，以前的登录信息不可用，需要重新登录后使用\n2,更新设置页面部分功能,请更新小程序至版本6',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -333,7 +333,7 @@ const ali = {
                 var access_token = tokenRes.access_token;
                 var refresh_token = tokenRes.refresh_token;
                 putVar("access_token", access_token);
-                writeFile(tokenPath,JSON.stringify({access_token: access_token, refresh_token: refresh_token}));
+                writeFile(tokenPath,JSON.stringify(tokenRes));
                 return access_token;
             } else {
                 let _access_token = token.access_token || token.token;
@@ -2490,9 +2490,6 @@ const ali = {
         }
         var folderID = MY_URL.split('??')[0].split('folder/')[1] || '';
         var page = MY_URL.split('??')[1] || 1;
-        log(MY_URL)
-        log(folderID)
-        log(page)
         if(page == 1) {
             putVar('icy_ali_next_marker', '');
             putVar('icy_ali_folder', '');
@@ -2640,17 +2637,6 @@ const ali = {
                 }),
                 col_type: 'text_2'
             })
-            if(typeof saveLink != 'undefined' && !!saveLink) {
-                let expiration_text = '';
-                if(typeof expiration != 'undefined') {
-                    expiration_text = '有效期限：' + (expiration ? getDateDiff(expiration) +'，请尽快保存！' : '永久有效');
-                }
-                d.push({
-                    title: '““””<b>✨✨✨✨<span style="color: '+ this.primaryColor +'">保存到我的阿里云盘</span>✨✨✨✨</b>\n' + "““””<small>"+'<span style="color: #999999">'+expiration_text+'</span></small>',
-                    url: saveLink,
-                    col_type: "text_center_1"
-                });
-            }
         }
 
         var rescod = null;
@@ -2670,6 +2656,10 @@ const ali = {
         //     return 'toast://到底了！';
         // }
         if(rescod.code) {
+            if(rescod.code == 'AccessTokenInvalid') {
+                this.getAliToken(true);
+                refreshPage();
+            }
             d.push({
                 title: "““””<center><b>"+'<span style="color: #ff0000">'+rescod.message+'</span></b></center>',
                 url: this.emptyRule,
