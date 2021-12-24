@@ -9,7 +9,7 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '2021122320',
+    version: '2021122411',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -215,7 +215,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复爱盼小站与鼎天网络社区',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,增加个人云盘功能，以前的登录信息不可用，需要重新登录后使用',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -271,12 +271,7 @@ const ali = {
                             (!isShare)
                         )
                     ){
-                        fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify({
-                            access_token:token.access_token,
-                            refresh_token:token.refresh_token,
-                            nick_name: token.nick_name,
-                            avatar: token.avatar,
-                        }));
+                        fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify(token));
                         alert('TOKEN获取成功，感谢支持！请勿泄漏个人隐私!退出该页面后刷新重试！');
                         if(location.href.includes('beinvited')) {
                             fy_bridge_app.back();
@@ -296,7 +291,7 @@ const ali = {
             desc: '100%&&float',
             extra: {
                 canBack: true,
-                js: "var click=false;var isShare=location.href.startsWith('https://www.aliyundrive.com/s/');var token_timer=function(){setTimeout(()=>{try{if(!click){if(isShare){var btn=document.querySelector('.btn--2uN28');if(btn){btn.click()}click=true}else{var btn=document.querySelector('.BeInvited--btn--eapb4-i');if(btn){btn.click()}click=true}}}catch(e){};var saved=false;var savetext=document.querySelector('.title--lRzap');if(savetext){saved=savetext.innerText=='转存成功'}var token=JSON.parse(localStorage.getItem('token'));if(token&&((saved&&isShare)||(!isShare))){fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify({access_token:token.access_token,refresh_token:token.refresh_token,nick_name:token.nick_name,avatar:token.avatar,}));alert('TOKEN获取成功，感谢支持！请勿泄漏个人隐私!退出该页面后刷新重试！');if(location.href.includes('beinvited')){fy_bridge_app.back()}else if(!location.href.includes('#token')&&isShare){location.href='https://www.aliyundrive.com/drive#token'}}else{token_timer()}},500)};token_timer();"
+                js: js
             }
         })
         setHomeResult({
@@ -346,43 +341,62 @@ const ali = {
                 return _access_token;
             }
         } else {
-            let d = []
-            setPageTitle('账号设置')
+            this.aliLogin();
+            return false;
+
+        }
+
+    },
+    aliLogin: function(){
+        let d = []
+        setPageTitle('账号设置');
+        const {tokenPath} = this.urls;
+        const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
+        if(!haveToken) {
             d.push({
                 title: '还没有设置阿里云盘账号信息',
                 desc: '阿里云盘在线观看需要设置登录信息，\n您可以选择登录/注册账号，或者他人共享的账号！',
                 url: this.emptyRule,
                 col_type: 'text_1'
             })
+        } else {
             d.push({
-                col_type: "line_blank"
-            });
-            d.push({
-                title: '登录/注册阿里云盘',
-                desc: '后面会加入个人云盘文件功能，\n注册账号转存文件，开发者需要你的支持！',
-                url: $('hiker://empty').rule(() => {
-                    eval(fetch('hiker://files/rules/icy/ali.js'));
-                    ali.getRefreshToken();
+                title: '☢️ 删除阿里云盘账号',
+                desc: '清除阿里云盘账号登录信息',
+                url: $("确定要删除？")
+                    .confirm(() => {
+                    deleteFile('hiker://files/rules/icy/icy-ali-token.json');
+                    refreshPage();
+                    return "toast://已删除";
                 }),
                 col_type: 'text_1'
             })
-            d.push({
-                col_type: "line_blank"
-            });
-            d.push({
-                title: '去启用共享账号',
-                desc: '随时可以在设置页面启用或关闭共享账号',
-                url: $('hiker://empty').rule(() => {
-                    eval(fetch('hiker://files/rules/icy/ali.js'));
-                    ali.settingPage();
-                }),
-                col_type: 'text_1'
-            })
-            setResult({data: d});
-            return false;
-
         }
-
+        d.push({
+            col_type: "line_blank"
+        });
+        d.push({
+            title: '登录/注册阿里云盘',
+            desc: '支持查看个人云盘文件，\n注册账号转存文件，开发者需要你的支持！',
+            url: $('hiker://empty').rule(() => {
+                eval(fetch('hiker://files/rules/icy/ali.js'));
+                ali.getRefreshToken();
+            }),
+            col_type: 'text_1'
+        })
+        d.push({
+            col_type: "line_blank"
+        });
+        d.push({
+            title: '去启用共享账号',
+            desc: '随时可以在设置页面启用或关闭共享账号',
+            url: $('hiker://empty').rule(() => {
+                eval(fetch('hiker://files/rules/icy/ali.js'));
+                ali.settingPage();
+            }),
+            col_type: 'text_1'
+        })
+        setResult({data: d});
     },
     preRule: function(){
         this.initConfig(this.forceConfigUpdate);
@@ -474,10 +488,11 @@ const ali = {
                 clearVar(item)
             })
         }, ["select_index", "login", "publicToken"]))
-        const {settingPath, customerSettingPath} = this.urls;
+        const {settingPath, customerSettingPath, tokenPath} = this.urls;
         var d = [];
         setPageTitle('设置');
         const haveCustomerSetting = fileExist(customerSettingPath) == 'true' || fileExist(customerSettingPath) == true;
+        const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
         let customerSettings = null;
         if(!getVar('icy_ali_customer','')) {
             putVar('icy_ali_customer', customerSettingPath)
@@ -681,7 +696,7 @@ const ali = {
         });
         d.push({
             title: '““””😬 阿里云盘共享账号  <b><span style="color: '+ primaryColor +'">' + (customerSettings.usePublicToken ? '启用' : '不启用') + '</span></b>',
-            desc: '最好用自己的账号哦',
+            desc: '会优先使用共享账号，不支持查看共享账号内文件，最好用自己的账号哦',
             url: $("#noLoading#").lazyRule((usePublicToken, customerSettings)=>{
                 customerSettings.usePublicToken = !usePublicToken;
                 writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
@@ -715,8 +730,30 @@ const ali = {
             })
         }
         d.push({
+            title: '““””🦄 登录阿里云盘账号  <b><span style="color: '+ primaryColor +'">' + (haveToken ? '已经登录' : '') + '</span></b>',
+            desc: '支持查看个人账号内文件',
+            url: $('hiker://empty').rule(() => {
+                eval(fetch('hiker://files/rules/icy/ali.js'));
+                ali.aliLogin();
+            }),
+            col_type: 'text_1'
+        })
+        d.push({
             col_type: "line_blank"
         });
+        if(haveToken) {
+            d.push({
+                title: '☢️ 删除阿里云盘账号',
+                desc: '清除阿里云盘账号登录信息',
+                url: $("确定要删除？")
+                    .confirm(() => {
+                    deleteFile('hiker://files/rules/icy/icy-ali-token.json');
+                    refreshPage();
+                    return "toast://已删除";
+                }),
+                col_type: 'text_1'
+            })
+        }
         d.push({
             title: '☢️ 恢复默认设置',
             desc: '清除所有用户设置，包括用户名密码等',
@@ -772,7 +809,6 @@ const ali = {
             });
             this.rendererFilterList(d);
         }
-
         if(key == 'rjiang') {
             this.homeDataR(d);
         } else if(dataType == 'html') {
@@ -809,6 +845,11 @@ const ali = {
         }
         if(!isSearchPage) {
             // home page
+            d.push({
+                title: '🦄 我的云盘',
+                url: "hiker://page/drive?url=https://www.aliyundrive.com/drive/??fypage",
+                col_type:'scroll_button'
+            })
             this.rendererFilter(d, searchModel, 'icy_ali_model', () => {
                 // callback
                 eval(fetch('hiker://files/rules/icy/ali.js'));
@@ -1493,7 +1534,7 @@ const ali = {
             setHomeResult(res);
         }
     },
-    videoProxy: function(file_id, share_id, share_token, zimuItem){
+    videoProxy: function(file_id, share_id, share_token, zimuItem, drive_id){
         var access_token = this.getAliToken();
         if(access_token.startsWith('toast')) {
             return access_token;
@@ -1501,21 +1542,33 @@ const ali = {
         if(!access_token) {
             return 'toast://还没登录？';
         }
-        var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_video_preview_play_info', {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': access_token,
-                'X-Share-Token': share_token
-            },
-            body: '{"share_id":"' + share_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":""}',
-            method: 'POST',
-        }));
+        var json = null;
+        if(share_id) {
+            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_video_preview_play_info', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                    'X-Share-Token': share_token
+                },
+                body: '{"share_id":"' + share_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":""}',
+                method: 'POST',
+            }));
+        } else if(drive_id) {
+            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_video_preview_play_info', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                },
+                body: '{"drive_id":"' + drive_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":""}',
+                method: 'POST',
+            }));
+        }
         var tid = ["FHD", "HD", "SD", "LD"];
         var tidName = ["全高清", "高清", "标清", "流畅"];
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
-                return this.videoProxy(file_id, share_id, share_token);
+                return this.videoProxy(file_id, share_id, share_token, drive_id);
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // // confirm({
@@ -1525,11 +1578,14 @@ const ali = {
                 // refreshPage();
                 // return "toast://token 失效了，再点击试试！";
             } else if(json.code.includes('NotFound.VideoPreviewInfo')) {
-                const result_link = this.get_share_link_download_url(share_id, share_token, file_id);
-                if(result_link.includes('.wmv')) {
-                    return 'toast://WMV格式暂时不支持播放！'
+                if(share_id) {
+                    const result_link = this.get_share_link_download_url(share_id, share_token, file_id);
+                    if(result_link.includes('.wmv')) {
+                        return 'toast://WMV格式暂时不支持播放！'
+                    }
+                    return result_link + '#isVideo=true#;{Referer@https://www.aliyundrive.com/}';
                 }
-                return result_link + '#isVideo=true#;{Referer@https://www.aliyundrive.com/}';
+                return 'toast://该格式暂时不支持播放！'
             } else {
                 return "toast://" + json.message;
             }
@@ -1563,7 +1619,12 @@ const ali = {
                 var _link = playList.find(e => e.template_id == value);
                 if (!!_link) {
                     // 多线路
-                    const playLink = 'http://116.85.31.19:3000/apis/yun-play/'+file_id+'/'+share_id+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
+                    let playLink = ''
+                    if(share_id) {
+                        playLink = 'http://116.85.31.19:3000/apis/yun-play/'+file_id+'/'+share_id+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
+                    } else if(drive_id) {
+                        playLink = 'http://116.85.31.19:3000/apis/my-yun-play/'+file_id+'/'+drive_id+'/'+access_token+'/'+value+'/index.m3u8';
+                    }
                     result.urls.push(playLink);
                     result.headers.push({'Referer': 'https://www.aliyundrive.com/'})
                     result.names.push(tidName[index]);
@@ -1749,7 +1810,7 @@ const ali = {
             return "toast://" + _play.body;
         }
     },
-    lazyAliDoc: function(shareId, sharetoken, input){
+    lazyAliDoc: function(shareId, sharetoken, file_id, drive_id){
         var access_token = this.getAliToken();
         if(access_token.startsWith('toast')) {
             return access_token;
@@ -1757,19 +1818,31 @@ const ali = {
         if(!access_token) {
             return 'toast://还没登录？';
         }
-        var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_office_preview_url', {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': access_token,
-                'X-Share-Token': sharetoken
-            },
-            body: '{"share_id":"' + shareId + '","file_id":"' + input + '"}',
-            method: 'POST'
-        }));
+        var json = null;
+        if(shareId) {
+            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_office_preview_url', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                    'X-Share-Token': sharetoken
+                },
+                body: '{"share_id":"' + shareId + '","file_id":"' + file_id + '"}',
+                method: 'POST'
+            }));
+        } else if(drive_id){
+            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_office_preview_url', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                },
+                body: '{"drive_id":"' + drive_id + '","file_id":"' + file_id + '"}',
+                method: 'POST'
+            }));
+        }
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
-                return this.lazyAliDoc(shareId, sharetoken, input);
+                return this.lazyAliDoc(shareId, sharetoken, file_id, drive_id);
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // refreshPage();
@@ -1838,7 +1911,7 @@ const ali = {
             return "toast://" + _play.body;
         }
     },
-    lazyAliAudio: function(shareId, sharetoken, input){
+    lazyAliAudio: function(shareId, sharetoken, file_id, drive_id){
         var access_token = this.getAliToken();
         if(access_token.startsWith('toast')) {
             return access_token;
@@ -1846,19 +1919,33 @@ const ali = {
         if(!access_token) {
             return 'toast://还没登录？';
         }
-        var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_download_url', {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': access_token,
-                'X-Share-Token': sharetoken
-            },
-            body: '{"share_id":"' + shareId + '","get_audio_play_info":true,"file_id":"' + input + '"}',
-            method: 'POST'
-        }));
+        var json = null;
+        var link = '';
+        if(shareId) {
+            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_download_url', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                    'X-Share-Token': sharetoken
+                },
+                body: '{"share_id":"' + shareId + '","get_audio_play_info":true,"file_id":"' + file_id + '"}',
+                method: 'POST'
+            }));  
+            link = json.download_url;
+        } else if (drive_id) {
+            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/databox/get_audio_play_info', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                },
+                body: '{"drive_id":"' + drive_id + '","file_id":"' + file_id + '"}',
+                method: 'POST'
+            }));  
+        }
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
-                return this.lazyAliAudio(shareId, sharetoken, input);
+                return this.lazyAliAudio(shareId, sharetoken, file_id, drive_id);
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // refreshPage();
@@ -1868,9 +1955,12 @@ const ali = {
             }
         }
 
-        var link = json.download_url;
         if(json.audio_template_list) {
             link = json.audio_template_list[json.audio_template_list.length-1].url
+        }
+        if(drive_id) {
+            link = json.template_list[json.template_list.length-1].url;
+            return link + '#isMusic=true#;{Referer@https://www.aliyundrive.com/}'
         }
         var _play = JSON.parse(fetch(link, {
             headers: {
@@ -2367,6 +2457,399 @@ const ali = {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             ali.lazyAliDoc(shareId, sharetoken, file_id);
                         }, shareId, sharetoken, file_id),
+                        col_type: col_type
+
+                    });
+            }
+
+        });
+        setHomeResult({
+            data: d
+        });
+    },
+    myAliRule: function() {
+        addListener('onClose', $.toString((params) => {
+            params.forEach(item => {
+                clearVar(item)
+            })
+        }, ["folderName"]))
+        this.getConfig();
+        var access_token = this.getAliToken();
+        if(!access_token) {
+            return 'toast://还没登录？';
+        } else if(access_token.startsWith('toast')) {
+            return access_token;
+        }
+        let token = JSON.parse(fetch(this.urls.tokenPath));
+        access_token = token.access_token;
+        var drive_id = token.default_drive_id;
+        if(!drive_id) {
+            deleteFile(this.urls.tokenPath);
+            refreshPage();
+            return false;
+        }
+        var folderID = MY_URL.split('??')[0].split('folder/')[1] || '';
+        var page = MY_URL.split('??')[1] || 1;
+        log(MY_URL)
+        log(folderID)
+        log(page)
+        if(page == 1) {
+            putVar('icy_ali_next_marker', '');
+            putVar('icy_ali_folder', '');
+        } else {
+            folderID = getVar('icy_ali_folder', '')
+        }
+
+        var next_marker = getVar('icy_ali_next_marker', '');
+        if(page != 1 && !next_marker) {
+            setHomeResult({
+                data: [{title: "““””<center><small>"+'<span style="color: #999999">～～～我是有底线的～～～</span></small></center>', url: this.emptyRule, col_type: 'text_center_1'}]
+            });
+            return 'toast://到底了！';
+        }
+        const getFileList = (access_token, drive_id, folderID, next_marker) => {
+            var order_by = getVar('icy_ali_order_by', 'name');
+            var order_direction = getVar('icy_ali_order_direction', 'ASC');
+            var folderRes = null;
+            // if(folderID) {
+            //     let [_myUrl, _fypage] = MY_URL.split('??');
+            //     MY_URL = _myUrl.split('/folder')[0] + '/folder/' + folderID + '??' +_fypage;
+            //     // MY_URL = MY_URL.split('/folder')[0] + '/folder/' + folderID;
+            //     folderRes = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get', {
+            //         headers: {
+            //             'Content-Type': 'application/json',
+            //             'Authorization': access_token,
+            //         },
+            //         body: '{"share_id": "'+shareId+'","file_id": "'+folderID+'","fields":"*","image_thumbnail_process":"image/resize,w_400/format,jpeg","image_url_process":"image/resize,w_375/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_375"}',
+            //         method: 'POST'
+            //     }));
+            //     let folderName = folderRes.name;
+            //     putVar('icy_ali_folder', folderRes.file_id);
+            //     setPageTitle(folderName);
+            // }
+            const data = {
+                "drive_id": drive_id,
+                "parent_file_id": (folderID ? folderID : 'root'),
+                "limit":100,
+                "all": false,
+                "url_expire_sec": 1600,
+                "image_thumbnail_process": "image/resize,w_400/format,jpeg",
+                "image_url_process": "image/resize,w_1920/format,jpeg",
+                "video_thumbnail_process": "video/snapshot,t_1000,f_jpg,ar_auto,w_300",
+                "fields": "*",
+                "order_by": order_by,
+                "order_direction": order_direction
+            }
+            if(next_marker) {
+                data.marker = next_marker;
+            }
+            // if(page > 1 && next_marker && folderRes) {
+            //     data.parent_file_id = folderRes.file_id;
+            // }
+            return fetch('https://api.aliyundrive.com/adrive/v3/file/list', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                },
+                body: JSON.stringify(data),
+                method: 'POST'
+            });
+        }
+
+        var viewName = Number(getVar('icy_ali_view', ''));
+        if(!getVar('icy_ali_order_by')) {
+            putVar('icy_ali_order_by', 'name');
+        }
+        if(!getVar('icy_ali_order_direction')) {
+            putVar('icy_ali_order_direction', 'ASC');
+        }
+        var d = [];
+        if(page == 1) {
+            const searchRule = getItem('icy_ali_searchRule', '青豆');
+            let folderName = getVar('folderName', '');
+
+            d.push({
+                title: '““””使用小程序：<b><span style="color: '+ this.primaryColor +'">' + searchRule + '</span></b> 搜索  <small><span style="color: #999999">点击设置</span></small>',
+                url: $(searchRule, '请输入小程序名称 eq: 青豆')
+                    .input(() => {
+                    setItem('icy_ali_searchRule', input);
+                    refreshPage();
+                    return "toast://保存成功";
+                }),
+                // url: $('hiker://empty').rule(() => {
+                //     eval(fetch('hiker://files/rules/icy/ali.js'));
+                //     ali.settingPage();
+                // }),
+                col_type: 'text_1'
+            })
+            if(searchRule) {
+                d.push({
+                    title: '搜索',
+                    // url: "'hiker://search?s=' + input + '&rule='" + searchRule,
+                    url: $.toString((searchRule)=> {
+                        if(searchRule) {
+                            if(input.trim()) {
+                                var link = 'hiker://search?s=' + input + '&rule=' + searchRule;
+                                return link;
+                            } else {
+                                return 'toast://请输入影片名称';
+                            }
+                        } else {
+                            return 'toast://请先设置小程序吧';
+                        }
+                    }, searchRule),
+                    col_type: "input",
+                    desc: '使用其他规则搜索影片信息',
+                    extra: {
+                        defaultValue: folderName,
+                    }
+                });
+            }
+            const sortLazy = $(['按名称正序', '按名称倒序', '按时间正序', '按时间倒序'], 1)
+            .select(() => {
+                putVar("icy_ali_order",input);
+                if(input.includes('名称')) {
+                    putVar('icy_ali_order_by', 'name');
+                } else {
+                    putVar('icy_ali_order_by', 'updated_at');
+                }
+                if(input.includes('正序')) {
+                    putVar('icy_ali_order_direction', 'ASC');
+                } else {
+                    putVar('icy_ali_order_direction', 'DESC');
+                }
+                refreshPage(false);
+            });
+            var sort = getVar('icy_ali_order', '按名称正序');
+
+            d.push({
+                title: '⭐' + sort,
+                url: sortLazy,
+                col_type: 'text_2'
+            })
+            // var order_by_arr = [{name: '名称', val: 'name'},{name: '修改时间', val: 'updated_at'}];
+            // var order_direction_arr = [{name: '升序', val: 'ASC'},{name: '降序', val: 'DESC'}];
+            // this.rendererFilter(d, order_by_arr, 'icy_ali_order_by');
+            // this.rendererFilter(d, order_direction_arr, 'icy_ali_order_direction');
+            d.push({
+                title: '⭐' + (!viewName ? '列表' : '图文'),
+                url: $("#noLoading#").lazyRule(()=>{
+                    putVar('icy_ali_view', Number(!Number(getVar('icy_ali_view'))));
+                    refreshPage(false);
+                    return "hiker://empty"
+                }),
+                col_type: 'text_2'
+            })
+            if(typeof saveLink != 'undefined' && !!saveLink) {
+                let expiration_text = '';
+                if(typeof expiration != 'undefined') {
+                    expiration_text = '有效期限：' + (expiration ? getDateDiff(expiration) +'，请尽快保存！' : '永久有效');
+                }
+                d.push({
+                    title: '““””<b>✨✨✨✨<span style="color: '+ this.primaryColor +'">保存到我的阿里云盘</span>✨✨✨✨</b>\n' + "““””<small>"+'<span style="color: #999999">'+expiration_text+'</span></small>',
+                    url: saveLink,
+                    col_type: "text_center_1"
+                });
+            }
+        }
+
+        var rescod = null;
+        try {
+            rescod = JSON.parse(getFileList(access_token, drive_id, folderID, next_marker));
+        } catch (e){
+            confirm({
+                title: '出错了',
+                content: '获取数据出了点问题, 刷新页面试试！',
+                confirm: 'refreshPage()'
+            })
+        }
+        // if((page != 1 && !next_marker) || !rescod) {
+        //     setHomeResult({
+        //         data: d
+        //     });
+        //     return 'toast://到底了！';
+        // }
+        if(rescod.code) {
+            d.push({
+                title: "““””<center><b>"+'<span style="color: #ff0000">'+rescod.message+'</span></b></center>',
+                url: this.emptyRule,
+                col_type: "text_center_1"
+            });
+            setHomeResult({
+                data: d
+            });
+            return false;
+        }
+
+        
+        if(!!rescod && (!rescod.items || !rescod.items.length)) {
+            d.push({
+                title: "““””<center><small>"+'<span style="color: #999999">空文件夹</span></small></center>',
+                url: this.emptyRule,
+                col_type: "text_center_1"
+            });
+        }
+        const col_type = !viewName ? 'avatar' : 'movie_3_marquee';
+        // 如果只包含一个文件夹， 直接取内容
+        // if(rescod.items.length === 1 && rescod.items[0].type == 'folder') {
+        //     const folderItem = rescod.items[0];
+        //     try {
+        //         rescod = JSON.parse(getFileList(sharetoken, shareId, folderItem.file_id, next_marker));
+        //         putVar('icy_ali_folder', folderItem.file_id);
+        //     } catch (e){
+        //         confirm({
+        //             title: '出错了',
+        //             content: '获取数据出了点问题, 刷新页面试试！',
+        //             confirm: 'refreshPage()'
+        //         })
+        //     }
+            
+        // }
+        putVar('icy_ali_next_marker', rescod.next_marker || '');
+
+        if(rescod.punished_file_count) {
+            d.push({
+                title: "““””<center><small>"+'<span style="color: #999999">⚠️ 部分文件由于违规，已封禁</span></small></center>',
+                url: this.emptyRule,
+                col_type: "text_center_1"
+            });
+        }
+
+        
+        const fnName = (fileExist(this.urls.tokenPath) == 'true' || fileExist(this.urls.tokenPath) == true || this.usePublicToken) ? 'lazyRule' : 'rule';
+        const zimuExtension = ['srt', 'vtt', 'ass'];
+        const zimuList = rescod.items.filter(_item => zimuExtension.includes(_item.file_extension));
+        rescod.items.forEach((_item, index) => {
+            const {type, category, name, file_id, thumbnail, updated_at, download_url} = _item;
+            let title = name
+            let desc = this.formatDate(updated_at, 'MM/dd HH:mm');
+            let pic_url = thumbnail || this.randomPic +'?t='+new Date().getTime() + '' +index;
+
+            switch(category || type){
+                case 'video':
+                    let zimuItemList = null;
+                    let videoName = name.split('.'+_item.file_extension)[0];
+                    if(zimuList.length) {
+                        zimuItemList = zimuList.filter(_zimu => _zimu.name.startsWith(videoName));
+                    }
+                    let videolazy = '';
+                    let _zimuList = (zimuItemList && zimuItemList.length) ? zimuItemList : zimuList;
+                    if(fnName == 'rule') {
+                        videolazy = $('hiker://empty' + file_id).rule(() => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            if(access_token) {
+                                back(true);
+                            }
+                            return "toast://登录后需要重新刷新页面哦！"
+                        })
+                    } else if(_zimuList && _zimuList.length > 1) {
+                        videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
+                        .select((file_id, drive_id, list, videoName) => {
+                            showLoading('加载中');
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            if(access_token) {
+                                let name = input;
+                                let zimuItem = null;
+                                if(input != '不需要字幕') {
+                                    if(name.startsWith('字幕')){
+                                        name = name.replace('字幕', videoName);
+                                    }
+                                    zimuItem = list.find(_zimu => _zimu.name == name);
+                                }
+                                return ali.videoProxy(file_id, '', '', zimuItem, drive_id);
+                            } else {
+                                return "toast://登录后需要重新刷新页面哦！"
+                            }
+
+                        }, file_id, drive_id, _zimuList, videoName);
+                    } else {
+                        videolazy = $('hiker://empty' + file_id).lazyRule((drive_id, file_id, fnName, zimuItemList) => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            if(access_token) {
+                                let zimuItem = null;
+                                if(zimuItemList && zimuItemList.length == 1) {
+                                    zimuItem = zimuItemList[0]
+                                }
+                                return ali.videoProxy(file_id, '', '', zimuItem, drive_id);
+                            } else {
+                                return "toast://登录后需要重新刷新页面哦！"
+                            }
+                        }, drive_id, file_id, fnName, zimuItemList)
+                    }
+                    d.push({
+                        title: '🎬 ' + title,
+                        pic_url: pic_url,
+                        desc: desc,
+                        url: videolazy,
+                        extra: {
+                            id: drive_id + file_id
+                        },
+                        col_type: col_type
+
+                    });
+                break;
+                case 'image':
+                    d.push({
+                        title: '🖼 ' + title,
+                        desc: desc,
+                        pic_url: pic_url,
+                        url: download_url,
+                        col_type: col_type
+
+                    });
+                break;
+                case 'folder':
+                    d.push({
+                        title: '📂 ' + title,
+                        desc: desc,
+                        pic_url: 'https://img.alicdn.com/imgextra/i3/O1CN01qSxjg71RMTCxOfTdi_!!6000000002097-2-tps-80-80.png',
+                        url: 'hiker://page/drive?url=https://www.aliyundrive.com/drive/folder/'+file_id + '??fypage',
+                        col_type: col_type
+
+                    });
+                break;
+                case 'audio':
+                    d.push({
+                        title: '🎻 ' + title,
+                        desc: desc,
+                        pic_url: pic_url || 'https://img.alicdn.com/imgextra/i4/O1CN01LPrGLP1IMAPWurM3w_!!6000000000878-2-tps-512-512.png',
+                        url: $('hiker://empty'+ file_id)[fnName]((drive_id, file_id, fnName) => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            if(access_token) {
+                                if(fnName == 'rule') {
+                                    back(true);
+                                }
+                                return ali.lazyAliAudio('', '', file_id, drive_id);
+                            } else {
+                                return "toast://登录后需要重新刷新页面哦！"
+                            }
+                        }, drive_id, file_id, fnName),
+                        col_type: col_type
+
+                    });
+                break;
+                default: 
+                    pic_url = category == 'doc' ? 'https://img.alicdn.com/imgextra/i2/O1CN01kHskgT2ACzipXL4Ra_!!6000000008168-2-tps-80-80.png' : 'https://img.alicdn.com/imgextra/i1/O1CN01mhaPJ21R0UC8s9oik_!!6000000002049-2-tps-80-80.png';
+                    let _title = title;
+                    if(category == 'doc') {
+                        _title = '📙 ' + title;
+                    } else if(zimuExtension.includes(_item.file_extension)) {
+                        _title = '🕸️ ' + title;
+                    } else {
+                        _title = '❓ ' + title;
+                    }
+                    d.push({
+                        title: _title,
+                        pic_url: thumbnail || pic_url,
+                        desc: desc,
+                        url: category != 'doc' ? 'toast://该文件不支持在线预览！' : $('hiker://empty'+file_id).rule((drive_id, file_id) => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            ali.lazyAliDoc('', '', file_id, drive_id);
+                        }, drive_id, file_id),
                         col_type: col_type
 
                     });
