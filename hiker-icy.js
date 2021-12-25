@@ -8,49 +8,12 @@ var icyPlayer = {
   urls: {
     referer: 'https://quark.sm.cn/api/rest?method=movieRec.index&format=html#',
     rest: 'https://quark.sm.cn/api/rest?',
-    setting: 'hiker://files/rules/icy/settings.json',
     rules: 'hiker://files/rules/icy/rules.js',
-    settingHtml: 'file:///storage/emulated/0/Android/data/com.example.hikerview/files/Documents/icy-settings.html',
   },
   forceUpdate: false,
 
   havePlugin: function() {
     return fileExist('hiker://files/cache/Parse_Dn.js') == 'true' || fileExist('hiker://files/cache/Parse_Dn.js') == true;
-  },
-  /**
-   * 返回选中的规则，如果为空，则用海阔app来搜索
-   * @returns null || rule
-   */
-  config: function(){
-    const haveSetting = fileExist(this.urls.setting) == 'true' || fileExist(this.urls.setting) == true;
-    if(haveSetting) {
-      var json = fetch(this.urls.setting);
-      return (!!json && json != 'undefined'  && json != 'null' ) ? JSON.parse(json) : null;
-    } else {
-      return null;
-    }
-  },
-  /**
-   * 渲染 配置页面
-   */
-  initConfig: function(){
-    const haveSettingHtml = fileExist(this.urls.settingHtml) == 'true' || fileExist(this.urls.settingHtml) == true;
-    let html = haveSettingHtml ? fetch(this.urls.settingHtml) : '';
-    if(this.forceUpdate || !html) {
-      html = fetch('https://gitee.com/fly1397/hiker-icy/raw/master/settings.html');
-      if(!html || !html.includes('MrFly')) {
-        html = fetch('https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings.html');
-      }
-      if(!html || !html.includes('MrFly')) {
-        html = fetch('http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings.html');
-      }
-    }
-    if(html) {
-      const rules = getLastRules(16).filter(item => !!item.search_url);
-      const script = `<script>var rules=`+JSON.stringify(rules)+`;function initRuleConfig(){try{var jsonfile=fy_bridge_app.fetch('hiker://files/rules/icy/settings.json');var config=(!!jsonfile&&jsonfile!='undefined'&&jsonfile!='null')?JSON.parse(jsonfile):null;var options='';var active=null;for(var i=0;i<rules.length;i++){var item=rules[i];var canSearch=!!item.search_url;options+='<option value="'+item.title+'" '+(canSearch?'':'disabled')+' >'+item.title;if(config&&config.title&&config.title==item.title){active=item;options+='--当前选择'}options+='</option>'}if(!active&&config&&config.title){options='<option value="'+config.title+'">'+config.title+'--当前选择</option>'+options}var ruleName=(active?active.title:((config&&config.title)?config.title:''));if(ruleName){document.getElementById('result').innerHTML='当前选择的小程序是：<strong id="active">'+ruleName+'</strong>'}options='<option value="">使用海阔视界搜索</option>'+options;document.getElementById('list').innerHTML=options;document.getElementById('list').value=ruleName}catch(e){document.getElementById('log').innerHTML=JSON.stringify(e)}}initRuleConfig();</script>`;
-      writeFile(this.urls.settingHtml, html + script);
-    }
-    
   },
   /**
    * 初始化断插， 返回配置url
@@ -61,13 +24,13 @@ var icyPlayer = {
         var jsUrl = 'https://code.aliyun.com/AI957/Hiker/raw/master/v/CloudParse-V2_Dn.js';
     }else{
         var jsUrl = JSON.parse(config).cj;
-    } 
+    }
     eval(fetch(jsUrl));
     return setUrl;
   },
   /**
      * 传入 youku，bilibili 等地址
-     * @param {string[]} links 
+     * @param {string[]} links
      * @returns {url: string, play_url: string}[]; url: 原始视频页面地址; play_url: m3u8等格式视频地址
      */
    getPlayUrls: function(links) {
@@ -79,19 +42,19 @@ var icyPlayer = {
     return JSON.parse(res).data;
   },
   /**
-   * 
-   * @param {string} pic 
+   *
+   * @param {string} pic
    * @returns string
    */
   formatPic: function(pic){
     return pic.startsWith('//') ? 'https:' + pic : pic;
   },
   /**
-   * 
-   * @param {string} vid 
-   * @param {string} sid 
-   * @param {number} start 
-   * @param {number} count 
+   *
+   * @param {string} vid
+   * @param {string} sid
+   * @param {number} start
+   * @param {number} count
    * @returns {url: string, duration: string, period: string, title: string}[]
    */
   changeSource: function(vid, sid, start, count){
@@ -104,9 +67,9 @@ var icyPlayer = {
     return result;
   },
   /**
-   * 
-   * @param {string} vid 
-   * @param {string} name 
+   *
+   * @param {string} vid
+   * @param {string} name
    * @returns string //模板字符串
    */
   getVideoByTpl: function(vid, name) {
@@ -165,7 +128,7 @@ var icyPlayer = {
           url: item.url,
           pic_url: item.icon,
           col_type: "icon_small_3"
-        }); 
+        });
       })
       d.push({
         col_type: "line_blank"
@@ -179,7 +142,7 @@ var icyPlayer = {
           title: '‘‘’’' + item.list_name + "<small><small><font color='#f47983'>更多></font></small></small>",
           url: this.urls.rest + "format=json&from=&method=movieRec.filmMenuList&source=&id="+item.id+"&page=fypage&limit=15",
           col_type: "text_1"
-        }); 
+        });
         item.video_list.forEach((video) => {
           d.push({
             title: video.name,
@@ -187,7 +150,7 @@ var icyPlayer = {
             pic_url: this.formatPic(video.pic),
             url: 'https://quark.sm.cn/s?q=' + video.name+'在线播放' + "@rule=js:eval(fetch('hiker://files/rules/icy/hiker-icy.js'));icyPlayer.searchVideoByName();",
             col_type: "movie_3_marquee"
-          }); 
+          });
         })
         d.push({
         col_type: "line_blank"
@@ -205,7 +168,7 @@ var icyPlayer = {
     } else {
       this.rendererListPage();
     }
-    
+
   },
   rendererListPage: function() {
     var res = {};
@@ -214,7 +177,7 @@ var icyPlayer = {
       this.categoryPage(d);
     } else {
       var method = MY_URL.match(/method=movieRec\.(.*)&/)[1];
-      
+
       const rendererList = (list_title,list) => {
         if(list && list.length) {
           list.forEach((item) => {
@@ -238,7 +201,7 @@ var icyPlayer = {
             pic_url: this.formatPic(video.pic),
             url: searchRule,
             col_type: "movie_3_marquee"
-          }); 
+          });
         })
       } else if(method === 'filmRec') {
         // 推荐
@@ -250,10 +213,10 @@ var icyPlayer = {
             pic_url: this.formatPic(video.pic),
             url: searchRule,
             col_type: "movie_3_marquee"
-          }); 
+          });
         })
       } else if(method === 'filmSearch') {
-        
+
       } else if(method === 'filmMenu'){
         // 片单
         var list_titles = [
@@ -291,7 +254,7 @@ var icyPlayer = {
           rendererList(active_list.name, json[active_list.val]);
         }
       }
-      
+
     }
     res.data = d;
     setHomeResult(res);
@@ -375,7 +338,7 @@ var icyPlayer = {
         pic_url: this.formatPic(video.image_url),
         url: this.urls.rest + 'method=yisou.getMaxData&vid=' + video.vid+ "@rule=js:eval(fetch('hiker://files/rules/icy/hiker-icy.js'));icyPlayer.getVideoByID('"+video.vid+"','"+ video.title+"');",
         col_type: "movie_3_marquee"
-      }); 
+      });
     })
   },
   // 分类=> 详细页面
@@ -497,61 +460,6 @@ var icyPlayer = {
     res.data = d;
     setHomeResult(res);
   },
-  searchByHikerRule: function(){
-    const icy_settings = this.config();
-    const {searchFind, find_rule, search_url, detail_find_rule, sdetail_find_rule, } = icy_settings;
-    try {
-      const ruleSearch = (searchFind == '*' || !searchFind) ? find_rule : searchFind;
-      const forSearchRule = (sdetail_find_rule == '*' || !sdetail_find_rule) ? detail_find_rule : sdetail_find_rule;
-      // 判断搜索解析规则是js 还是css
-     if(ruleSearch.startsWith('js:')) {
-       /**
-        * 解决 js规则下打开详细页面需要用 详细规则 才可以正常打开。
-        * @param {Object|Array} res 需要渲染的对象，包含data
-        */
-       const formatResult = function(res) {
-        if(res.data) {
-          res.data = res.data.forEach(item => {
-            if(item.url && !item.url.includes('@rule')) {
-              item.url += (forSearchRule.startsWith('js') ? '@rule='+forSearchRule : '')
-            }
-            return item;
-          })
-        } else if(res instanceof Array){
-          res = res.forEach(item => {
-            if(item.url && !item.url.includes('@rule')) {
-              item.url += (forSearchRule.startsWith('js') ? '@rule='+forSearchRule : '')
-            }
-            return item;
-          })
-        }
-        setHomeResult(res);
-       }
-       if(ruleSearch.match(/set[Home|Search]*Result/)) {
-         // 小程序采用行内js渲染结果 -- 返回setResult | setHomeResult | setSearchResult
-        eval(ruleSearch.replace('js:', '').replace(/set[Home|Search]*Result$/, 'formatResult'));
-       } else {
-        // 小程序引用js文件，由js文件里的 function 去渲染结果
-        newRule = ruleSearch.replace(/(\w*)\(\)/g, '');
-        eval(newRule);
-        ruleSearch.match(/(\w*)\(\)/g).forEach(fnName => {
-          let fnStr = eval(fnName.replace('()', '')+'.toString()');
-          if(fnStr.match(/set[Home|Search]*Result/)) {
-            eval(fnStr.replace(/set[Home|Search]*Result$/, 'formatResult'));
-          }
-          eval(fnName);
-        })
-       }
-     } else {
-       // 如果是css规则
-       const match = search_url.match(/https?:\/\/([^/]+)/i);
-       let host = (search_url.startsWith('http') && match) ? match[0] : '';
-       this.rendererSearchResult(ruleSearch, host, forSearchRule)
-     }
-    } catch(e) {
-      this.rendererEmptyRule(JSON.stringify(e));
-    }
-  },
   rendererSearchResult: function(ruleSearch, host, rule) {
     var res = {};
     var d = [];
@@ -570,7 +478,7 @@ var icyPlayer = {
           pic_url: pic,
           url: url + (rule.startsWith('js') ? '@rule='+rule : ''),
           col_type: "movie_1_vertical_pic"
-        }); 
+        });
       })
     } else {
       d.push({
@@ -638,7 +546,7 @@ var icyPlayer = {
     } else {
       this.rendererVideoByName(response, name);
     }
-    
+
   },
   rendererVideoByName: function(response, keyword) {
     var video_data = null;
@@ -684,7 +592,7 @@ var icyPlayer = {
       d.push({
         col_type: "line_blank"
       });
-      
+
       this.rendererSummary(d, parseDomForHtml(response, '.M_Video_Common_Dilu_brief&&.js-c-clamp-wrapper&&.js-c-paragraph-text&&Text'));
       // this.rendererVideoResult(d, name);
     } catch(e) {
@@ -758,12 +666,17 @@ var icyPlayer = {
     setHomeResult(res);
   },
   rendererVideoResult(d, name){
-    this.initConfig();
-    const icy_settings = this.config();
+
+    const searchRule = getItem('icy_searchRule', '云盘汇影');
     d.push({
       title: '搜索设置',
       pic_url: this.icon.appset,
-      url: 'hiker://empty@rule=js:var res={}; var d = []; d.push({desc:"100%&&float",col_type:"x5_webview_single", url:"'+this.urls.settingHtml+'"}); res.data = d;setHomeResult(res);',
+      url: $(searchRule, '请输入小程序名称 eq: 云盘汇影')
+            .input(() => {
+            setItem('icy_searchRule', input);
+            refreshPage();
+            return "toast://设置成功";
+        }),
       col_type: 'icon_2'
     })
     let setUrl = 'https://haikuoshijie.cn/user/1958';
@@ -779,15 +692,10 @@ var icyPlayer = {
     d.push({
       col_type: "line_blank"
     });
-    if(icy_settings && icy_settings.title && icy_settings.search_url) {
-      let _search_url = icy_settings.search_url;
-      // 排除 hiker://$$ 类似这样后面不接empty的url
-      if(!_search_url.match(/^hiker:\/\/[a-z]/)) {
-        _search_url = _search_url.replace('hiker://', 'hiker://empty');
-      }
+    if(searchRule) {
       d.push({
-        title: '““””搜索<b><span style="color: #f47983">'+ name+'</span></b> -- By '+ icy_settings.title,
-        url: _search_url.replace('**', name) + "@rule=js:eval(fetch('hiker://files/rules/icy/hiker-icy.js'));icyPlayer.searchByHikerRule();",
+        title: '““””搜索<b><span style="color: #f47983">'+ name+'</span></b> -- By '+ searchRule,
+        url: 'hiker://search?s=' + name + '&rule=' + searchRule,
         col_type: 'text_1'
       })
     } else {
