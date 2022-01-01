@@ -9,7 +9,16 @@ const ali = {
 
         remoteConfig: ['https://gitee.com/fly1397/hiker-icy/raw/master/settings-ali.json', 'https://cdn.jsdelivr.net/gh/fly1397/hiker-icy/settings-ali.json', 'http://lficy.com:30000/mrfly/hiker-icy/raw/master/settings-ali.json'],
     },
-    version: '2021122609',
+    images: {
+        zimu: 'https://lanmeiguojiang.com/tubiao/more/186.png',
+        folder: 'https://lanmeiguojiang.com/tubiao/more/201.png',
+        img: 'https://lanmeiguojiang.com/tubiao/more/295.png',
+        video: 'https://lanmeiguojiang.com/tubiao/more/321.png',
+        audio: 'https://lanmeiguojiang.com/tubiao/music/115.svg',
+        book: 'https://lanmeiguojiang.com/tubiao/more/133.png',
+        unknown: 'https://lanmeiguojiang.com/tubiao/more/2.png',
+    },
+    version: '2022010110',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -166,7 +175,6 @@ const ali = {
         const haveSetting = fileExist(settingPath) == 'true' || fileExist(settingPath) == true;
         let json = haveSetting ? fetch(settingPath) : '';
         if(!json || forceConfigUpdate) {
-            log(firstConfigPath)
             json = fetch(firstConfigPath);
           if(!json || !json.includes('name')) {
             json = fetch(remoteConfig[1]);
@@ -183,12 +191,17 @@ const ali = {
         if(haveCustomerSetting) {
             const customerSetting = JSON.parse(fetch(customerSettingPath));
             if(customerSetting.customerResouce) {
+                let customerResouce = [];
                 this.searchModel.forEach(item => {
                     const customer = customerSetting.customerResouce.find(_customer => _customer.key == item.key);
-                    customer.val = item.val;
-                    customer.name = item.name;
+                    if(customer) {
+                        customer.val = item.val;
+                        customer.name = item.name;
+                        customerResouce.push(customer);
+                    }
                     
                 });
+                customerSetting.customerResouce = customerResouce;
             }
             writeFile(customerSettingPath, JSON.stringify(customerSetting));
         }
@@ -215,7 +228,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复个人云盘下视频播放无法加载字幕的问题',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,祝大家新年快乐\n2,增加阿里云盘多账号支持\n,3,爱盼小站不再运行，移除爱盼小站\n4，修复阿里盘搜的bug',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -271,7 +284,16 @@ const ali = {
                             (!isShare)
                         )
                     ){
-                        fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify(token));
+                        let token_url = 'hiker://files/rules/icy/icy-ali-token.json';
+                        let _tokens = JSON.parse(request(token_url) || '[]');
+                        let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
+                        let _token = tokens.find(item => item.user_id == token.user_id);
+                        if(_token) {
+                            _token = token;
+                        } else {
+                            tokens.push(token)
+                        }
+                        fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify(tokens));
                         alert('TOKEN获取成功，感谢支持！请勿泄漏个人隐私!退出该页面后刷新重试！');
                         if(location.href.includes('beinvited')) {
                             fy_bridge_app.back();
@@ -312,12 +334,15 @@ const ali = {
                 return 'toast://共享TOKEN代码运行失败了'
             }
         }
-        const {tokenPath} = this.urls;
+        const {tokenPath, customerSettingPath} = this.urls;
         const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
         
         if(haveToken) {
-            let token = JSON.parse(fetch(tokenPath));
-            if(!token.access_token) {
+            let _tokens = JSON.parse(fetch(tokenPath) || '[]');
+            let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
+            let customerSettings = JSON.parse(fetch(customerSettingPath));
+            let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
+            if(token && (!token.access_token || !token.refresh_token)) {
                 deleteFile(tokenPath);
                 return 'toast://TOKEN获取失败，请尝试删除软件缓存，重启海阔，重新登录试试'
             }
@@ -331,9 +356,19 @@ const ali = {
                     body: '{"refresh_token":"'+token.refresh_token+'"}',
                 }));
                 var access_token = tokenRes.access_token;
-                var refresh_token = tokenRes.refresh_token;
                 putVar("access_token", access_token);
-                writeFile(tokenPath,JSON.stringify(tokenRes));
+                let _token = tokens.find(item => item.user_id == tokenRes.user_id);
+                if(_token) {
+                    tokens = tokens.map(item => {
+                        if(item.user_id == tokenRes.user_id) {
+                            item = tokenRes;
+                        }
+                        return item;
+                    })
+                } else {
+                    tokens.push(tokenRes);
+                }
+                writeFile(tokenPath,JSON.stringify(tokens));
                 return access_token;
             } else {
                 let _access_token = token.access_token || token.token;
@@ -349,8 +384,17 @@ const ali = {
     },
     aliLogin: function(){
         let d = []
-        setPageTitle('账号设置');
-        const {tokenPath} = this.urls;
+        setPageTitle('阿里云盘账号设置');
+        const {tokenPath, customerSettingPath} = this.urls;
+
+        if(!getVar('icy_ali_customer','')) {
+            putVar('icy_ali_customer', customerSettingPath)
+        }
+        if(!getVar('icy_ali_tokenPath','')) {
+            putVar('icy_ali_tokenPath', tokenPath)
+        }
+
+        let customerSettings = JSON.parse(fetch(getVar('icy_ali_customer')));
         const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
         if(!haveToken) {
             d.push({
@@ -360,24 +404,49 @@ const ali = {
                 col_type: 'text_1'
             })
         } else {
-            d.push({
-                title: '☢️ 删除阿里云盘账号',
-                desc: '清除阿里云盘账号登录信息',
-                url: $("确定要删除？")
-                    .confirm(() => {
-                    deleteFile('hiker://files/rules/icy/icy-ali-token.json');
-                    refreshPage();
-                    return "toast://已删除";
-                }),
-                col_type: 'text_1'
+            let _tokens = JSON.parse(fetch(tokenPath) || '[]');
+            let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
+
+            let user_id = customerSettings.user_id || tokens[0].user_id;
+            tokens.forEach((item, index) => {
+                let title = item.user_id == user_id ? "<b>当前登录："+'<span style="color: '+ this.primaryColor +'">⭐ '+item.nick_name+'</span></b>' : item.nick_name;
+                d.push({
+                    title: title,
+                    desc: '切换账号',
+                    img: item.avatar,
+                    url: $('#noLoading#').lazyRule((token) => {
+                        eval(fetch('hiker://files/rules/icy/ali.js'));
+                        ali.activeToken = token;
+                        let customerSettings = JSON.parse(fetch(getVar('icy_ali_customer')));
+                        customerSettings.user_id = token.user_id;
+                        writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
+                        refreshPage(false);
+                        return 'toast://账号切换至：' + token.nick_name;;
+                    }, item),
+                    col_type: 'avatar',
+                })
+                d.push({
+                    title: '““””<small><span style="color: #999999">❌ 删除阿里云盘账号: <b>' + item.nick_name + '</b></span></small>',
+                    url: $("确定要删除？")
+                        .confirm((index) => {
+                            let _tokens = JSON.parse(fetch(getVar('icy_ali_tokenPath')) || '[]');
+                            let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
+                            tokens.splice(index, 1);
+                            writeFile(getVar('icy_ali_tokenPath'), JSON.stringify(tokens));
+                            refreshPage(false);
+                            return 'toast://删除成功';
+                    }, index),
+                    col_type: 'text_1'
+                })
             })
         }
+
         d.push({
             col_type: "line_blank"
         });
         d.push({
             title: '登录/注册阿里云盘',
-            desc: '支持查看个人云盘文件，\n注册账号转存文件，开发者需要你的支持！',
+            desc: '支持查看个人云盘文件，支持多账号模式\n注册账号转存文件，开发者需要你的支持！',
             url: $('hiker://empty').rule(() => {
                 eval(fetch('hiker://files/rules/icy/ali.js'));
                 ali.getRefreshToken();
@@ -399,6 +468,7 @@ const ali = {
         setResult({data: d});
     },
     preRule: function(){
+        const {settingPath, customerSettingPath, tokenPath} = this.urls;
         this.initConfig(this.forceConfigUpdate);
         this.getConfig();
         this.update();
@@ -424,6 +494,15 @@ const ali = {
             }
             putVar("icy_ali_search", '');
         };
+        if(!getVar('icy_ali_customer','')) {
+            putVar('icy_ali_customer', customerSettingPath)
+        }
+        if(!getVar('icy_ali_tokenPath','')) {
+            putVar('icy_ali_tokenPath', tokenPath)
+        }
+        if(!getVar('icy_ali_setting','')) {
+            putVar('icy_ali_setting', settingPath)
+        }
     },
     login: function (key){
         const { customerSettingPath} = this.urls;
@@ -729,9 +808,12 @@ const ali = {
                 }, customerSettings)
             })
         }
+        let _tokens = JSON.parse(fetch(tokenPath) || '[]');
+        let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
+        let token = tokens.find(item => item.user_id == (customerSettings.user_id || (tokens[0] ? tokens[0].user_id : '')));
         d.push({
-            title: '““””🦄 登录阿里云盘账号  <b><span style="color: '+ primaryColor +'">' + (haveToken ? '已经登录' : '') + '</span></b>',
-            desc: '支持查看个人账号内文件',
+            title: '““””🦄 登录阿里云盘账号  <b><span style="color: '+ primaryColor +'">' + (haveToken ? '已经登录' + tokens.length + '个账号' : '') + '</span></b>',
+            desc: (token ? '当前登录账号：' + token.nick_name + '\n' : '') + '支持查看个人账号内文件，支持多账号模式，点击切换账号。',
             url: $('hiker://empty').rule(() => {
                 eval(fetch('hiker://files/rules/icy/ali.js'));
                 ali.aliLogin();
@@ -744,7 +826,7 @@ const ali = {
         if(haveToken) {
             d.push({
                 title: '☢️ 删除阿里云盘账号',
-                desc: '清除阿里云盘账号登录信息',
+                desc: '清除阿里云盘所有账号登录信息',
                 url: $("确定要删除？")
                     .confirm(() => {
                     deleteFile('hiker://files/rules/icy/icy-ali-token.json');
@@ -1288,7 +1370,8 @@ const ali = {
             if(resCode.errors) {
                 d.push({
                     title: '页面失联了💔',
-                    col_type: "text_1"
+                    col_type: "text_1",
+                    url: 'toast://' + JSON.stringify(resCode.errors),
                 });
             } else {
                 const {data, included, links} = resCode;
@@ -1313,7 +1396,8 @@ const ali = {
             if(resCode.errors) {
                 d.push({
                     title: '页面失联了💔',
-                    col_type: "text_1"
+                    col_type: "text_1",
+                    url: 'toast://' + JSON.stringify(resCode.errors),
                 });
             } else {
                 let start = (page-1)*20;
@@ -2087,10 +2171,16 @@ const ali = {
                 data: d
             });
             return false;
-        } else if(sharetoken_res.code.includes('Forbidden')) {
+        } else if(sharetoken_res.code) {
             var d = [];
+            let message = sharetoken_res.message;
+            if(sharetoken_res.code.includes('Forbidden')){
+                message = '文件违规\n根据相关法律法规要求，该文件已禁止访问';
+            } else if(sharetoken_res.code.includes('ShareLinkTokenInvalid')){
+                message = '你打开的链接有误，请重试';
+            }
             d.push({
-                title: "““””<center><b>"+'<span style="color: '+ this.primaryColor +'">文件违规\n根据相关法律法规要求，该文件已禁止访问</span></b></center>',
+                title: "““””<center><b>"+'<span style="color: '+ this.primaryColor +'">'+message+'</span></b></center>',
                 url: this.emptyRule,
                 col_type: "text_center_1"
             });
@@ -2382,7 +2472,7 @@ const ali = {
                     }
                     d.push({
                         title: '🎬 ' + title,
-                        pic_url: pic_url,
+                        pic_url: pic_url || this.images.video,
                         desc: desc,
                         url: videolazy,
                         extra: {
@@ -2396,7 +2486,7 @@ const ali = {
                     d.push({
                         title: '🖼 ' + title,
                         desc: desc,
-                        pic_url: pic_url,
+                        pic_url: pic_url || this.images.img,
                         url: $('hiker://empty'+ file_id)[fnName]((shareId, sharetoken, file_id, fnName) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
@@ -2417,7 +2507,7 @@ const ali = {
                     d.push({
                         title: '📂 ' + title,
                         desc: desc,
-                        pic_url: 'https://img.alicdn.com/imgextra/i3/O1CN01qSxjg71RMTCxOfTdi_!!6000000002097-2-tps-80-80.png',
+                        pic_url: this.images.folder,
                         url: 'hiker://page/detail?url=https://www.aliyundrive.com/s/'+shareId+'/folder/'+file_id + '?share_pwd='+share_pwd+'??fypage',
                         col_type: col_type
 
@@ -2427,7 +2517,7 @@ const ali = {
                     d.push({
                         title: '🎻 ' + title,
                         desc: desc,
-                        pic_url: pic_url || 'https://img.alicdn.com/imgextra/i4/O1CN01LPrGLP1IMAPWurM3w_!!6000000000878-2-tps-512-512.png',
+                        pic_url: pic_url || this.images.audio,
                         url: $('hiker://empty'+ file_id)[fnName]((shareId, sharetoken, file_id, fnName) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
@@ -2445,7 +2535,7 @@ const ali = {
                     });
                 break;
                 default: 
-                    pic_url = category == 'doc' ? 'https://img.alicdn.com/imgextra/i2/O1CN01kHskgT2ACzipXL4Ra_!!6000000008168-2-tps-80-80.png' : 'https://img.alicdn.com/imgextra/i1/O1CN01mhaPJ21R0UC8s9oik_!!6000000002049-2-tps-80-80.png';
+                    pic_url = category == 'doc' ? this.images.book : this.images.unknown;
                     const docLazy = $('hiker://empty'+file_id).lazyRule((shareId, sharetoken, file_id) => {
                         eval(fetch('hiker://files/rules/icy/ali.js'));
                         return ali.get_share_link_download_url(shareId, sharetoken, file_id);
@@ -2455,6 +2545,7 @@ const ali = {
                         _title = '📙 ' + title;
                     } else if(zimuExtension.includes(_item.file_extension)) {
                         _title = '🕸️ ' + title;
+                        pic_url = this.images.zimu;
                     } else {
                         _title = '❓ ' + title;
                     }
@@ -2489,7 +2580,13 @@ const ali = {
         } else if(access_token.startsWith('toast')) {
             return access_token;
         }
-        let token = JSON.parse(fetch(this.urls.tokenPath));
+
+        var d = [];
+        const {tokenPath, customerSettingPath} = this.urls
+        let _tokens = JSON.parse(fetch(tokenPath) || '[]');
+        let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
+        let customerSettings = JSON.parse(fetch(customerSettingPath));
+        let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
         access_token = token.access_token;
         var drive_id = token.default_drive_id;
         if(!drive_id) {
@@ -2570,8 +2667,32 @@ const ali = {
         if(!getVar('icy_ali_order_direction')) {
             putVar('icy_ali_order_direction', 'ASC');
         }
-        var d = [];
         if(page == 1) {
+            if(!folderID) {
+                d.push({
+                    title: "<b>当前登录："+'<span style="color: '+ this.primaryColor +'">⭐ '+token.nick_name+'</span></b>',
+                    desc: '切换账号',
+                    img: token.avatar,
+                    url: tokens.length > 1 ? $(tokens.map(item => item.nick_name), 2)
+                        .select(() => {
+                            let _tokens = JSON.parse(fetch(getVar('icy_ali_tokenPath')) || '[]');
+                            let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
+                            let token = tokens.find(item => item.nick_name == input);
+                            let customerSettings = JSON.parse(fetch(getVar('icy_ali_customer')));
+                            customerSettings.user_id = token.user_id;
+                            writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
+                            ["folderName", 'icy_ali_next_marker', 'icy_ali_folder'].forEach(item => {
+                                clearVar(item)
+                            })
+                            refreshPage(false);
+                            return 'toast://账号切换至：' + token.nick_name;
+                    }) : $('hiker://empty').rule(() => {
+                        eval(fetch('hiker://files/rules/icy/ali.js'));
+                        ali.aliLogin();
+                    }),
+                    col_type: 'avatar',
+                })
+            }
             const searchRule = getItem('icy_ali_searchRule', '青豆');
             let folderName = getVar('folderName', '');
 
@@ -2723,7 +2844,7 @@ const ali = {
             const {type, category, name, file_id, thumbnail, updated_at, download_url} = _item;
             let title = name
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm');
-            let pic_url = thumbnail || this.randomPic +'?t='+new Date().getTime() + '' +index;
+            let pic_url = thumbnail;
 
             switch(category || type){
                 case 'video':
@@ -2781,7 +2902,7 @@ const ali = {
                     }
                     d.push({
                         title: '🎬 ' + title,
-                        pic_url: pic_url,
+                        pic_url: pic_url || this.images.video,
                         desc: desc,
                         url: videolazy,
                         extra: {
@@ -2795,7 +2916,7 @@ const ali = {
                     d.push({
                         title: '🖼 ' + title,
                         desc: desc,
-                        pic_url: pic_url,
+                        pic_url: pic_url || this.images.img,
                         url: download_url,
                         col_type: col_type
 
@@ -2805,7 +2926,7 @@ const ali = {
                     d.push({
                         title: '📂 ' + title,
                         desc: desc,
-                        pic_url: 'https://img.alicdn.com/imgextra/i3/O1CN01qSxjg71RMTCxOfTdi_!!6000000002097-2-tps-80-80.png',
+                        pic_url: this.images.folder,
                         url: 'hiker://page/drive?url=https://www.aliyundrive.com/drive/folder/'+file_id + '??fypage',
                         col_type: col_type
 
@@ -2815,7 +2936,7 @@ const ali = {
                     d.push({
                         title: '🎻 ' + title,
                         desc: desc,
-                        pic_url: pic_url || 'https://img.alicdn.com/imgextra/i4/O1CN01LPrGLP1IMAPWurM3w_!!6000000000878-2-tps-512-512.png',
+                        pic_url: pic_url || this.images.audio,
                         url: $('hiker://empty'+ file_id)[fnName]((drive_id, file_id, fnName) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
@@ -2833,12 +2954,13 @@ const ali = {
                     });
                 break;
                 default: 
-                    pic_url = category == 'doc' ? 'https://img.alicdn.com/imgextra/i2/O1CN01kHskgT2ACzipXL4Ra_!!6000000008168-2-tps-80-80.png' : 'https://img.alicdn.com/imgextra/i1/O1CN01mhaPJ21R0UC8s9oik_!!6000000002049-2-tps-80-80.png';
+                    pic_url = category == 'doc' ? this.images.book : this.images.unknown;
                     let _title = title;
                     if(category == 'doc') {
                         _title = '📙 ' + title;
                     } else if(zimuExtension.includes(_item.file_extension)) {
                         _title = '🕸️ ' + title;
+                        pic_url = this.images.zimu;
                     } else {
                         _title = '❓ ' + title;
                     }
@@ -2912,7 +3034,8 @@ const ali = {
                 } else {
                     d.push({
                         title: '页面失联了💔',
-                        col_type: "text_1"
+                        col_type: "text_1",
+                        url: 'toast://' + JSON.stringify(e),
                     });
                 }
             }
@@ -2984,7 +3107,8 @@ const ali = {
                 } else {
                     d.push({
                         title: '页面失联了💔',
-                        col_type: "text_1"
+                        col_type: "text_1",
+                        url: 'toast://' + JSON.stringify(e),
                     });
                 }
             }
@@ -3088,7 +3212,8 @@ const ali = {
             if(page == 1) {
                 d.push({
                     title: '页面失联了💔',
-                    col_type: "text_1"
+                    col_type: "text_1",
+                    url: 'toast://' + JSON.stringify(e),
                 });
             }
         }
@@ -3099,6 +3224,7 @@ const ali = {
             const _path = searchDataPath || homeDataPath;
             const [listPath, , , ] = _path.split(';');
             const {fyarea, fyclass, fyyear, fysort} = this.getFilter(true);
+            log(searchUrl.replace('**', keyword).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page))
             const searchResult = fetch(searchUrl.replace('**', keyword).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page));
             const items = parseDomForArray(searchResult, listPath);
             this.listPageHTML(items, _path, d, page, activeModel, keyword, fromHikerSearch);
@@ -3106,7 +3232,8 @@ const ali = {
             if(page == 1) {
                 d.push({
                     title: '页面失联了💔',
-                    col_type: "text_1"
+                    col_type: "text_1",
+                    url: 'toast://' + JSON.stringify(e),
                 });
             }
         }
