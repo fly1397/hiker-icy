@@ -344,9 +344,9 @@ const ali = {
                 let tokens = _tokens.length ? _tokens : (_tokens && _tokens.user_id ? [_tokens] : [] );
                 let customerSettings = JSON.parse(fetch(customerSettingPath));
                 let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
-                if(token && (!token.access_token || !token.refresh_token)) {
+                if((token && (!token.access_token || !token.refresh_token)) || !token) {
                     deleteFile(tokenPath);
-                    return 'toast://TOKEN获取失败，请尝试删除软件缓存，重启海阔，重新登录试试'
+                    return 'toast://TOKEN获取失败，已经删除阿里登录信息，重新登录试试'
                 }
                 if(!!needRefresh) {
                     const tokenRes = JSON.parse(fetch('https://api.aliyundrive.com/token/refresh', {
