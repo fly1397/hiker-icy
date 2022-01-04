@@ -18,7 +18,7 @@ const ali = {
         book: 'https://lanmeiguojiang.com/tubiao/more/133.png',
         unknown: 'https://lanmeiguojiang.com/tubiao/more/2.png',
     },
-    version: '20220101',
+    version: '20220104',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -229,7 +229,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,祝大家新年快乐\n2,增加阿里云盘多账号支持\n,3,爱盼小站不再运行，移除爱盼小站\n4，修复阿里盘搜的bug',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复部分阿里云盘登录的bug',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
