@@ -18,7 +18,7 @@ const ali = {
         book: 'https://lanmeiguojiang.com/tubiao/more/133.png',
         unknown: 'https://lanmeiguojiang.com/tubiao/more/2.png',
     },
-    version: '2022010110',
+    version: '20220101',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -183,6 +183,7 @@ const ali = {
             json = fetch(remoteConfig[2]);
           }
         }
+        log(json)
         if(json) {
             writeFile(settingPath, json);            
             this.searchModel = JSON.parse(json).sort((a,b) => a.index - b.index);
@@ -321,6 +322,7 @@ const ali = {
         })
     },
     getAliToken: function(needRefresh) {
+        const {tokenPath, customerSettingPath} = this.urls;
         this.getConfig();
         if(this.usePublicToken && this.publicToken) {
             try {
@@ -334,51 +336,56 @@ const ali = {
                 return 'toast://共享TOKEN代码运行失败了'
             }
         }
-        const {tokenPath, customerSettingPath} = this.urls;
-        const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
-        
-        if(haveToken) {
-            let _tokens = JSON.parse(fetch(tokenPath) || '[]');
-            let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
-            let customerSettings = JSON.parse(fetch(customerSettingPath));
-            let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
-            if(token && (!token.access_token || !token.refresh_token)) {
-                deleteFile(tokenPath);
-                return 'toast://TOKEN获取失败，请尝试删除软件缓存，重启海阔，重新登录试试'
-            }
-            if(!!needRefresh) {
-                const tokenRes = JSON.parse(fetch('https://api.aliyundrive.com/token/refresh', {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "User-Agent": MOBILE_UA,
-                    },
-                    method: 'POST',
-                    body: '{"refresh_token":"'+token.refresh_token+'"}',
-                }));
-                var access_token = tokenRes.access_token;
-                putVar("access_token", access_token);
-                let _token = tokens.find(item => item.user_id == tokenRes.user_id);
-                if(_token) {
-                    tokens = tokens.map(item => {
-                        if(item.user_id == tokenRes.user_id) {
-                            item = tokenRes;
-                        }
-                        return item;
-                    })
-                } else {
-                    tokens.push(tokenRes);
+        try {
+            const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
+            
+            if(haveToken) {
+                let _tokens = JSON.parse(fetch(tokenPath) || '[]');
+                let tokens = _tokens.length ? _tokens : (_tokens && _tokens.user_id ? [_tokens] : [] );
+                let customerSettings = JSON.parse(fetch(customerSettingPath));
+                let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
+                if(token && (!token.access_token || !token.refresh_token)) {
+                    deleteFile(tokenPath);
+                    return 'toast://TOKEN获取失败，请尝试删除软件缓存，重启海阔，重新登录试试'
                 }
-                writeFile(tokenPath,JSON.stringify(tokens));
-                return access_token;
+                if(!!needRefresh) {
+                    const tokenRes = JSON.parse(fetch('https://api.aliyundrive.com/token/refresh', {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "User-Agent": MOBILE_UA,
+                        },
+                        method: 'POST',
+                        body: '{"refresh_token":"'+token.refresh_token+'"}',
+                    }));
+                    var access_token = tokenRes.access_token;
+                    putVar("access_token", access_token);
+                    let _token = tokens.find(item => item.user_id == tokenRes.user_id);
+                    if(_token) {
+                        tokens = tokens.map(item => {
+                            if(item.user_id == tokenRes.user_id) {
+                                item = tokenRes;
+                            }
+                            return item;
+                        })
+                    } else {
+                        tokens.push(tokenRes);
+                    }
+                    writeFile(tokenPath,JSON.stringify(tokens));
+                    return access_token;
+                } else {
+                    let _access_token = token.access_token || token.token;
+                    putVar("access_token", _access_token);
+                    return _access_token;
+                }
             } else {
-                let _access_token = token.access_token || token.token;
-                putVar("access_token", _access_token);
-                return _access_token;
-            }
-        } else {
-            this.aliLogin();
-            return false;
+                this.aliLogin();
+                return false;
 
+            }
+        } catch (e) {
+            log(JSON.stringify(e));
+            deleteFile(tokenPath);
+            return 'toast://TOKEN获取失败，已经删除阿里登录信息，重新登录试试'
         }
 
     },
