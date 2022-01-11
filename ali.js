@@ -24,7 +24,7 @@ const ali = {
     version: '20220111',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
-    isDev: false,
+    isDev: true,
 
     // 强制更新config
     forceConfigUpdate: false,
@@ -1366,7 +1366,7 @@ const ali = {
                             })
                         } else {
                             const {data, included, links} = JSON.parse(searchResult);
-                            const host = links.first.match(/https:\/\/(\w+\.?)+/)[0];
+                            const host = links.first.match(/https?:\/\/(\w+\.?)+/)[0];
                             let _data = data;
                             if(filterTags && data) {
                                 _data = data.filter(item => !!item.relationships.tags.data.filter(_item => filterTags.includes(Number(_item.id))).length);
