@@ -3,10 +3,10 @@
     {
       "name": "🔥 阿里小站",
       "index": 0,
-      "val": "https://alixiaozhan.net",
+      "val": "https://pan.alixiaozhan.net",
       "key": "xiaozhan",
       "desc": "阿里云盘资源共享站",
-      "searchUrl": "https://alixiaozhan.net/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
+      "searchUrl": "https://pan.alixiaozhan.net/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
       "cats": [
         { "name": "影视", "val": "video", "withType": 1},
         { "name": "动漫", "val": "comic", "withType": 1 },
@@ -145,6 +145,36 @@
       ]
     },
     {
+      "name": "🔑 爱盼小站",
+      "index": 4,
+      "val": "http://www.laycode.cn",
+      "key": "unilei",
+      "desc": "阿里云盘资源分享站，网盘资源资源分享与互助的社区",
+      "needKey": true,
+      "username": "",
+      "password": "",
+      "cookie": "",
+      "loginError": false,
+      "searchUrl": "http://www.laycode.cn/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CrecipientUsers%2CrecipientGroups%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
+      "cats": [
+        { "name": "电影", "val": "movie", "withType": 1 },
+        { "name": "剧集", "val": "tv", "withType": 1 },
+        { "name": "资源合集", "val": "ziyuanheji", "withType": 1 },
+        { "name": "动漫", "val": "dongman", "withType": 1 },
+        { "name": "图片", "val": "picture", "withType": 1 },
+        { "name": "音乐", "val": "music", "withType": 1 }
+      ],
+      "sorts": [
+        { "name": "相关推荐", "val": "", "withType": -1},
+        { "name": "最新回复", "val": "-lastPostedAt" },
+        { "name": "热门主题", "val": "-commentCount" },
+        { "name": "新鲜出炉", "val": "-createdAt" },
+        { "name": "陈年旧帖", "val": "createdAt" },
+        { "name": "最多人看", "val": "-view_count" },
+        { "name": "最少人看", "val": "view_count" }
+      ]
+    },
+    {
       "name": "🔑 鼎天网络社区",
       "index": 5,
       "val": "https://community.dtnetwork.top/",
@@ -222,11 +252,11 @@
         ]
     },
     {
-      "name": "🔍 阿里盘搜",
+      "name": "🔍 UP云搜",
       "index": 6,
-      "val": "https://www.alipanso.com",
-      "key": "pansou",
-      "desc": "已收录2000w+优质资源，拥有全网90%以上的阿里云盘资源",
+      "val": "https://www.alipanso.com/search.html?page=fypage&keyword=%E6%9C%80%E6%96%B0",
+      "key": "upsou",
+      "desc": "UP云搜,最早提供阿里云盘搜索服务的平台,收集各类阿里云盘资源提供一站式搜索功能,推动互联网优质资源的高效传递!",
       "dataType": "html",
       "detailLinkPre": "https://www.alipanso.com/",
       "itemsExcloudByLink": "#|https?",
@@ -244,8 +274,33 @@
       ]
     },
     {
-      "name": "🔍 优聚搜",
+      "name": "🔍 阿里盘搜",
       "index": 7,
+      "val": "https://www.alipansou.com/search?k=%E5%BD%B1%E8%A7%86&s=0&t=-1&page=fypage",
+      "key": "pansou",
+      "desc": "阿里盘搜,支持阿里云盘搜索,可快速搜索阿里云盘资源中的有效连接,每天更新海量资源",
+      "dataType": "html",
+      "detailLinkPre": "https://www.alipansou.com",
+      "itemsExcloudByLink": "#|https?",
+      "homeDataPath": "body&&van-row,3:;template&&Text;a&&href;template,1&&Text;",
+      "searchUrl": "https://www.alipansou.com/search?k=**&s=fysort&t=fyclass&page=fypage",
+      "searchDataPath": "body&&van-row,3:;template&&Text;a&&href;template,1&&Text;",
+      "cats": [
+        { "name": "全部类别", "val": "-1", "withType": -1},
+        { "name": "视频", "val": "1", "withType": -1},
+        { "name": "音乐", "val": "2", "withType": -1},
+        { "name": "图片", "val": "3", "withType": -1},
+        { "name": "文档", "val": "4", "withType": -1}
+      ],
+      "sorts": [
+        { "name": "默认排序", "val": "0", "withType": -1},
+        { "name": "时间排序", "val": "1", "withType": -1},
+        { "name": "完全匹配", "val": "2", "withType": -1}
+      ]
+    },
+    {
+      "name": "🔍 优聚搜",
+      "index": 8,
       "val": "https://api.ujuso.com/v1/api_search/vite?page=fypage&size=15&kid=LWsgYmiMxSVPpmwodIlkonoFPmYbcVJl&time=fysort&type=ALY&kw=%E5%BD%B1%E8%A7%86",
       "key": "ujuso",
       "desc": "优聚搜 ujuso.com",
@@ -263,7 +318,7 @@
     },
     {
       "name": "☁️ R酱-OneDriver",
-      "index": 8,
+      "index": 9,
       "key": "rjiang",
       "val": "https://share-api.rhilip.info/search?limit=50&offset=fypage",
       "desc": "此处资源均为软件全自动搬运至OneDrive国际版分享，没有条理且未经任何整理辨别！！！！请善用搜索功能进行检索~",
