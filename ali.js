@@ -2217,6 +2217,7 @@ const ali = {
         let parentName = _name ? base64Decode(_name.split('??')[0]) : '';
         const _data = {
             parent_name: parentName,
+            folder_id: folderID,
             file_id: '',
             file_name: '',
             share_id: shareId,
