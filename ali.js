@@ -2329,6 +2329,8 @@ const ali = {
                 let folderName = folderRes.name;
                 putVar('icy_ali_folder', folderRes.file_id);
                 setPageTitle(folderName);
+
+                _data.folder_id = folderID;
                 _data.parent_name += ';' +folderName;
             }
             const data = {"share_id": shareId,"parent_file_id": (folderID ? folderID : 'root'),"limit":100,"image_thumbnail_process":"image/resize,w_160/format,jpeg","image_url_process":"image/resize,w_1920/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_300","order_by": order_by,"order_direction": order_direction}
