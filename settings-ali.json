@@ -3,10 +3,10 @@
     {
       "name": "🔥 阿里小站",
       "index": 0,
-      "val": "https://pan.alixiaozhan.net",
+      "val": "https://pan666.net",
       "key": "xiaozhan",
       "desc": "阿里云盘资源共享站",
-      "searchUrl": "https://pan.alixiaozhan.net/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
+      "searchUrl": "https://pan666.net/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
       "cats": [
         { "name": "影视", "val": "video", "withType": 1},
         { "name": "动漫", "val": "comic", "withType": 1 },
@@ -162,7 +162,8 @@
         { "name": "资源合集", "val": "ziyuanheji", "withType": 1 },
         { "name": "动漫", "val": "dongman", "withType": 1 },
         { "name": "图片", "val": "picture", "withType": 1 },
-        { "name": "音乐", "val": "music", "withType": 1 }
+        { "name": "音乐", "val": "music", "withType": 1 },
+        { "name": "Netflix", "val": "netflix", "withType": 1 }
       ],
       "sorts": [
         { "name": "相关推荐", "val": "", "withType": -1},
