@@ -49,7 +49,7 @@
     {
       "name": "🔑 阿里云盘小站",
       "index": 3,
-      "val": "https://aliyunshare.org",
+      "val": "https://wpxz.org",
       "key": "yunshare",
       "desc": "云资源共享第一站,你想要的这里都有!",
       "needKey": true,
@@ -57,7 +57,7 @@
       "password": "",
       "cookie": "",
       "loginError": false,
-      "searchUrl": "https://aliyunshare.org/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost%2ClastPost%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
+      "searchUrl": "https://wpxz.org/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost%2ClastPost%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
       "filterTags": [12,16,17,18,19,20,21,79,89,1,73,74,75,76,77,78,90,80,81,82,83,84,85,9,28,29,30,31],
       "cats": [
         {
@@ -255,14 +255,14 @@
     {
       "name": "🔍 UP云搜",
       "index": 6,
-      "val": "https://www.alipanso.com/search.html?page=fypage&keyword=%E6%9C%80%E6%96%B0",
+      "val": "https://www.upyunso.com/search.html?page=fypage&keyword=%E6%9C%80%E6%96%B0",
       "key": "upsou",
       "desc": "UP云搜,最早提供阿里云盘搜索服务的平台,收集各类阿里云盘资源提供一站式搜索功能,推动互联网优质资源的高效传递!",
       "dataType": "html",
-      "detailLinkPre": "https://www.alipanso.com/",
+      "detailLinkPre": "https://www.upyunso.com/",
       "itemsExcloudByLink": "#|https?",
       "homeDataPath": "body&&.resource-item;h1&&Text;a&&href;.resource-meta&&Text+.resource-meta,1&&.meta-item&&Text;",
-      "searchUrl": "https://www.alipanso.com/search.html?page=fypage&keyword=**&search_folder_or_file=fyclass&is_search_folder_content=1&is_search_path_title=1&category=all&file_extension=all&search_model=fysort",
+      "searchUrl": "https://www.upyunso.com/search.html?page=fypage&keyword=**&search_folder_or_file=fyclass&is_search_folder_content=1&is_search_path_title=1&category=all&file_extension=all&search_model=fysort",
       "searchDataPath": "body&&.resource-item;h1&&Text;a&&href;.resource-meta&&Text+.resource-meta,1&&.meta-item&&Text;",
       "cats": [
         { "name": "线路一", "val": "", "withType": -1},
