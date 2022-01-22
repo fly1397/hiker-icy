@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220122',
+    version: '2022012222',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -238,7 +238,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新阿里云盘小站地址\n2,更新up云搜地址',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,之前把转码播放地址弄成本地提交了，修复一下',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -1782,7 +1782,7 @@ const ali = {
                     let playLink = ''
                     if(share_id) {
                         let _d = base64Encode(encodeURI(JSON.stringify(file_data))).replace(/\//g,'$');
-                        playLink = 'http://192.168.2.64:3000/apis/yun-play/'+_d+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
+                        playLink = 'http://116.85.31.19:3000/apis/yun-play/'+_d+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
                     } else if(drive_id) {
                         playLink = 'http://116.85.31.19:3000/apis/my-yun-play/'+file_id+'/'+drive_id+'/'+access_token+'/'+value+'/index.m3u8';
                     }
