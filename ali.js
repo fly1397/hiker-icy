@@ -1686,11 +1686,11 @@ const ali = {
     },
     videoProxy: function(file_id, share_id, share_token, zimuItem, drive_id, file_data){
         var access_token = this.getAliToken();
-        if(access_token.startsWith('toast')) {
-            return access_token;
-        }
         if(!access_token) {
             return 'toast://还没登录？';
+        }
+        if(access_token.startsWith('toast')) {
+            return access_token;
         }
         var json = null;
         if(share_id) {
