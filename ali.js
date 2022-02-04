@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '2022012222',
+    version: '20220204',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -238,7 +238,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,之前把转码播放地址弄成本地提交了，修复一下',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新爱盼小站地址',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -584,7 +584,7 @@ const ali = {
             body: '{"identification": "'+username+'","password": "'+password+'","remember":true}',
             withHeaders: true
         }));
-        if(JSON.parse(login.body).errors) {
+        if(login.body && login.body.includes('errors')) {
             confirm({
                 title: '登录失败',
                 content: '需要配置正确的账号和密码！',
