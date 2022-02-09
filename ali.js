@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220209',
+    version: '2022020922',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -100,7 +100,7 @@ const ali = {
         const {fyarea, fyclass, fyyear, fysort} = this.getFilter(true);
         const link = url.replace('**', keyword).replace('fypage', (((page||1) - 1) * 20)).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort);
         const headers = {"Referer": link, 'User-Agent': MOBILE_UA,};
-        const activeModel = this.activeModel();
+        const activeModel = this.activeModel(true);
         if(activeModel) {
             headers['cookie'] = activeModel.cookie || '';
         }
@@ -110,6 +110,9 @@ const ali = {
         let model_search = getVar('icy_ali_model');
         this.getConfig();
         const {searchModel} = this;
+        if(searchPage) {
+            model_search = getVar('icy_ali_model_search');
+        }
         return searchModel ? searchModel.find(item => item.val == model_search) || (searchPage ? searchModel[0] : null): null;
     },
     objData: function(obj, path){
@@ -238,7 +241,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,首页默认加载个人云盘页面内容。\n2,更新阿里小站地址。',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,首页默认加载个人云盘页面内容。\n2,更新阿里小站地址。\n3,修复一些bug',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -928,25 +931,23 @@ const ali = {
                     ali.settingPage();
                 }),
             })
-            if(this.activeModel()) {
-                d.push({
-                    url: $.toString(()=> {
-                        if(input.trim()) {
-                            putVar("icy_ali_search",input);
-                            var link = 'hiker://empty$$$' + input + '$$$fypage$$$';
-                            return $(link).rule(()=> {
-                                eval(fetch('hiker://files/rules/icy/ali.js'));
-                                ali.searchPage();
-                            })
-                        } else {
-                            return 'toast://请输入影片名称，或者网盘链接';
-                        }
-                    }),
-                    title: '搜索',
-                    desc: "支持输入云盘分享链接",
-                    col_type: "input"
-                });
-            }
+            d.push({
+                url: $.toString(()=> {
+                    if(input.trim()) {
+                        putVar("icy_ali_search",input);
+                        var link = 'hiker://empty$$$' + input + '$$$fypage$$$';
+                        return $(link).rule(()=> {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            ali.searchPage();
+                        })
+                    } else {
+                        return 'toast://请输入影片名称，或者网盘链接';
+                    }
+                }),
+                title: '搜索',
+                desc: "支持输入云盘分享链接",
+                col_type: "input"
+            });
             this.rendererFilterList(d);
         }
         if(this.activeModel()) {
@@ -981,11 +982,11 @@ const ali = {
         }
     },
     rendererFilterList: function(d, isSearchPage){
+        const activeModel = this.activeModel(isSearchPage);
         const {searchModel} = this;
-        const activeModel = this.activeModel();
         const withoutType = isSearchPage ? 1 : -1;
         const suffix = isSearchPage ? '_search' : '';
-        if(this.useSuggestQuery && activeModel) {
+        if(this.useSuggestQuery) {
             this.rendererSuggest(d, isSearchPage);
         }
         if(!isSearchPage) {
@@ -1022,10 +1023,10 @@ const ali = {
             });
         } else {
             // search page
-            this.rendererFilter(d, searchModel, 'icy_ali_model', () => {
+            this.rendererFilter(d, searchModel, 'icy_ali_model_search', () => {
                 // callback
                 eval(fetch('hiker://files/rules/icy/ali.js'));
-                const activeModel = ali.activeModel();
+                const activeModel = ali.activeModel(true);
                 if(activeModel) {
                     const {areas, cats, years, sorts} = activeModel;
 
@@ -1301,6 +1302,27 @@ const ali = {
         }
         this.getConfig();
         const activeModel = this.activeModel(true);
+        if(!getVar('icy_ali_model_search') && activeModel) {
+            const {areas, cats, years, sorts, val} = activeModel;
+            putVar('icy_ali_model_search', getVar('icy_ali_model', '') || val);
+            if(areas) {
+                const _areas = areas.filter(item => item.withType != -1);
+                putVar('icy_ali_area', _areas[0] ? _areas[0].val : '');
+            }
+            if(cats) {
+                const _cats = cats.filter(item => item.withType != -1);
+                putVar('icy_ali_cat', _cats[0] ? _cats[0].val : '');
+            }
+            if(years) {
+                const _years = years.filter(item => item.withType != -1);
+                putVar('icy_ali_year', _years[0] ? _years[0].val : '');
+            }
+            if(sorts) {
+                const _sorts = sorts.filter(item => item.withType != -1);
+                putVar('icy_ali_sort' , _sorts[0] ? _sorts[0].val : '')
+            }
+            putVar("icy_ali_search", '');
+        };
 
         let keyword = getVar('icy_ali_search') || _keyword || '';
         var _links = keyword.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
@@ -2854,45 +2876,47 @@ const ali = {
                     col_type: 'avatar',
                 })
             }
-            const searchRule = getItem('icy_ali_searchRule', '青豆');
-            let folderName = getVar('folderName', '');
-
-            d.push({
-                title: '““””使用小程序：<b><span style="color: '+ this.primaryColor +'">' + searchRule + '</span></b> 搜索  <small><span style="color: #999999">点击设置</span></small>',
-                url: $(searchRule, '请输入小程序名称 eq: 青豆')
-                    .input(() => {
-                    setItem('icy_ali_searchRule', input);
-                    refreshPage();
-                    return "toast://保存成功";
-                }),
-                // url: $('hiker://empty').rule(() => {
-                //     eval(fetch('hiker://files/rules/icy/ali.js'));
-                //     ali.settingPage();
-                // }),
-                col_type: 'text_1'
-            })
-            if(searchRule) {
+            if(!_d) {
+                const searchRule = getItem('icy_ali_searchRule', '青豆');
+                let folderName = getVar('folderName', '');
+    
                 d.push({
-                    title: '搜索',
-                    // url: "'hiker://search?s=' + input + '&rule='" + searchRule,
-                    url: $.toString((searchRule)=> {
-                        if(searchRule) {
-                            if(input.trim()) {
-                                var link = 'hiker://search?s=' + input + '&rule=' + searchRule;
-                                return link;
+                    title: '““””使用小程序：<b><span style="color: '+ this.primaryColor +'">' + searchRule + '</span></b> 搜索  <small><span style="color: #999999">点击设置</span></small>',
+                    url: $(searchRule, '请输入小程序名称 eq: 青豆')
+                        .input(() => {
+                        setItem('icy_ali_searchRule', input);
+                        refreshPage();
+                        return "toast://保存成功";
+                    }),
+                    // url: $('hiker://empty').rule(() => {
+                    //     eval(fetch('hiker://files/rules/icy/ali.js'));
+                    //     ali.settingPage();
+                    // }),
+                    col_type: 'text_1'
+                })
+                if(searchRule) {
+                    d.push({
+                        title: '搜索',
+                        // url: "'hiker://search?s=' + input + '&rule='" + searchRule,
+                        url: $.toString((searchRule)=> {
+                            if(searchRule) {
+                                if(input.trim()) {
+                                    var link = 'hiker://search?s=' + input + '&rule=' + searchRule;
+                                    return link;
+                                } else {
+                                    return 'toast://请输入影片名称';
+                                }
                             } else {
-                                return 'toast://请输入影片名称';
+                                return 'toast://请先设置小程序吧';
                             }
-                        } else {
-                            return 'toast://请先设置小程序吧';
+                        }, searchRule),
+                        col_type: "input",
+                        desc: '使用其他规则搜索影片信息',
+                        extra: {
+                            defaultValue: folderName,
                         }
-                    }, searchRule),
-                    col_type: "input",
-                    desc: '使用其他规则搜索影片信息',
-                    extra: {
-                        defaultValue: folderName,
-                    }
-                });
+                    });
+                }
             }
             const sortLazy = $(['名称正序', '名称倒序', '时间正序', '时间倒序'], 1)
             .select(() => {
