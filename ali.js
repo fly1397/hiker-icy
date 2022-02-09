@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220204',
+    version: '20220209',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -100,17 +100,17 @@ const ali = {
         const {fyarea, fyclass, fyyear, fysort} = this.getFilter(true);
         const link = url.replace('**', keyword).replace('fypage', (((page||1) - 1) * 20)).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort);
         const headers = {"Referer": link, 'User-Agent': MOBILE_UA,};
-        const cookie = this.activeModel().cookie || '';
-        if(cookie) {
-            headers['cookie'] = cookie;
+        const activeModel = this.activeModel();
+        if(activeModel) {
+            headers['cookie'] = activeModel.cookie || '';
         }
         return fetch(link, {headers: headers});
     },
-    activeModel: function() {
+    activeModel: function(searchPage) {
         let model_search = getVar('icy_ali_model');
         this.getConfig();
         const {searchModel} = this;
-        return searchModel ? searchModel.find(item => item.val == model_search) || searchModel[0] : null;
+        return searchModel ? searchModel.find(item => item.val == model_search) || (searchPage ? searchModel[0] : null): null;
     },
     objData: function(obj, path){
         let _obj = obj;
@@ -238,7 +238,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新爱盼小站地址',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,首页默认加载个人云盘页面内容。\n2,更新阿里小站地址。',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -707,7 +707,7 @@ const ali = {
                     writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
                     refreshPage(false);
                     return 'toast://保存成功';
-                }, item.key, customerSettings, activeModel.key),
+                }, item.key, customerSettings, (activeModel ? activeModel.key : '')),
                 col_type: 'text_3'
             })
         })
@@ -900,7 +900,6 @@ const ali = {
     homePage: function() {
         var d = [];
         var page = Number(MY_URL.split('$$$')[1]);
-        const {cats, sorts, val, name, key, dataType} = this.activeModel();
         if(page == 1) {
             if(MY_RULE.version != '6' && !Number(getVar('newVersion', ''))) {
                 confirm({
@@ -929,39 +928,47 @@ const ali = {
                     ali.settingPage();
                 }),
             })
-            d.push({
-                url: $.toString(()=> {
-                    if(input.trim()) {
-                        putVar("icy_ali_search",input);
-                        var link = 'hiker://empty$$$' + input + '$$$fypage$$$';
-                        return $(link).rule(()=> {
-                            eval(fetch('hiker://files/rules/icy/ali.js'));
-                            ali.searchPage();
-                        })
-                    } else {
-                        return 'toast://请输入影片名称，或者网盘链接';
-                    }
-                }),
-                title: '搜索',
-                desc: "支持输入云盘分享链接",
-                col_type: "input"
-            });
+            if(this.activeModel()) {
+                d.push({
+                    url: $.toString(()=> {
+                        if(input.trim()) {
+                            putVar("icy_ali_search",input);
+                            var link = 'hiker://empty$$$' + input + '$$$fypage$$$';
+                            return $(link).rule(()=> {
+                                eval(fetch('hiker://files/rules/icy/ali.js'));
+                                ali.searchPage();
+                            })
+                        } else {
+                            return 'toast://请输入影片名称，或者网盘链接';
+                        }
+                    }),
+                    title: '搜索',
+                    desc: "支持输入云盘分享链接",
+                    col_type: "input"
+                });
+            }
             this.rendererFilterList(d);
         }
-        if(key == 'rjiang') {
-            this.homeDataR(d);
-        } else if(dataType == 'html') {
-            this.homeDataHTML(d);
-        } else if(dataType == 'json') {
-            this.homeDataJSON(d);
+        if(this.activeModel()) {
+
+            const {cats, sorts, val, name, key, dataType} = this.activeModel();
+            if(key == 'rjiang') {
+                this.homeDataR(d);
+            } else if(dataType == 'html') {
+                this.homeDataHTML(d);
+            } else if(dataType == 'json') {
+                this.homeDataJSON(d);
+            } else {
+                this.homeData(d);
+            }
+    
+    
+            d.push({
+                col_type: "blank_block"
+            });
         } else {
-            this.homeData(d);
+            this.myAliRule(d);
         }
-
-
-        d.push({
-            col_type: "blank_block"
-        });
         setResult(d);
     },
     getFilter: function(isSearchPage){
@@ -978,36 +985,39 @@ const ali = {
         const activeModel = this.activeModel();
         const withoutType = isSearchPage ? 1 : -1;
         const suffix = isSearchPage ? '_search' : '';
-        const {areas, cats, years, sorts} = activeModel;
-        if(this.useSuggestQuery) {
+        if(this.useSuggestQuery && activeModel) {
             this.rendererSuggest(d, isSearchPage);
         }
         if(!isSearchPage) {
             // home page
+            var title = !activeModel ? "““””<b>"+'<span style="color: '+ this.primaryColor +'">⭐ 🦄 我的云盘</span></b>' : '🦄 我的云盘';
             d.push({
-                title: '🦄 我的云盘',
+                title: title,
                 url: "hiker://page/drive?url=https://www.aliyundrive.com/drive/??fypage",
                 col_type:'scroll_button'
             })
             this.rendererFilter(d, searchModel, 'icy_ali_model', () => {
                 // callback
                 eval(fetch('hiker://files/rules/icy/ali.js'));
-                const {areas, cats, years, sorts} = ali.activeModel();
-                if(areas) {
-                    const _areas = areas.filter(item => item.withType != -1);
-                    putVar('icy_ali_area', _areas[0] ? _areas[0].val : '');
-                }
-                if(cats) {
-                    const _cats = cats.filter(item => item.withType != -1);
-                    putVar('icy_ali_cat', _cats[0] ? _cats[0].val : '');
-                }
-                if(years) {
-                    const _years = years.filter(item => item.withType != -1);
-                    putVar('icy_ali_year', _years[0] ? _years[0].val : '');
-                }
-                if(sorts) {
-                    const _sorts = sorts.filter(item => item.withType != -1);
-                    putVar('icy_ali_sort' , _sorts[0] ? _sorts[0].val : '')
+                const activeModel = ali.activeModel();
+                if(activeModel) {
+                    const {areas, cats, years, sorts} = activeModel;
+                    if(areas) {
+                        const _areas = areas.filter(item => item.withType != -1);
+                        putVar('icy_ali_area', _areas[0] ? _areas[0].val : '');
+                    }
+                    if(cats) {
+                        const _cats = cats.filter(item => item.withType != -1);
+                        putVar('icy_ali_cat', _cats[0] ? _cats[0].val : '');
+                    }
+                    if(years) {
+                        const _years = years.filter(item => item.withType != -1);
+                        putVar('icy_ali_year', _years[0] ? _years[0].val : '');
+                    }
+                    if(sorts) {
+                        const _sorts = sorts.filter(item => item.withType != -1);
+                        putVar('icy_ali_sort' , _sorts[0] ? _sorts[0].val : '')
+                    }
                 }
             });
         } else {
@@ -1015,47 +1025,55 @@ const ali = {
             this.rendererFilter(d, searchModel, 'icy_ali_model', () => {
                 // callback
                 eval(fetch('hiker://files/rules/icy/ali.js'));
-                const {areas, cats, years, sorts} = ali.activeModel();
-                if(areas) {
-                    const _areas = areas.filter(item => item.withType != 1);
-                    putVar('icy_ali_area_search', _areas[0] ? _areas[0].val : '');
-                }
-                if(cats) {
-                    const _cats = cats.filter(item => item.withType != 1);
-                    putVar('icy_ali_cat_search', _cats[0] ? _cats[0].val : '');
-                }
-                if(years) {
-                    const _years = years.filter(item => item.withType != 1);
-                    putVar('icy_ali_year_search', _years[0] ? _years[0].val : '');
-                }
-                if(sorts) {
-                    const _sorts = sorts.filter(item => item.withType != 1);
-                    putVar('icy_ali_sort_search' , _sorts[0] ? _sorts[0].val : '')
+                const activeModel = ali.activeModel();
+                if(activeModel) {
+                    const {areas, cats, years, sorts} = activeModel;
+
+                    if(areas) {
+                        const _areas = areas.filter(item => item.withType != 1);
+                        putVar('icy_ali_area_search', _areas[0] ? _areas[0].val : '');
+                    }
+                    if(cats) {
+                        const _cats = cats.filter(item => item.withType != 1);
+                        putVar('icy_ali_cat_search', _cats[0] ? _cats[0].val : '');
+                    }
+                    if(years) {
+                        const _years = years.filter(item => item.withType != 1);
+                        putVar('icy_ali_year_search', _years[0] ? _years[0].val : '');
+                    }
+                    if(sorts) {
+                        const _sorts = sorts.filter(item => item.withType != 1);
+                        putVar('icy_ali_sort_search' , _sorts[0] ? _sorts[0].val : '')
+                    }
                 }
             });
         }
-        if(areas) {
-            const _areas = areas.filter(item => item.withType != withoutType);
-            this.rendererFilter(d, _areas, 'icy_ali_area'+ suffix);
-        }
-        if(cats) {
-            const _cats = cats.filter(item => item.withType != withoutType) || [];
-            this.rendererFilter(d, _cats, 'icy_ali_cat'+ suffix, () => {
-                putVar('icy_ali_subcat' , '');
-            });
-            const activeCat = getVar('icy_ali_cat'+ suffix) || '';
-            const cat = _cats.find(item => item.val === activeCat);
-            if(cat && cat.sub && cat.sub.length) {
-                this.rendererFilter(d, cat.sub, 'icy_ali_subcat'+ suffix);
+        if(activeModel) {
+
+            const {areas, cats, years, sorts} = activeModel;
+            if(areas) {
+                const _areas = areas.filter(item => item.withType != withoutType);
+                this.rendererFilter(d, _areas, 'icy_ali_area'+ suffix);
             }
-        }
-        if(years) {
-            const _years = years.filter(item => item.withType != withoutType);
-            this.rendererFilter(d, _years, 'icy_ali_year'+ suffix);
-        }
-        if(sorts) {
-            const _sorts = sorts.filter(item => item.withType != withoutType);
-            this.rendererFilter(d, _sorts, 'icy_ali_sort'+ suffix);
+            if(cats) {
+                const _cats = cats.filter(item => item.withType != withoutType) || [];
+                this.rendererFilter(d, _cats, 'icy_ali_cat'+ suffix, () => {
+                    putVar('icy_ali_subcat' , '');
+                });
+                const activeCat = getVar('icy_ali_cat'+ suffix) || '';
+                const cat = _cats.find(item => item.val === activeCat);
+                if(cat && cat.sub && cat.sub.length) {
+                    this.rendererFilter(d, cat.sub, 'icy_ali_subcat'+ suffix);
+                }
+            }
+            if(years) {
+                const _years = years.filter(item => item.withType != withoutType);
+                this.rendererFilter(d, _years, 'icy_ali_year'+ suffix);
+            }
+            if(sorts) {
+                const _sorts = sorts.filter(item => item.withType != withoutType);
+                this.rendererFilter(d, _sorts, 'icy_ali_sort'+ suffix);
+            }
         }
 
         d.push({
@@ -1282,7 +1300,7 @@ const ali = {
             putVar('icy_ali_search', _keyword);
         }
         this.getConfig();
-        const activeModel = this.activeModel();
+        const activeModel = this.activeModel(true);
 
         let keyword = getVar('icy_ali_search') || _keyword || '';
         var _links = keyword.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
@@ -1380,6 +1398,7 @@ const ali = {
                         title: name + '搜索失败，错误: ' + JSON.stringify(e),
                         col_type: "long_text"
                     });
+                    log(JSON.stringify(e))
                 }
             }
             const hikerSearchModel = this.searchModel.filter(item => !!item.forHikerSearch);
@@ -2709,7 +2728,7 @@ const ali = {
             data: d
         });
     },
-    myAliRule: function() {
+    myAliRule: function(_d) {
         addListener('onClose', $.toString((params) => {
             params.forEach(item => {
                 clearVar(item)
@@ -2723,7 +2742,7 @@ const ali = {
             return access_token;
         }
 
-        var d = [];
+        var d = _d || [];
         const {tokenPath, customerSettingPath} = this.urls
         let _tokens = JSON.parse(fetch(tokenPath) || '[]');
         let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
@@ -2736,8 +2755,8 @@ const ali = {
             refreshPage();
             return false;
         }
-        var folderID = MY_URL.split('??')[0].split('folder/')[1] || '';
-        var page = MY_URL.split('??')[1] || 1;
+        var folderID = (MY_URL.includes('$$$') ? MY_URL.split('$$$') : MY_URL.split('??'))[0].split('folder/')[1] || '';
+        var page = MY_PAGE || (MY_URL.includes('$$$') ? MY_URL.split('$$$') : MY_URL.split('??'))[1] || 1;
         if(page == 1) {
             putVar('icy_ali_next_marker', '');
             putVar('icy_ali_folder', '');
@@ -3135,9 +3154,11 @@ const ali = {
             }
 
         });
-        setHomeResult({
-            data: d
-        });
+        if(!_d) {
+            setHomeResult({
+                data: d
+            });
+        }
     },
     needSharePWD: function(link) {
         var d = [];
