@@ -1,11 +1,16 @@
 
 [
     {
-      "name": "🔥 阿里小站",
+      "name": "🔑 阿里小站",
       "index": 0,
       "val": "https://pan.wuenci.com",
       "key": "xiaozhan",
       "desc": "阿里云盘资源共享站",
+      "needKey": true,
+      "username": "",
+      "password": "",
+      "cookie": "",
+      "loginError": false,
       "searchUrl": "https://pan.wuenci.com/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
       "cats": [
         { "name": "影视", "val": "video", "withType": 1},
