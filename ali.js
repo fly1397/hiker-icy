@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '2022020922',
+    version: '20220215',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -241,7 +241,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,首页默认加载个人云盘页面内容。\n2,更新阿里小站地址。\n3,修复一些bug',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,支持阿里小站登录。',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -1145,7 +1145,7 @@ const ali = {
     },
     homeData: function(d) {
         const activeModel = this.activeModel();
-        const {val, cats, key, cookie, username, password, loginError, filterTags} = activeModel;
+        const {val, cats, key, cookie, username, password, loginError, filterTags, needKey} = activeModel;
 
         var cat = getVar('icy_ali_cat') || cats[0].val;
         var subcat = getVar('icy_ali_subcat') || '';
@@ -1165,7 +1165,7 @@ const ali = {
                 col_type: 'rich_text'
             })
         }
-        if(page == 1 && res.includes('l2sp')) {
+        if(page == 1 && (res.includes('l2sp') || (key == 'xiaozhan' && !cookie))) {
             if(username && password && !loginError) {
                 d.push({
                     title: '““””需要登录才能查看链接<b><span style="color: '+ this.primaryColor +'">🔑 点击登录</span></b>',
@@ -1253,7 +1253,7 @@ const ali = {
                     pic_url: pic,
                     content: descStr,
                     desc: fromHikerSearch ? name : descStr,
-                    url: $(host + '/d/' + attributes.slug).rule((dataitem, post, host) => {
+                    url: $('hiker://empty?url='+host + '/d/' + attributes.slug).rule((dataitem, post, host) => {
                         var d = [];
                         eval(fetch('hiker://files/rules/icy/ali.js'));
                         ali.detailData(dataitem, post, host, d);
@@ -1590,7 +1590,7 @@ const ali = {
         d.push({
             title: contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
                 return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '??fypage';
-            }).replace('www.alixiaozhan.net', 'pan.alixiaozhan.net').replace(siteReg, function(e,t) {
+            }).replace('www.alixiaozhan.net', 'pan.wuenci.com').replace(siteReg, function(e,t) {
                 return 'href="hiker://page/site-detail?host=' + t+'??'+t.split('/d/')[1].split('-')[0] +'??fypage"';
             }),
             col_type: "rich_text"
@@ -1630,7 +1630,7 @@ const ali = {
                 d.push({
                     title: contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
                         return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '??fypage';
-                    }).replace('www.alixiaozhan.net', 'pan.alixiaozhan.net').replace(siteReg, function(e,t) {
+                    }).replace('www.alixiaozhan.net', 'pan.wuenci.com').replace(siteReg, function(e,t) {
                         return 'href="hiker://page/site-detail?host=' + t+'??'+t.split('/d/')[1].split('-')[0] +'??fypage"';
                     }),
                     col_type: "rich_text"
