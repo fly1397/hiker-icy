@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220215',
+    version: '20220220',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -241,7 +241,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,支持阿里小站登录。',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新阿里小站地址。',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -264,6 +264,7 @@ const ali = {
         // }
         var js = $.toString(()=> {
             var isShare = location.href.startsWith('https://www.aliyundrive.com/s/');
+            var isInvited = location.href.startsWith('https://pages.aliyundrive.com/');
             var click = false;
             const tokenFunction = function () {
                 var token = null;
@@ -289,7 +290,27 @@ const ali = {
                             (saved && isShare)
                         )
                     ){
+                        alert('保存成功，感谢支持！');
                         fy_bridge_app.back();
+                        return;
+                    }
+                } else if(isInvited) {
+                    try{
+                        if(!click){
+                            var btn = document.querySelector('.BeInvited--btn--eapb4-i');
+                            if(btn) {
+                                btn.click();
+                                click=true; 
+                            }
+                        }
+                    } catch(e){};
+                    var _token = JSON.parse(localStorage.getItem('token'));
+                    if(
+                        _token && _token.user_id
+                    ){
+                        alert('注册成功，返回后重新选择登录页面进行登录！');
+                        fy_bridge_app.back();
+                        return;
                     }
                 } else {
                     token = JSON.parse(localStorage.getItem('token'));
@@ -317,6 +338,7 @@ const ali = {
                     //     location.href = 'https://www.aliyundrive.com/drive#token';
                     // }
                     fy_bridge_app.back();
+                    return;
                 }else{
                     token_timer();
                 }
@@ -393,8 +415,10 @@ const ali = {
                         }
                         writeFile(tokenPath,JSON.stringify(tokens));
                         return access_token;
+                    } else if(tokenRes.code && tokenRes.code.included('InvalidParameter.RefreshToken')) {
+                        return 'toast://登录状态已经过期，需要重新登录'
                     } else if(tokenRes.message){
-                        return 'toas://' + tokenRes.message
+                        return 'toast://' + tokenRes.message
                     }
                 } else {
                     let _access_token = token.access_token || token.token;
@@ -476,8 +500,8 @@ const ali = {
             col_type: "line_blank"
         });
         d.push({
-            title: '登录/注册阿里云盘',
-            desc: '支持查看个人云盘文件，支持多账号模式\n登录多账号，海阔APP更多功能设置=>清除内部缓存',
+            title: '登录阿里云盘',
+            desc: '支持查看个人云盘文件，支持多账号模式\n清除之前的登录信息： 海阔APP更多功能设置=>清除内部缓存',
             url: $('hiker://empty').rule(() => {
                 eval(fetch('hiker://files/rules/icy/ali.js'));
                 ali.getRefreshToken();
@@ -485,11 +509,11 @@ const ali = {
             col_type: 'text_1'
         })
         d.push({
-            title: '保存文件支持开发者',
-            desc: '保存文件支持开发者, 这里不做登录处理',
+            title: '注册阿里云盘',
+            desc: '这里不做登录处理',
             url: $('hiker://empty').rule(() => {
                 eval(fetch('hiker://files/rules/icy/ali.js'));
-                ali.getRefreshToken('https://www.aliyundrive.com/s/BFiLLN5Uu58');
+                ali.getRefreshToken('https://pages.aliyundrive.com/mobile-page/web/beinvited.html?code=8281833');
             }),
             col_type: 'text_1'
         })
