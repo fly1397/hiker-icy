@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220220',
+    version: '20220221',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -241,7 +241,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新阿里小站地址。',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,登录后会自动清除信息方便下次重新登录。',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -291,6 +291,7 @@ const ali = {
                         )
                     ){
                         alert('保存成功，感谢支持！');
+                        localStorage.clear();
                         fy_bridge_app.back();
                         return;
                     }
@@ -308,7 +309,8 @@ const ali = {
                     if(
                         _token && _token.user_id
                     ){
-                        alert('注册成功，返回后重新选择登录页面进行登录！');
+                        alert('注册成功，返回后重新选择登录页面进行登录！');                   
+                        localStorage.clear();
                         fy_bridge_app.back();
                         return;
                     }
@@ -329,6 +331,7 @@ const ali = {
                         tokens.push(token)
                     }
                     fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify(tokens));
+                    localStorage.clear();
                     alert('TOKEN获取成功，请勿泄漏个人隐私!退出该页面后刷新重试！');
                     // if(location.href.includes('auth.aliyundrive.com')) {
                     //     fy_bridge_app.back();
@@ -501,7 +504,7 @@ const ali = {
         });
         d.push({
             title: '登录阿里云盘',
-            desc: '支持查看个人云盘文件，支持多账号模式\n清除之前的登录信息： 海阔APP更多功能设置=>清除内部缓存',
+            desc: '支持查看个人云盘文件，支持多账号模式\n登录后会自动清除信息方便下次重新登录',
             url: $('hiker://empty').rule(() => {
                 eval(fetch('hiker://files/rules/icy/ali.js'));
                 ali.getRefreshToken();
