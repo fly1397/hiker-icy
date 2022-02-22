@@ -513,7 +513,7 @@ const ali = {
         })
         d.push({
             title: '注册阿里云盘',
-            desc: '这里不做登录处理',
+            desc: '支持作者邀请码注册，这里不做登录处理',
             url: $('hiker://empty').rule(() => {
                 eval(fetch('hiker://files/rules/icy/ali.js'));
                 ali.getRefreshToken('https://pages.aliyundrive.com/mobile-page/web/beinvited.html?code=8281833');
