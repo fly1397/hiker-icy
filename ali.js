@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220221',
+    version: '20220301',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -101,8 +101,9 @@ const ali = {
         const link = url.replace('**', keyword).replace('fypage', (((page||1) - 1) * 20)).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort);
         const headers = {"Referer": link, 'User-Agent': MOBILE_UA,};
         const activeModel = this.activeModel(true);
+        let cookie2 = getVar(host, '');
         if(activeModel) {
-            headers['cookie'] = activeModel.cookie || '';
+            headers['cookie'] = (activeModel.cookie || '') + (cookie2 ? ';'+cookie2 : '');
         }
         return fetch(link, {headers: headers});
     },
@@ -241,7 +242,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,登录后会自动清除信息方便下次重新登录。',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,可以选择手动挡打开小站🤷‍♂️。',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -439,6 +440,41 @@ const ali = {
             return 'toast://TOKEN获取失败，已经删除阿里登录信息，重新登录试试'
         }
 
+    },
+    pageManually: function(host, url){
+        setPageTitle('云盘汇影--手动档')
+        let d = [];
+        var js = $.toString((url)=> {
+            var isShare = location.href.startsWith('https://www.aliyundrive.com/s/');
+            var timer = function(){
+                setTimeout(()=>{
+                    if(isShare){
+                        fba.open(JSON.stringify({
+                            rule:'云盘汇影',
+                            url:'hiker://page/detail?rule=云盘汇影&url='+location.href+'??fypage'
+                        }));
+                        history.back(-1);
+                    }else{
+                        document.querySelector('.davwheat-ad').style.display = 'none';
+                        timer();
+                    }
+                },500)
+            };
+            timer();
+
+        }, url)
+        d.push({
+            url: host,
+            col_type: 'x5_webview_single',
+            desc: '100%&&float',
+            extra: {
+                canBack: true,
+                js: js
+            }
+        })
+        setHomeResult({
+            data: d
+        })
     },
     aliLogin: function(){
         let d = []
@@ -1180,17 +1216,24 @@ const ali = {
         var page = Number(MY_URL.split('$$$')[1]);
         var url = val + '/api/discussions?include=user%2ClastPostedUser%2Ctags%2CfirstPost%2CfirstPost%2ClastPost&filter%5Btag%5D='+(subcat || cat)+'&sort='+sort+'&page%5Boffset%5D=' + (page - 1) * 20;
         const headers = {"Referer": url, 'User-Agent': MOBILE_UA,};
+        let cookie2 = getVar(val, '');
         const _cookie = cookie || '';
         if(_cookie) {
-            headers['cookie'] = _cookie
+
+            headers['cookie'] = _cookie + (cookie2 ? ';'+cookie2 : '');
         }
         const res = fetch(url, {headers: headers});
-        if(res.includes('complete a CAPTCHA')) {
+        if(res.includes('complete a CAPTCHA') || res.includes('Checking your browser before accessing')) {
             d.push({
-                title: '<div style="height: 100vh; display:flex; align-items: center;justify-content: center;"><a href="web://'+url+'">需要<b><span style="color: '+ this.primaryColor +'">验证码</span></b>才能继续</a></div>',
-                url: url + "@lazyRule=.js:'x5WebView://"+url+"'",
-                col_type: 'rich_text'
+                title: '““””需要点击这里<b><span style="color: '+ this.primaryColor +'">手动打开</span></b>继续浏览',
+                desc: '由于该站点限制，无法正常读取数据，手动打开后浏览即可！',
+                url: $("hiker://empty").rule((host, url)=>{
+                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                    ali.pageManually(host,url);
+                }, val, url),
+                col_type: 'text_1'
             })
+            return;
         }
         if(page == 1 && (res.includes('l2sp') || (key == 'xiaozhan' && !cookie))) {
             if(username && password && !loginError) {
