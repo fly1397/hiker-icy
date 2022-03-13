@@ -259,7 +259,7 @@ const ali = {
         let d = [];
         let url = _url || 'https://auth.aliyundrive.com/v2/oauth/authorize?login_type=custom&response_type=code&redirect_uri=https%3A%2F%2Fwww.aliyundrive.com%2Fsign%2Fcallback&client_id=25dzX3vbYqktVxyX&state=%7B%22origin%22%3A%22*%22%7D#/login';
         // if(getItem('haveShared', '') && !haveToken) {
-        //     // url = 'https://pages.aliyundrive.com/mobile-page/web/beinvited.html?code=a283707';
+        //     // url = 'https://pages.aliyundrive.com/mobile-page/web/beinvited.html?code=8281833';
         //     // url = 'https://www.aliyundrive.com/s/BFiLLN5Uu58';
         //     setItem('haveShared', '1')
         // }
@@ -552,7 +552,7 @@ const ali = {
             desc: '支持作者邀请码注册，这里不做登录处理',
             url: $('hiker://empty').rule(() => {
                 eval(fetch('hiker://files/rules/icy/ali.js'));
-                ali.getRefreshToken('https://pages.aliyundrive.com/mobile-page/web/beinvited.html?code=8281833');
+                ali.getRefreshToken('https://pages.aliyundrive.com/mobile-page/web/beinvited.html?code=1906385');
             }),
             col_type: 'text_1'
         })
