@@ -759,7 +759,7 @@ const ali = {
         })
         const activeModel = this.activeModel();
         customerResouce.forEach(item => {
-            var name = item.name.split(' ')[1].trim();
+            var name = item.name.includes(' ') ? item.name.split(' ')[1].trim() : item.name;
             var title = (!!item.forHikerSearch) ? "““””<b>"+'<span style="color: '+ primaryColor +'">'+name+'</span></b>' : name;
             d.push({
                 title: title,
