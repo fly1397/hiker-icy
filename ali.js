@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220301',
+    version: '20220422',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -48,9 +48,12 @@ const ali = {
         let desc = _desc.trim();
         let title = _title;
         if(!title){
+            const maName = desc.match(/[译|片]\s*名\s*(.*)/);
             const maDesc = desc.match(/「(.*)」，?/);
             const maDesc_2 = desc.match(/『(.*)』/);
-            if(maDesc) {
+            if(maName && maName[1]){
+                title = maName[1].split('◎')[0].replace('：', '');
+            }else if(maDesc) {
                 title = maDesc[1].split('」')[0];
             } else if(maDesc_2) {
                 title = maDesc_2[1];
@@ -67,7 +70,7 @@ const ali = {
         }
         const titleDom = '<div class="fortext">' + title || '' + '</div>';
         let result = parseDomForHtml(titleDom, '.fortext&&Text');
-        let len = 26;
+        let len = 24;
         if(result.length > len) {
             result = result.substr(0, len) + '...'
         }
@@ -96,15 +99,11 @@ const ali = {
         }
         return fmt; 
     },
-    searchFetch: function(host, url, keyword, page){
+    searchFetch: function(host, url, keyword, page, cookie){
         const {fyarea, fyclass, fyyear, fysort} = this.getFilter(true);
         const link = url.replace('**', keyword).replace('fypage', (((page||1) - 1) * 20)).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort);
         const headers = {"Referer": link, 'User-Agent': MOBILE_UA,};
-        const activeModel = this.activeModel(true);
-        let cookie2 = getVar(host, '');
-        if(activeModel) {
-            headers['cookie'] = (activeModel.cookie || '') + (cookie2 ? ';'+cookie2 : '');
-        }
+        headers['cookie'] = (cookie || '');
         return fetch(link, {headers: headers});
     },
     activeModel: function(searchPage) {
@@ -242,7 +241,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,可以选择手动挡打开小站🤷‍♂️。',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复爱盼小站地址',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -367,7 +366,8 @@ const ali = {
             data: d
         })
     },
-    getAliToken: function(needRefresh) {
+    getAliToken: function() {
+        let needRefresh = true;
         const {tokenPath, customerSettingPath} = this.urls;
         this.getConfig();
         if(this.usePublicToken && this.publicToken) {
@@ -476,8 +476,8 @@ const ali = {
             data: d
         })
     },
-    aliLogin: function(){
-        let d = []
+    aliLogin: function(_d){
+        let d = _d || []
         setPageTitle('阿里云盘账号设置');
         const {tokenPath, customerSettingPath} = this.urls;
 
@@ -507,7 +507,7 @@ const ali = {
                 d.push({
                     title: title,
                     desc: '切换账号',
-                    img: item.avatar,
+                    img: item.avatar+'@Referer=https://www.aliyundrive.com/',
                     url: $('#noLoading#').lazyRule((token) => {
                         eval(fetch('hiker://files/rules/icy/ali.js'));
                         ali.activeToken = token;
@@ -568,7 +568,9 @@ const ali = {
             }),
             col_type: 'text_1'
         })
-        setResult({data: d});
+        if(!_d) {
+            setResult({data: d});
+        }
     },
     preRule: function(){
         const {settingPath, customerSettingPath, tokenPath} = this.urls;
@@ -716,7 +718,7 @@ const ali = {
         })
         const selectIndex = getVar('select_index', '');
         customerResouce.forEach((item, index) => {
-            var name = item.name.split(' ')[1].trim();
+            var name = item.name.includes(' ') ? item.name.split(' ')[1].trim() : item.name;
             var title = String(index) === selectIndex ? "““””<b>"+'<span style="color: '+primaryColor+'">'+name+'</span></b>' : name;
             d.push({
                 title: title,
@@ -1216,11 +1218,10 @@ const ali = {
         var page = Number(MY_URL.split('$$$')[1]);
         var url = val + '/api/discussions?include=user%2ClastPostedUser%2Ctags%2CfirstPost%2CfirstPost%2ClastPost&filter%5Btag%5D='+(subcat || cat)+'&sort='+sort+'&page%5Boffset%5D=' + (page - 1) * 20;
         const headers = {"Referer": url, 'User-Agent': MOBILE_UA,};
-        let cookie2 = getVar(val, '');
         const _cookie = cookie || '';
         if(_cookie) {
 
-            headers['cookie'] = _cookie + (cookie2 ? ';'+cookie2 : '');
+            headers['cookie'] = _cookie;
         }
         const res = fetch(url, {headers: headers});
         if(res.includes('complete a CAPTCHA') || res.includes('Checking your browser before accessing')) {
@@ -1432,7 +1433,7 @@ const ali = {
             }
             const search = (activeModel,fromHikerSearch,keyword, page, d ) => {
                 try {
-                    const {username, password, loginError, key, dataType, filterTags, name} = activeModel;
+                    const {username, password, loginError, key, dataType, filterTags, name, cookie} = activeModel;
                     if(dataType == 'html') {
                         this.searchHTML(activeModel, fromHikerSearch, keyword, page, d);
                     } else if(dataType == 'json') {
@@ -1440,7 +1441,7 @@ const ali = {
                     } else if(key == 'rjiang') {
                         this.searchR(activeModel, fromHikerSearch ,keyword, page, d);
                     } else {
-                        const searchResult = this.searchFetch(activeModel.val, activeModel.searchUrl,keyword, page);
+                        const searchResult = this.searchFetch(activeModel.val, activeModel.searchUrl,keyword, page, cookie);
                         if(page == 1 && searchResult.includes('l2sp')) {
                             if(username && password && !loginError) {
                                 d.push({
@@ -1467,13 +1468,17 @@ const ali = {
                                 })
                             }
                         }
-                        if(searchResult.includes('complete a CAPTCHA')) {
-                            const link = activeModel.searchUrl.replace('**', keyword).replace('fypage', (((page||1) - 1) * 20)).replace('fysort', getVar('icy_ali_sort_search'));
+                        if(searchResult.includes('complete a CAPTCHA') || searchResult.includes('Checking your browser before accessing')) {
                             d.push({
-                                title: '<div style="height: 100vh; display:flex; align-items: center;justify-content: center;"><a href="web://'+link+'">需要<b><span style="color: '+ this.primaryColor +'">验证码</span></b>才能继续</a></div>',
-                                url: link + "@lazyRule=.js:'x5WebView://"+link+"'",
-                                col_type: 'rich_text'
+                                title: '““””需要点击这里<b><span style="color: '+ this.primaryColor +'">手动打开</span></b>继续浏览',
+                                desc: '由于该站点限制，无法正常读取数据，手动打开后浏览即可！',
+                                url: $("hiker://empty").rule((host, keyword)=>{
+                                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                                    ali.pageManually(host+'?q='+keyword, '');
+                                }, activeModel.val, keyword),
+                                col_type: 'text_1'
                             })
+                            return;
                         } else {
                             const {data, included, links} = JSON.parse(searchResult);
                             const host = links.first.match(/https?:\/\/(\w+\.?)+/)[0];
@@ -1605,9 +1610,9 @@ const ali = {
             col_type: "text_1"
         });
 
-        let _linksArr = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
+        let _linksArr = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net|pan\.quark\.cn\/s)\/\w*/g) || [];
         let _links = [];
-        const codes = texts.split(/(?:https:\/\/www\.aliyundrive\.com\/s[\/\w*]*)|(?:https:\/\/alywp\.net[\/\w*]*)/ig) || [];
+        const codes = texts.split(/(?:https:\/\/www\.aliyundrive\.com\/s[\/\w*]*)|(?:https:\/\/alywp\.net[\/\w*]*)|(?:https:\/\/pan\.quark\.cn\/s[\/\w*]*)/ig) || [];
         const siteReg = new RegExp('href="('+host+'\/d\/(-|\\w|\\d)*)"', 'ig');
         if(!expand && _linksArr.length > 5) {
             _links = _linksArr.slice(0, 5);
@@ -1617,6 +1622,7 @@ const ali = {
         _links.forEach((link, index) => {
             let code = '';
             let item_title = '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '链接：');
+            let isquark = link.includes('pan.quark.cn');
             if(codes[index]) {
                 const code_match = codes[index].match(/提取码|访问码/);
                 if(code_match && code_match[0]) {
@@ -1628,11 +1634,11 @@ const ali = {
                 // title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
                 title: '““””' + item_title + '\n<small><span style="color: #999999">'+link + (code ? '  提取码：' + code : '')+'</span></small>',
                 // desc: link + (code ? '  提取码：' + code : ''),
-                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '??fypage',
+                url: isquark ? 'qklink://www.uc.cn/b20b84fd735a8dd3f7541129bacc4e9a?action=open_url&url=' + link : 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '??fypage',
                 col_type: "text_1"
             });
         })
-        if(!_links.length && !contentDome.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g)) {
+        if(!_links.length && !contentDome.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net|pan\.quark\.cn\/s)\/\w*/g)) {
             d.push({
                 title: '““””<small><span style="color: #999999">没有匹配到链接？点击查看原网页内容！</span></small>',
                 url: host + '/d/' + slug,
@@ -1662,6 +1668,8 @@ const ali = {
                 return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '??fypage';
             }).replace('www.alixiaozhan.net', 'pan.wuenci.com').replace(siteReg, function(e,t) {
                 return 'href="hiker://page/site-detail?host=' + t+'??'+t.split('/d/')[1].split('-')[0] +'??fypage"';
+            }).replace(/href="https:\/\/(pan\.quark\.cn\/s)(\/|\w|\d)*/ig, function(e,t) {
+                return 'href="qklink://www.uc.cn/b20b84fd735a8dd3f7541129bacc4e9a?action=open_url&url=' + e.split('href="')[1];
             }),
             col_type: "rich_text"
         })
@@ -1702,6 +1710,8 @@ const ali = {
                         return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '??fypage';
                     }).replace('www.alixiaozhan.net', 'pan.wuenci.com').replace(siteReg, function(e,t) {
                         return 'href="hiker://page/site-detail?host=' + t+'??'+t.split('/d/')[1].split('-')[0] +'??fypage"';
+                    }).replace(/href="https:\/\/(pan\.quark\.cn\/s)(\/|\w|\d)*/ig, function(e,t) {
+                        return 'href="qklink://www.uc.cn/b20b84fd735a8dd3f7541129bacc4e9a?action=open_url&url=' + e.split('href="')[1];
                     }),
                     col_type: "rich_text"
                 })
@@ -2925,7 +2935,7 @@ const ali = {
                 d.push({
                     title: "<b>当前登录："+'<span style="color: '+ this.primaryColor +'">⭐ '+token.nick_name+'</span></b>',
                     desc: '切换账号',
-                    img: token.avatar,
+                    img: token.avatar+'@Referer=https://www.aliyundrive.com/',
                     url: tokens.length > 1 ? $(tokens.map(item => item.nick_name), 2)
                         .select(() => {
                             let _tokens = JSON.parse(fetch(getVar('icy_ali_tokenPath')) || '[]');
@@ -2939,10 +2949,10 @@ const ali = {
                             })
                             refreshPage(false);
                             return 'toast://账号切换至：' + token.nick_name;
-                    }) : $('hiker://empty').rule(() => {
+                    }) : $('hiker://empty').rule((d) => {
                         eval(fetch('hiker://files/rules/icy/ali.js'));
-                        ali.aliLogin();
-                    }),
+                        ali.aliLogin(d);
+                    }, _d),
                     col_type: 'avatar',
                 })
             }
@@ -3434,11 +3444,12 @@ const ali = {
         const contentDome = '<div class="fortext">' + contentHtml || '' + '</div>';
         const texts = parseDomForHtml(contentDome, '.fortext&&Text');
 
-        const _links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
-        const codes = texts.split(/(?:https:\/\/www\.aliyundrive\.com\/s[\/\w*]*)|(?:https:\/\/alywp\.net[\/\w*]*)/ig) || [];
+        const _links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net|pan\.quark\.cn\/s)\/\w*/g) || [];
+        const codes = texts.split(/(?:https:\/\/www\.aliyundrive\.com\/s[\/\w*]*)|(?:https:\/\/alywp\.net[\/\w*]*)|(?:https:\/\/pan\.quark\.cn\/s[\/\w*]*)/ig) || [];
         _links.forEach((link, index) => {
             let code = '';
             let item_title = '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '链接：');
+            let isquark = link.includes('pan.quark.cn');
             if(codes[index]) {
                 const code_match = codes[index].match(/提取码|访问码/);
                 if(code_match && code_match[0]) {
@@ -3449,11 +3460,11 @@ const ali = {
             d.push({
                 // title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
                 title: '““””' + item_title + '\n<small><span style="color: #999999">'+link + (code ? '  提取码：' + code : '')+'</span></small>',
-                url: 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '??fypage',
+                url: isquark ? 'qklink://www.uc.cn/b20b84fd735a8dd3f7541129bacc4e9a?action=open_url&url=' + link : 'hiker://page/detail?url=' + link + (code ? '?share_pwd=' + code: '') + '??fypage',
                 col_type: "text_1"
             });
         })
-        if(!_links.length && !contentDome.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g)) {
+        if(!_links.length && !contentDome.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net|pan\.quark\.cn\/s)\/\w*/g)) {
             d.push({
                 title: '““””<small><span style="color: #999999">没有匹配到链接？点击查看原网页内容！</span></small>',
                 url: realLink,
@@ -3471,6 +3482,8 @@ const ali = {
         d.push({
             title: contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
                 return 'href="hiker://page/detail?url=' + e.split('href="')[1];
+            }).replace(/href="https:\/\/(pan\.quark\.cn\/s)(\/|\w|\d)*/ig, function(e,t) {
+                return 'href="qklink://www.uc.cn/b20b84fd735a8dd3f7541129bacc4e9a?action=open_url&url=' + e.split('href="')[1];
             }),
             col_type: "rich_text"
         })
@@ -3593,8 +3606,8 @@ const ali = {
         const contentDome = '<div class="fortext">' + contentHtml || '' + '</div>';
         const texts = parseDomForHtml(contentDome, '.fortext&&Text');
 
-        const _links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g) || [];
-        const codes = texts.split(/(?:https:\/\/www\.aliyundrive\.com\/s[\/\w*]*)|(?:https:\/\/alywp\.net[\/\w*]*)/ig) || [];
+        const _links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net|pan\.quark\.cn\/s)\/\w*/g) || [];
+        const codes = texts.split(/(?:https:\/\/www\.aliyundrive\.com\/s[\/\w*]*)|(?:https:\/\/alywp\.net[\/\w*]*)|(?:https:\/\/pan\.quark\.cn\/s[\/\w*]*)/ig) || [];
         _links.forEach((link, index) => {
             let code = '';
             let item_title = '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '链接：');
@@ -3612,7 +3625,7 @@ const ali = {
                 col_type: "text_1"
             });
         })
-        if(!_links.length && !contentDome.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g)) {
+        if(!_links.length && !contentDome.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net|pan\.quark\.cn\/s)\/\w*/g)) {
             d.push({
                 title: '““””<small><span style="color: #999999">没有匹配到链接？点击查看原网页内容！</span></small>',
                 url: link,
@@ -3630,6 +3643,8 @@ const ali = {
         d.push({
             title: contentHtml.replace(/href="https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/|\w|\d)*/ig, function(e,t) {
                 return 'href="hiker://page/detail?url=' + e.split('href="')[1] + '??fypage';
+            }).replace(/href="https:\/\/(pan\.quark\.cn\/s)(\/|\w|\d)*/ig, function(e,t) {
+                return 'href="qklink://www.uc.cn/b20b84fd735a8dd3f7541129bacc4e9a?action=open_url&url=' + e.split('href="')[1];
             }),
             col_type: "rich_text"
         })
