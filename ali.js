@@ -3553,12 +3553,19 @@ const ali = {
                 const contentDome = '<div class="fortext">' + desc || '' + '</div>';
                 const pic = parseDomForHtml(contentDome, '.fortext&&img&&src') || '';
                 var lazy = $('').lazyRule(() => {
-                    const res = fetch(input); 
-                    let _link = parseDomForHtml(res, 'a&&href').match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g);
-                    if(!_link) {
-                        _link = res.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g);
+                    const res = JSON.parse(fetch(input, {
+                        withHeaders: true
+                    }));
+                    var link = '';
+                    if(res.url && res.url.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g)) {
+                        link = res.url
+                    } else {
+                        let _link = parseDomForHtml(res.body, 'a&&href').match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g);
+                        if(!_link) {
+                            _link = res.body.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)\/\w*/g);
+                        }
+                        link = _link ? _link[0] : '';
                     }
-                    var link = _link[0];
                     if(link) {
                         return 'hiker://page/detail?url=' + link + '??fypage';
                     } else {
