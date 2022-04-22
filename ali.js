@@ -1177,7 +1177,7 @@ const ali = {
                 url: this.emptyRule,
                 col_type: 'scroll_button'
             });
-            data.forEach(item => {
+            data.filter(item => !item.title.startsWith('必看经典')).forEach(item => {
                 if(atSearchPage) {
                     d.push({
                         title: item.title,
