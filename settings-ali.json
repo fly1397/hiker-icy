@@ -258,41 +258,6 @@
         ]
     },
     {
-      "name": "夸克网盘小站",
-      "index": 10,
-      "val": "https://kkxz.vip",
-      "key": "kkxz",
-      "desc": "夸克网盘小站-夸克网盘资源共享第一站",
-      "needKey": true,
-      "username": "",
-      "password": "",
-      "cookie": "",
-      "loginError": false,
-      "searchUrl": "https://kkxz.vip/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CrecipientUsers%2CrecipientGroups%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
-      "cats": [
-        { "name": "电影", "val": "movie", "withType": 1 },
-        { "name": "剧集", "val": "tv", "withType": 1 },
-        { "name": "综艺", "val": "variety", "withType": 1 },
-        { "name": "动漫", "val": "comic", "withType": 1 },
-        { "name": "图片", "val": "photo", "withType": 1 },
-        { "name": "音乐", "val": "music", "withType": 1 },
-        { "name": "综艺", "val": "variety", "withType": 1 },
-        { "name": "学习", "val": "study", "withType": 1 },
-        { "name": "电子书", "val": "book", "withType": 1 },
-        { "name": "游戏", "val": "game", "withType": 1 },
-        { "name": "软件", "val": "soft", "withType": 1 }
-      ],
-      "sorts": [
-        { "name": "相关推荐", "val": "", "withType": -1},
-        { "name": "最新回复", "val": "-lastPostedAt" },
-        { "name": "热门主题", "val": "-commentCount" },
-        { "name": "新鲜出炉", "val": "-createdAt" },
-        { "name": "陈年旧帖", "val": "createdAt" },
-        { "name": "最多人看", "val": "-view_count" },
-        { "name": "最少人看", "val": "view_count" }
-      ]
-    },
-    {
       "name": "🔍 UP云搜",
       "index": 6,
       "val": "https://www.upyunso.com/search.html?page=fypage&keyword=%E6%9C%80%E6%96%B0",
@@ -365,5 +330,69 @@
       "desc": "此处资源均为软件全自动搬运至OneDrive国际版分享，没有条理且未经任何整理辨别！！！！请善用搜索功能进行检索~",
       "detailLinkPre": "https://share-api.rhilip.info/items/",
       "searchUrl": "https://share-api.rhilip.info/search/**?limit=50&offset=fypage"
+    },
+    {
+      "name": "夸克网盘小站",
+      "index": 10,
+      "val": "https://kkxz.vip",
+      "key": "kkxz",
+      "desc": "夸克网盘小站-夸克网盘资源共享第一站",
+      "needKey": false,
+      "username": "",
+      "password": "",
+      "cookie": "",
+      "loginError": false,
+      "searchUrl": "https://kkxz.vip/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost%2CfirstPost%2ClastPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
+      "cats": [
+        { "name": "电影", "val": "movie", "withType": 1 },
+        { "name": "剧集", "val": "tv", "withType": 1 },
+        { "name": "综艺", "val": "variety", "withType": 1 },
+        { "name": "动漫", "val": "comic", "withType": 1 },
+        { "name": "图片", "val": "photo", "withType": 1 },
+        { "name": "音乐", "val": "music", "withType": 1 },
+        { "name": "学习", "val": "study", "withType": 1 },
+        { "name": "电子书", "val": "book", "withType": 1 },
+        { "name": "游戏", "val": "game", "withType": 1 },
+        { "name": "软件", "val": "software", "withType": 1 }
+      ],
+      "sorts": [
+        { "name": "相关推荐", "val": "", "withType": -1},
+        { "name": "最新回复", "val": "-lastPostedAt" },
+        { "name": "热门主题", "val": "-commentCount" },
+        { "name": "新鲜出炉", "val": "-createdAt" },
+        { "name": "陈年旧帖", "val": "createdAt" }
+      ]
+    },
+    {
+      "name": "KK分享社区",
+      "index": 11,
+      "val": "https://kkfx.cc",
+      "key": "kkfx",
+      "desc": "KK丨网盘学习资源分享社区",
+      "needKey": false,
+      "username": "",
+      "password": "",
+      "cookie": "",
+      "loginError": false,
+      "searchUrl": "https://kkfx.cc/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost%2CfirstPost%2ClastPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
+      "cats": [
+        { "name": "电影", "val": "movie", "withType": 1 },
+        { "name": "剧集", "val": "tv", "withType": 1 },
+        { "name": "片单", "val": "watch", "withType": 1 },
+        { "name": "动漫", "val": "comic", "withType": 1 },
+        { "name": "音乐", "val": "music", "withType": 1 },
+        { "name": "文档", "val": "document", "withType": 1 },
+        { "name": "学习", "val": "study", "withType": 1 },
+        { "name": "电子书", "val": "book", "withType": 1 },
+        { "name": "游戏", "val": "games", "withType": 1 },
+        { "name": "软件", "val": "soft", "withType": 1 }
+      ],
+      "sorts": [
+        { "name": "相关推荐", "val": "", "withType": -1},
+        { "name": "最新回复", "val": "-lastPostedAt" },
+        { "name": "热门主题", "val": "-commentCount" },
+        { "name": "新鲜出炉", "val": "-createdAt" },
+        { "name": "陈年旧帖", "val": "createdAt" }
+      ]
     }
   ]
