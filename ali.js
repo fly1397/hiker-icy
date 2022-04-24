@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '2022042216',
+    version: '20220424',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -241,7 +241,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复阿里小站，爱盼小站地址\n2,增加夸克网盘支持（暂时只支持调起app，无法预览）',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,阿里网盘增加支持显示全文件名，优化对于多个字幕文件名去重处理',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -1513,7 +1513,10 @@ const ali = {
     },
     // 资源站点详细页面
     detailPage: function() {
-        const {cookie, val} = this.activeModel();
+        var cookie, val ;
+        if(this.activeModel()) {
+            var {cookie, val} = this.activeModel();
+        }
         let host = val;
         let _query = '';
         if(MY_URL.includes('?host=')) {
@@ -1694,7 +1697,7 @@ const ali = {
                 col_type: "text_1"
             });
         }
-        const {val} = this.activeModel();
+        const val = this.activeModel() ? this.activeModel().val : MY_URL ;
         const host = val.match(/https?:\/\/(\w+\.?)+/)[0];
         const siteReg = new RegExp('href="('+host+'\/d\/(-|\\w|\\d)*)"', 'ig');
         posts.forEach(post => {
@@ -2294,6 +2297,32 @@ const ali = {
             return "toast://" + _play.body;
         }
     },
+    formatNames: function(items) {
+        var strs = items.map(item => item.split(/[\.|\s]/))
+        var arr = [];
+        function list(item,item2) {
+            var a = 0;
+            do {
+                a++
+            } while (a < item.length && item.slice(0, a+1).join('') == item2.slice(0, a+1).join(''))
+            var b = 0;
+            do {
+                b++
+            } while (b < item.length && item.slice(-1*(b+1), ).join('') == item2.slice(-1*(b+1), ).join(''))
+            arr.push(item.slice(a,item.length - b).join('') + '.' + item[item.length-1])
+        }
+        strs.forEach((item, i) => {
+        if(i < strs.length) {
+            if(i == strs.length - 1) {
+                list(item, strs[i-1])
+            }else {       
+                list(item, strs[i+1])
+            }
+        }
+            
+        })
+        return arr;
+    },
     aliRule: function() {
         addListener('onClose', $.toString((params) => {
             params.forEach(item => {
@@ -2301,7 +2330,6 @@ const ali = {
             })
         }, ["folderName"]))
         this.getConfig();
-        log(MY_URL)
         const [shareLink, _page] = MY_URL.split(/[?|$|#]{2}/).filter(item => !!item);
         const [link, _share_pwd] = shareLink.split('?share_pwd=');
         const [_link, _folderID] = link.split('/folder/');
@@ -2471,7 +2499,6 @@ const ali = {
             });
         }
 
-        var viewName = Number(getVar('icy_ali_view', ''));
         if(!getVar('icy_ali_order_by')) {
             putVar('icy_ali_order_by', 'name');
         }
@@ -2547,14 +2574,21 @@ const ali = {
             // var order_direction_arr = [{name: '升序', val: 'ASC'},{name: '降序', val: 'DESC'}];
             // this.rendererFilter(d, order_by_arr, 'icy_ali_order_by');
             // this.rendererFilter(d, order_direction_arr, 'icy_ali_order_direction');
+            const viewLazy = $(['列表模式', '图文模式', '全文件名模式'], 1)
+            .select(() => {
+                putVar("icy_ali_view",input);
+                refreshPage(false);
+                return "hiker://empty"
+            });
+            var viewName = getVar('icy_ali_view', '列表模式');
+            if(!viewName.includes('模式')) {
+                viewName = '列表模式';
+                putVar("icy_ali_view",'列表模式');
+            }
             d.push({
-                title: '👀' + (!viewName ? '列表模式' : '图文模式'),
+                title: '👀' + viewName,
                 pic_url: this.images.view,
-                url: $("#noLoading#").lazyRule(()=>{
-                    putVar('icy_ali_view', Number(!Number(getVar('icy_ali_view'))));
-                    refreshPage(false);
-                    return "hiker://empty"
-                }),
+                url: viewLazy,
                 col_type: 'text_3'
             })
             d.push({
@@ -2633,7 +2667,7 @@ const ali = {
                 col_type: "text_center_1"
             });
         }
-        const col_type = !viewName ? 'avatar' : 'movie_3_marquee';
+        const col_type = viewName == '列表模式' ? 'avatar' : (viewName == '全文件名模式' ? 'text_1' :'movie_3_marquee');
         // 如果只包含一个文件夹， 直接取内容
         if(rescod.items.length === 1 && rescod.items[0].type == 'folder') {
             const folderItem = rescod.items[0];
@@ -2667,7 +2701,12 @@ const ali = {
         const zimuList = rescod.items.filter(_item => zimuExtension.includes(_item.file_extension));
         rescod.items.forEach((_item, index) => {
             const {type, category, name, file_id, thumbnail, updated_at} = _item;
-            let title = name
+            let title = name;
+            let len = 26;
+            let len2 = len / 2;
+            if(name.length >= len && col_type == 'avatar') {
+                title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
+            }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm');
             let pic_url = thumbnail || this.randomPic +'?t='+new Date().getTime() + '' +index;
 
@@ -2697,7 +2736,8 @@ const ali = {
                             return "toast://登录后需要重新刷新页面哦！"
                         })
                     } else if(_zimuList && !!_zimuList.length && !zimuItemList.length) {
-                        videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
+                        _zimuList = _zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'));
+                        videolazy = $(['不需要字幕'].concat(this.formatNames(_zimuList)), 1)
                         .select((file_id, shareId, sharetoken, list, videoName, file_data) => {
                             showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
@@ -2923,7 +2963,6 @@ const ali = {
             });
         }
 
-        var viewName = Number(getVar('icy_ali_view', ''));
         if(!getVar('icy_ali_order_by')) {
             putVar('icy_ali_order_by', 'name');
         }
@@ -3025,14 +3064,21 @@ const ali = {
             // var order_direction_arr = [{name: '升序', val: 'ASC'},{name: '降序', val: 'DESC'}];
             // this.rendererFilter(d, order_by_arr, 'icy_ali_order_by');
             // this.rendererFilter(d, order_direction_arr, 'icy_ali_order_direction');
+            const viewLazy = $(['列表模式', '图文模式', '全文件名模式'], 1)
+            .select(() => {
+                putVar("icy_ali_view",input);
+                refreshPage(false);
+                return "hiker://empty"
+            });
+            var viewName = getVar('icy_ali_view', '列表模式');
+            if(!viewName.includes('模式')) {
+                viewName = '列表模式';
+                putVar("icy_ali_view",'列表模式');
+            }
             d.push({
-                title: '👀' + (!viewName ? '列表模式' : '图文模式'),
+                title: '👀' + viewName,
                 pic_url: this.images.view,
-                url: $("#noLoading#").lazyRule(()=>{
-                    putVar('icy_ali_view', Number(!Number(getVar('icy_ali_view'))));
-                    refreshPage(false);
-                    return "hiker://empty"
-                }),
+                url: viewLazy,
                 col_type: 'text_3'
             })
             d.push({
@@ -3090,7 +3136,7 @@ const ali = {
                 col_type: "text_center_1"
             });
         }
-        const col_type = !viewName ? 'avatar' : 'movie_3_marquee';
+        const col_type = viewName == '列表模式' ? 'avatar' : (viewName == '全文件名模式' ? 'text_1' :'movie_3_marquee');
         // 如果只包含一个文件夹， 直接取内容
         // if(rescod.items.length === 1 && rescod.items[0].type == 'folder') {
         //     const folderItem = rescod.items[0];
@@ -3122,7 +3168,12 @@ const ali = {
         const zimuList = rescod.items.filter(_item => zimuExtension.includes(_item.file_extension));
         rescod.items.forEach((_item, index) => {
             const {type, category, name, file_id, thumbnail, updated_at, download_url} = _item;
-            let title = name
+            let title = name;
+            let len = 26;
+            let len2 = len / 2;
+            if(name.length >= len && col_type == 'avatar') {
+                title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
+            }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm');
             let pic_url = thumbnail;
 
@@ -3145,7 +3196,8 @@ const ali = {
                             return "toast://登录后需要重新刷新页面哦！"
                         })
                     } else if(_zimuList  && !!_zimuList.length && !zimuItemList.length) {
-                        videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
+                        _zimuList = _zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'));
+                        videolazy = $(['不需要字幕'].concat(this.formatNames(_zimuList)), 1)
                         .select((file_id, drive_id, list, videoName) => {
                             showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
