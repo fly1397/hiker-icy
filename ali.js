@@ -2736,9 +2736,8 @@ const ali = {
                             return "toast://登录后需要重新刷新页面哦！"
                         })
                     } else if(_zimuList && !!_zimuList.length && !zimuItemList.length) {
-                        _zimuList = _zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'));
-                        videolazy = $(['不需要字幕'].concat(this.formatNames(_zimuList)), 1)
-                        .select((file_id, shareId, sharetoken, list, videoName, file_data) => {
+                        videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
+                        .select((file_id, drive_id, list, zimus, videoName) => {
                             showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
@@ -2751,13 +2750,12 @@ const ali = {
                                     }
                                     zimuItem = list.find(_zimu => _zimu.name == name);
                                 }
-
-                                return ali.videoProxy(file_id, shareId, sharetoken, zimuItem, null, file_data);
+                                return ali.videoProxy(file_id, '', '', zimuItem, drive_id);
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
 
-                        }, file_id, shareId, sharetoken, _zimuList, videoName, file_data);
+                        }, file_id, drive_id, _zimuList, videoName);
                     } else {
                         videolazy = $('hiker://empty' + file_id).lazyRule((shareId, sharetoken, file_id, fnName, zimuItemList, file_data) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
@@ -3196,9 +3194,8 @@ const ali = {
                             return "toast://登录后需要重新刷新页面哦！"
                         })
                     } else if(_zimuList  && !!_zimuList.length && !zimuItemList.length) {
-                        _zimuList = _zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'));
-                        videolazy = $(['不需要字幕'].concat(this.formatNames(_zimuList)), 1)
-                        .select((file_id, drive_id, list, videoName) => {
+                        videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
+                        .select((file_id, drive_id, list, zimus, videoName) => {
                             showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
