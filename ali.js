@@ -1827,7 +1827,7 @@ const ali = {
                 body: '{"share_id":"' + share_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":""}',
                 method: 'POST',
             }));
-        } else if(!!drive_id) {
+        } else if(drive_id) {
             json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_video_preview_play_info', {
                 headers: {
                     'Content-Type': 'application/json',
@@ -2296,32 +2296,6 @@ const ali = {
         } else {
             return "toast://" + _play.body;
         }
-    },
-    formatNames: function(items) {
-        var strs = items.map(item => item.split(/[\.|\s]/))
-        var arr = [];
-        function list(item,item2) {
-            var a = 0;
-            do {
-                a++
-            } while (a < item.length && item.slice(0, a+1).join('') == item2.slice(0, a+1).join(''))
-            var b = 0;
-            do {
-                b++
-            } while (b < item.length && item.slice(-1*(b+1), ).join('') == item2.slice(-1*(b+1), ).join(''))
-            arr.push(item.slice(a,item.length - b).join('') + '.' + item[item.length-1])
-        }
-        strs.forEach((item, i) => {
-        if(i < strs.length) {
-            if(i == strs.length - 1) {
-                list(item, strs[i-1])
-            }else {       
-                list(item, strs[i+1])
-            }
-        }
-            
-        })
-        return arr;
     },
     aliRule: function() {
         addListener('onClose', $.toString((params) => {
@@ -3169,11 +3143,11 @@ const ali = {
         rescod.items.forEach((_item, index) => {
             const {type, category, name, file_id, thumbnail, updated_at, download_url} = _item;
             let title = name;
-            let len = 26;
-            let len2 = len / 2;
-            if(name.length >= len && col_type == 'avatar') {
-                title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
-            }
+            // let len = 26;
+            // let len2 = len / 2;
+            // if(name.length >= len && col_type == 'avatar') {
+            //     title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
+            // }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm');
             let pic_url = thumbnail;
 
