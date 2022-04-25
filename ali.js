@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220424',
+    version: '20220425',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -241,7 +241,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,阿里网盘增加支持显示全文件名，优化对于多个字幕文件名去重处理',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复分享链接解析的bug',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -1827,7 +1827,7 @@ const ali = {
                 body: '{"share_id":"' + share_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":""}',
                 method: 'POST',
             }));
-        } else if(drive_id) {
+        } else if(!!drive_id) {
             json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_video_preview_play_info', {
                 headers: {
                     'Content-Type': 'application/json',
@@ -2737,7 +2737,7 @@ const ali = {
                         })
                     } else if(_zimuList && !!_zimuList.length && !zimuItemList.length) {
                         videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
-                        .select((file_id, drive_id, list, videoName) => {
+                        .select((file_id, shareId, sharetoken, list, videoName, file_data) => {
                             showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
@@ -2750,12 +2750,14 @@ const ali = {
                                     }
                                     zimuItem = list.find(_zimu => _zimu.name == name);
                                 }
-                                return ali.videoProxy(file_id, '', '', zimuItem, drive_id);
+
+                                return ali.videoProxy(file_id, shareId, sharetoken, zimuItem, null, file_data);
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
 
-                        }, file_id, drive_id, _zimuList, videoName);
+
+                        }, file_id, shareId, sharetoken, _zimuList, videoName, file_data);
                     } else {
                         videolazy = $('hiker://empty' + file_id).lazyRule((shareId, sharetoken, file_id, fnName, zimuItemList, file_data) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
