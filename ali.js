@@ -2737,7 +2737,7 @@ const ali = {
                         })
                     } else if(_zimuList && !!_zimuList.length && !zimuItemList.length) {
                         videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
-                        .select((file_id, drive_id, list, zimus, videoName) => {
+                        .select((file_id, drive_id, list, videoName) => {
                             showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
@@ -3195,7 +3195,7 @@ const ali = {
                         })
                     } else if(_zimuList  && !!_zimuList.length && !zimuItemList.length) {
                         videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
-                        .select((file_id, drive_id, list, zimus, videoName) => {
+                        .select((file_id, drive_id, list, videoName) => {
                             showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
