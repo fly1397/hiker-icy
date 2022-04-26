@@ -1895,7 +1895,9 @@ const ali = {
             if(zimu && (zimu.startsWith('http') || zimu.includes('icy/cache'))) {
                 result.subtitle = zimu;
             }
-            return JSON.stringify(result);
+            // log(JSON.stringify(result))
+            log((drive_id ? this.get_download_url(drive_id, file_id) : this.get_share_link_download_url(share_id, share_token, file_id)) + '#isVideo=true#')
+            return (drive_id ? this.get_download_url(drive_id, file_id) : this.get_share_link_download_url(share_id, share_token, file_id)) + '#isVideo=true#';
         }
         try {
             var playList = json.video_preview_play_info.live_transcoding_task_list;
@@ -2641,7 +2643,7 @@ const ali = {
                 col_type: "text_center_1"
             });
         }
-        const col_type = viewName == '列表模式' ? 'avatar' : (viewName == '全文件名模式' ? 'text_1' :'movie_3_marquee');
+        const col_type = getVar('icy_ali_view', '列表模式') == '列表模式' ? 'avatar' : (getVar('icy_ali_view', '列表模式') == '全文件名模式' ? 'text_1' :'movie_3_marquee');
         // 如果只包含一个文件夹， 直接取内容
         if(rescod.items.length === 1 && rescod.items[0].type == 'folder') {
             const folderItem = rescod.items[0];
@@ -2669,7 +2671,6 @@ const ali = {
             });
         }
 
-        
         const fnName = (fileExist(this.urls.tokenPath) == 'true' || fileExist(this.urls.tokenPath) == true || this.usePublicToken) ? 'lazyRule' : 'rule';
         const zimuExtension = ['srt', 'vtt', 'ass', 'ssa'];
         const zimuList = rescod.items.filter(_item => zimuExtension.includes(_item.file_extension));
@@ -3110,7 +3111,7 @@ const ali = {
                 col_type: "text_center_1"
             });
         }
-        const col_type = viewName == '列表模式' ? 'avatar' : (viewName == '全文件名模式' ? 'text_1' :'movie_3_marquee');
+        const col_type = getVar('icy_ali_view', '列表模式') == '列表模式' ? 'avatar' : (getVar('icy_ali_view', '列表模式') == '全文件名模式' ? 'text_1' :'movie_3_marquee');
         // 如果只包含一个文件夹， 直接取内容
         // if(rescod.items.length === 1 && rescod.items[0].type == 'folder') {
         //     const folderItem = rescod.items[0];
@@ -3143,11 +3144,11 @@ const ali = {
         rescod.items.forEach((_item, index) => {
             const {type, category, name, file_id, thumbnail, updated_at, download_url} = _item;
             let title = name;
-            // let len = 26;
-            // let len2 = len / 2;
-            // if(name.length >= len && col_type == 'avatar') {
-            //     title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
-            // }
+            let len = 26;
+            let len2 = len / 2;
+            if(name.length >= len && col_type == 'avatar') {
+                title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
+            }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm');
             let pic_url = thumbnail;
 
@@ -3169,7 +3170,7 @@ const ali = {
                             }
                             return "toast://登录后需要重新刷新页面哦！"
                         })
-                    } else if(_zimuList  && !!_zimuList.length && !zimuItemList.length) {
+                    } else if(_zimuList  && !!_zimuList.length && zimuItemList.length !== 1) {
                         videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
                         .select((file_id, drive_id, list, videoName) => {
                             showLoading('加载中');
