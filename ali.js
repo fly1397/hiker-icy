@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220511',
+    version: '20220518',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -241,7 +241,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,新增一个站点：云盘资源分享',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新阿里小站地址.\n2,新增一个站点：新小站（阿里小站新版网站）、移除阿里大站、 新增三角铁（待完善）',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -3516,14 +3516,44 @@ const ali = {
     },
     // 匹配 dataType = html的模式
     homeDataHTML: function(d) {
-        const activeModel = this.activeModel();
-        const {val, homeDataPath} = activeModel;
+        let activeModel = this.activeModel();
+        const {val, homeDataPath, needcookie, key} = activeModel;
         var page = Number(MY_URL.split('$$$')[1]);
         
         try {
             const [listPath, , , ] = homeDataPath.split(';')
             const {fyarea, fyclass, fyyear, fysort} = this.getFilter();
-            const items = parseDomForArray(fetch(val.replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page)), listPath);
+            let dom = '';
+            let cookie = getVar(key, '');
+            let url = val.replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page);
+
+            if(!!needcookie && !cookie) {
+                const pageResult = JSON.parse(fetch(url, {
+                    headers: {'User-Agent': MOBILE_UA,},
+                    withHeaders: true
+                }));
+                cookie = pageResult.headers['set-cookie'].join(';');
+                dom = fetch(url, {
+                    headers: {
+                        "User-Agent": MOBILE_UA,
+                        "cookie": cookie,
+                    }
+                })
+
+            } else {
+                dom = fetch(url, {
+                    headers: {
+                        "User-Agent": MOBILE_UA,
+                        "cookie": cookie,
+                    }
+                })
+            }
+            const items = parseDomForArray(dom, listPath);
+            if(!!needcookie && cookie) {
+                if(items.length) {
+                    putVar(key, cookie)
+                }
+            }
             this.listPageHTML(items, homeDataPath, d, page, activeModel);
         } catch(e) {
             if(page == 1) {
@@ -3539,12 +3569,41 @@ const ali = {
     },
     searchHTML: function(activeModel, fromHikerSearch, keyword, page, d) {
         try {
-            const {searchUrl, searchDataPath , homeDataPath, val} = activeModel;
+            const {searchUrl, searchDataPath , homeDataPath, val, key, needcookie} = activeModel;
             const _path = searchDataPath || homeDataPath;
             const [listPath, , , ] = _path.split(';');
             const {fyarea, fyclass, fyyear, fysort} = this.getFilter(true);
-            const searchResult = fetch(searchUrl.replace('**', keyword).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page));
-            const items = parseDomForArray(searchResult, listPath);
+            let dom = '';
+            let cookie = getVar(key, '');
+            let url = searchUrl.replace('**', keyword).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page);
+
+            if(!!needcookie && !cookie) {
+                const pageResult = JSON.parse(fetch(url, {
+                    headers: {'User-Agent': MOBILE_UA,},
+                    withHeaders: true
+                }));
+                cookie = pageResult.headers['set-cookie'].join(';');
+                dom = fetch(url, {
+                    headers: {
+                        "User-Agent": MOBILE_UA,
+                        "cookie": cookie,
+                    }
+                })
+
+            } else {
+                dom = fetch(url, {
+                    headers: {
+                        "User-Agent": MOBILE_UA,
+                        "cookie": cookie,
+                    }
+                })
+            }
+            const items = parseDomForArray(dom, listPath);
+            if(!!needcookie && cookie) {
+                if(items.length) {
+                    putVar(key, cookie)
+                }
+            }
             this.listPageHTML(items, _path, d, page, activeModel, keyword, fromHikerSearch);
         } catch(e) {
             if(page == 1) {
