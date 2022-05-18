@@ -3,7 +3,7 @@
   {
     "name": "🔑 阿里小站",
     "index": 0,
-    "val": "https://www.pan666.cn",
+    "val": "https://www.pan666.com.cn",
     "key": "xiaozhan",
     "desc": "阿里云盘资源共享站",
     "needKey": true,
@@ -11,7 +11,7 @@
     "password": "",
     "cookie": "",
     "loginError": false,
-    "searchUrl": "https://www.pan666.cn/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
+    "searchUrl": "https://www.pan666.com.cn/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
     "cats": [
       { "name": "影视", "val": "video", "withType": 1},
       { "name": "动漫", "val": "comic", "withType": 1 },
@@ -54,21 +54,21 @@
       ]
     },
     {
-      "name": "🔥 阿里大站",
-      "index": 2,
-      "val": "https://pan.3636360.com/api/v3/thread.list?perPage=10&page=fypage&fyclass&fysort",
-      "key": "dazhan",
-      "desc": "阿里大站,阿里云盘资源共享站",
+      "name": "🔥 三角体",
+      "index": 8,
+      "val": "https://www.ood.one/api/v3/thread.list?perPage=10&page=fypage&fyclass&fysort",
+      "key": "ood",
+      "desc": "三角体阿里云网盘资源共享",
       "dataType": "json",
-      "detailLinkPre": "https://pan.3636360.com/thread/",
+      "detailLinkPre": "https://www.ood.one/thread/",
       "homeDataPath": "Data&&pageData;title;threadId;content&&text;",
-      "searchUrl": "https://pan.3636360.com/api/v3/thread.list?perPage=10&page=fypage&filter[search]=**&scope=2",
+      "searchUrl": "https://www.ood.one/api/v3/thread.list?perPage=10&page=fypage&filter[search]=**&scope=2",
       "searchDataPath": "Data&&pageData;title;threadId;content&&text;",
       "cats": [
         { "name": "影视", "val": "filter[categoryids][0]=1", "withType": 1},
         { "name": "动漫", "val": "filter[categoryids][0]=7", "withType": 1},
         { "name": "音乐", "val": "filter[categoryids][0]=2", "withType": 1},
-        { "name": "图片", "val": "filter[categoryids][0]=3", "withType": 1}
+        { "name": "图书", "val": "filter[categoryids][0]=3", "withType": 1}
       ],
       "sorts": [
         { "name": "全部", "val": "filter[essence]=0&filter[attention]=0&filter[sort]=1&scope=0", "withType": 1},
@@ -282,6 +282,33 @@
             { "name": "2016-2011",  "val": "23", "withType": 1},
             { "name": "2010-2000",  "val": "24", "withType": 1},
             { "name": "更早",  "val": "25", "withType": 1}
+        ]
+    },
+    {
+        "name": "🔥 新小站",
+        "index": 7,
+        "val": "https://newxiaozhan.com/forum.php?mod=forumdisplay&fid=fyclassfysort&page=fypage",
+        "key": "newxiaozhan",
+        "desc": "阿里小站-阿里云盘资源共享站, 由于网站频繁遭受攻击，而之前的网站系统很难进行维护防御，目前升级新系统！",
+        "dataType": "html",
+        "needcookie": true,
+        "detailLinkPre": "https://newxiaozhan.com/",
+        "itemsExcloudByLink": "#|https",
+        "homeDataPath": ".hthreadlist&&li;.title&&Text;.title&&a&&href;.from&&Text;",
+        "searchUrl": "https://newxiaozhan.com/search.php?mod=forum&searchid=2996&orderby=lastpost&ascdesc=desc&searchsubmit=yes&kw=**&mobile=2&page=fypage",
+        "searchDataPath": ".hthreadlist&&li;.title&&Text;.title&&a&&href;.from&&Text;",
+        "detailPath": ".zepfirst&&.message&&Html",
+        "cats": [
+            { "name": "影视",  "val": "2", "withType": 1},
+            { "name": "动漫",  "val": "40", "withType": 1},
+            { "name": "音乐",  "val": "39", "withType": 1},
+            { "name": "图片",  "val": "36", "withType": 1},
+            { "name": "书籍",  "val": "41", "withType": 1}
+        ],
+        "sorts": [
+            { "name": "综合",  "val": "", "withType": 1},
+            { "name": "最新",  "val": "&orderby=lastpost&filter=lastpost", "withType": 1},
+            { "name": "热门",  "val": "&filter=heat&orderby=heats", "withType": 1}
         ]
     },
     {
