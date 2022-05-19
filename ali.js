@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220518',
+    version: '20220519',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -98,6 +98,19 @@ const ali = {
             }
         }
         return fmt; 
+    },
+    formatSize: function(size){
+        if(!size) {
+            return '';
+        }
+        const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        let i = 0;
+        while (size >= 1024) {
+            size /= 1024;
+            i++;
+        }
+        size = i ? Number(size.toFixed(2)) : size;
+        return `${size} ${units[i]}`;
     },
     searchFetch: function(host, url, keyword, page, cookie){
         const {fyarea, fyclass, fyyear, fysort} = this.getFilter(true);
@@ -241,7 +254,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新阿里小站地址.\n2,新增一个站点：新小站（阿里小站新版网站）、移除阿里大站、 新增三角铁（待完善）',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复up云搜.\n2,站点：新小站，三角铁部分完善',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -2675,14 +2688,14 @@ const ali = {
         const zimuExtension = ['srt', 'vtt', 'ass', 'ssa'];
         const zimuList = rescod.items.filter(_item => zimuExtension.includes(_item.file_extension));
         rescod.items.forEach((_item, index) => {
-            const {type, category, name, file_id, thumbnail, updated_at} = _item;
+            const {type, category, name, file_id, thumbnail, updated_at, size} = _item;
             let title = name;
             let len = 26;
             let len2 = len / 2;
             if(name.length >= len && col_type == 'avatar') {
                 title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
             }
-            let desc = this.formatDate(updated_at, 'MM/dd HH:mm');
+            let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
             let pic_url = thumbnail || this.randomPic +'?t='+new Date().getTime() + '' +index;
 
             switch(category || type){
@@ -3142,14 +3155,14 @@ const ali = {
         const zimuExtension = ['srt', 'vtt', 'ass'];
         const zimuList = rescod.items.filter(_item => zimuExtension.includes(_item.file_extension));
         rescod.items.forEach((_item, index) => {
-            const {type, category, name, file_id, thumbnail, updated_at, download_url} = _item;
+            const {type, category, name, file_id, thumbnail, updated_at, download_url, size} = _item;
             let title = name;
             let len = 26;
             let len2 = len / 2;
             if(name.length >= len && col_type == 'avatar') {
                 title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
             }
-            let desc = this.formatDate(updated_at, 'MM/dd HH:mm');
+            let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
             let pic_url = thumbnail;
 
             switch(category || type){
@@ -3326,7 +3339,12 @@ const ali = {
                     setItem('ujuso', kid);
                 }
             }
-            const items = this.objData(JSON.parse(fetch(url)), listPath);
+            let result = fetch(url);
+            if(key == 'upsou') {
+                result = base64Decode(result);
+
+            }
+            const items = this.objData(JSON.parse(result), listPath);
             this.listPageJSON(items, homeDataPath, d, activeModel, page);
         } catch(e) {
             if(page == 1) {
@@ -3403,7 +3421,11 @@ const ali = {
                     setItem('ujuso', kid);
                 }
             }
-            const items = this.objData(JSON.parse(fetch(url)), listPath);
+            let result = fetch(url);
+            if(key == 'upsou') {
+                result = base64Decode(result);
+            }
+            const items = this.objData(JSON.parse(result), listPath);
             this.listPageJSON(items, searchDataPath, d, activeModel, page, keyword, fromHikerSearch);
         } catch(e) {
             if(page == 1) {
@@ -3429,31 +3451,40 @@ const ali = {
         }
     },
     listPageJSON: function(items, dataPath, d, activeModel, page, keyword, fromHikerSearch) {
-        const {name, detailLinkPre} = activeModel;
+        const {name, detailLinkPre, key} = activeModel;
         const [, titlePath, linkPath, descPath] = dataPath.split(';')
         if(!!items && !!items.length) {
             items.forEach((dataitem) => {
                 let title = this.objData(dataitem, titlePath) || '';
-                const link = (detailLinkPre || '') + (this.objData(dataitem, linkPath) || '');
+                let link = (detailLinkPre || '') + (this.objData(dataitem, linkPath) || '');
                 const desc = this.objData(dataitem, descPath) || '';
                 const contentDome = '<div class="fortext">' + desc || '' + '</div>';
                 const pic = parseDomForHtml(contentDome, '.fortext&&img&&src') || '';
                 const descStr = parseDomForHtml(contentDome, '.fortext&&Text');
                 title = this.getEmptyTitle(title, descStr);
                 const isShareLink = link.startsWith('https://www.aliyundrive.com/s/');
+                let lazy = $(link).rule((title, link, desc) => {
+                    var d = [];
+                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                    ali.detailDataJSON(title, link , desc, d);
+                    setHomeResult({
+                        data: d
+                    })
+                }, title, link, desc)
+                if(key == 'upsou') {
+                    link = link.replace('download.html?url=', 'download?url=');
+                    lazy = $(link).lazyRule(() => {
+                        let result = fetch(input);
+                        result = JSON.parse(base64Decode(result));
+                        return 'hiker://page/detail?url=' + result.result.res_url + '??fypage'
+                    })
+                }
                 d.push({
                     title: title,
                     pic_url: pic,
                     desc: fromHikerSearch ? name : descStr,
                     content: descStr,
-                    url: isShareLink ? 'hiker://page/detail?url=' + link + '??fypage' : $(link).rule((title, link, desc) => {
-                        var d = [];
-                        eval(fetch('hiker://files/rules/icy/ali.js'));
-                        ali.detailDataJSON(title, link , desc, d);
-                        setHomeResult({
-                            data: d
-                        })
-                    }, title, link, desc),
+                    url: isShareLink ? 'hiker://page/detail?url=' + link + '??fypage' : lazy,
                     col_type: pic ? "movie_1_left_pic" : 'text_1'
                 })
             })
@@ -3618,7 +3649,7 @@ const ali = {
         }
     },
     listPageHTML: function(items, dataPath, d, page, activeModel, keyword, fromHikerSearch) {
-        const {name, detailLinkPre, itemsExcloudByLink, detailPath} = activeModel;
+        const {name, detailLinkPre, itemsExcloudByLink, detailPath, key, needcookie} = activeModel;
         const [, titlePath, linkPath, descPath] = dataPath.split(';')
         if(items && items.length) {
             items.forEach((dataitem) => {
@@ -3658,21 +3689,48 @@ const ali = {
                     }
                 })
                 if(!!detailPath) {
-                    lazy = $('').rule((_title, _detailPath) => {
+                    lazy = $('').rule((_title, _detailPath, key, needcookie) => {
                         let _url = MY_URL;
                         let title = _title;                        
                         let detailPath = _detailPath;
                         if(MY_URL.includes('??')) {
                             [_url, title,detailPath,] = MY_URL.split('??');
                         }
-                        
-                        const res = fetch(_url); 
-                        const content = parseDomForHtml(res, detailPath).split('<div class="card-body">')[0].replace(/<style.*\/style>/g, '').replace(/<script.*\/script>/g, '').replace(/\s*fr\s*om\s*w\s*ww\.yun\s*pan\s*zi\s*yuan\.co\s*m/g, '');
+                        let dom = '';
+                        let cookie = getVar(key, '');
+
+                        if(!!needcookie && !cookie) {
+                            const pageResult = JSON.parse(fetch(_url, {
+                                headers: {'User-Agent': MOBILE_UA,},
+                                withHeaders: true
+                            }));
+                            cookie = pageResult.headers['set-cookie'].join(';');
+                            dom = fetch(_url, {
+                                headers: {
+                                    "User-Agent": MOBILE_UA,
+                                    "cookie": cookie,
+                                }
+                            })
+
+                        } else {
+                            dom = fetch(_url, {
+                                headers: {
+                                    "User-Agent": MOBILE_UA,
+                                    "cookie": cookie,
+                                }
+                            })
+                        }
+                        const content = parseDomForHtml(dom, detailPath).split('<div class="card-body">')[0].replace(/<style.*\/style>/g, '').replace(/<script.*\/script>/g, '').replace(/\s*fr\s*om\s*w\s*ww\.yun\s*pan\s*zi\s*yuan\.co\s*m/g, '');
                         var d = [];
+                        if(!!needcookie && cookie) {
+                            if(content) {
+                                putVar(key, cookie)
+                            }
+                        }
                         eval(fetch('hiker://files/rules/icy/ali.js'));
                         ali.detailPageHTML(title, _url, content, d);
                         setHomeResult({data: d});
-                    }, title, detailPath)
+                    }, title, detailPath, key, needcookie)
                 }
                 d.push({
                     title: title,
