@@ -314,23 +314,18 @@
     {
       "name": "🔍 UP云搜",
       "index": 10,
-      "val": "https://www.upyunso.com/search.html?page=fypage&keyword=%E6%9C%80%E6%96%B0",
+      "val": "https://api.upyunso.com/search?keyword=%E6%9C%80%E6%96%B0&page=fypage&s_type=fyclass",
       "key": "upsou",
       "desc": "UP云搜,最早提供阿里云盘搜索服务的平台,收集各类阿里云盘资源提供一站式搜索功能,推动互联网优质资源的高效传递!",
-      "dataType": "html",
-      "detailLinkPre": "https://www.upyunso.com/",
+      "dataType": "json",
+      "detailLinkPre": "https://api.upyunso.com/",
       "itemsExcloudByLink": "#|https?",
-      "homeDataPath": "body&&.resource-item;h1&&Text;a&&href;.resource-meta&&Text+.resource-meta,1&&.meta-item&&Text;",
-      "searchUrl": "https://www.upyunso.com/search.html?page=fypage&keyword=**&search_folder_or_file=fyclass&is_search_folder_content=1&is_search_path_title=1&category=all&file_extension=all&search_model=fysort",
-      "searchDataPath": "body&&.resource-item;h1&&Text;a&&href;.resource-meta&&Text+.resource-meta,1&&.meta-item&&Text;",
+      "homeDataPath": "result&&items;title;page_url;insert_time;",
+      "searchUrl": "https://api.upyunso.com/search?keyword=**&page=fypage&s_type=fyclass",
+      "searchDataPath": "result&&items;title;page_url;insert_time;",
       "cats": [
-        { "name": "线路一", "val": "", "withType": -1},
-        { "name": "线路二", "val": "2", "withType": -1}
-      ],
-      "sorts": [
-        { "name": "目录+文件", "val": "", "withType": -1},
-        { "name": "目录", "val": "1", "withType": -1},
-        { "name": "文件", "val": "2", "withType": -1}
+        { "name": "标题", "val": "1", "withType": 1},
+        { "name": "标题+内容", "val": "2", "withType": 1}
       ]
     },
     {
