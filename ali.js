@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220519',
+    version: '20220609',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -254,7 +254,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复up云搜.\n2,站点：新小站，三角铁部分完善',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,增加原始文件模式的字幕支持',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -648,8 +648,9 @@ const ali = {
             headers: {'User-Agent': MOBILE_UA,},
             withHeaders: true
         }));
-        const cookie = pageResult.headers['set-cookie'].join(';');
+        let cookie = pageResult.headers['set-cookie'].join(';');
         const _token = pageResult.headers['x-csrf-token'].join(';');
+        cookie = cookie.split(';').filter(item => !item.includes('Path=') && !item.includes('Expires=') && !item.includes('Max-Age=') && !item.includes('SameSite=') && item.includes('=')).join(';')
         const token = pageResult.body.match(/csrfToken":"([\w|\d]*)"/);
         if(!token || !token[1] || !cookie) {
             return false;
@@ -665,7 +666,7 @@ const ali = {
             body: '{"identification": "'+username+'","password": "'+password+'","remember":true}',
             withHeaders: true
         }));
-        if(login.body && login.body.includes('errors')) {
+        if(login.body && login.body.includes('errors') && login.body.includes('not_authenticated')) {
             confirm({
                 title: '登录失败',
                 content: '需要配置正确的账号和密码！',
@@ -1249,7 +1250,7 @@ const ali = {
             })
             return;
         }
-        if(page == 1 && (res.includes('l2sp') || (key == 'xiaozhan' && !cookie))) {
+        if(page == 1 && (res.includes('l2sp'))) {
             if(username && password && !loginError) {
                 d.push({
                     title: '““””需要登录才能查看链接<b><span style="color: '+ this.primaryColor +'">🔑 点击登录</span></b>',
@@ -1908,9 +1909,10 @@ const ali = {
             if(zimu && (zimu.startsWith('http') || zimu.includes('icy/cache'))) {
                 result.subtitle = zimu;
             }
+            return JSON.stringify(result);
             // log(JSON.stringify(result))
-            log((drive_id ? this.get_download_url(drive_id, file_id) : this.get_share_link_download_url(share_id, share_token, file_id)) + '#isVideo=true#')
-            return (drive_id ? this.get_download_url(drive_id, file_id) : this.get_share_link_download_url(share_id, share_token, file_id)) + '#isVideo=true#';
+            // log((drive_id ? this.get_download_url(drive_id, file_id) : this.get_share_link_download_url(share_id, share_token, file_id)) + '#isVideo=true#')
+            // return (drive_id ? this.get_download_url(drive_id, file_id) : this.get_share_link_download_url(share_id, share_token, file_id)) + '#isVideo=true#';
         }
         try {
             var playList = json.video_preview_play_info.live_transcoding_task_list;
@@ -2449,8 +2451,8 @@ const ali = {
             return false;
         }
         const getFileList = (sharetoken, shareId, folderID, next_marker) => {
-            var order_by = getVar('icy_ali_order_by', 'name');
-            var order_direction = getVar('icy_ali_order_direction', 'ASC');
+            var order_by = getItem('icy_ali_order_by', 'name');
+            var order_direction = getItem('icy_ali_order_direction', 'ASC');
             var folderRes = null;
             if(folderID) {
                 let [_myUrl, _fypage] = MY_URL.split('??');
@@ -2488,11 +2490,11 @@ const ali = {
             });
         }
 
-        if(!getVar('icy_ali_order_by')) {
-            putVar('icy_ali_order_by', 'name');
+        if(!getItem('icy_ali_order_by')) {
+            setItem('icy_ali_order_by', 'name');
         }
-        if(!getVar('icy_ali_order_direction')) {
-            putVar('icy_ali_order_direction', 'ASC');
+        if(!getItem('icy_ali_order_direction')) {
+            setItem('icy_ali_order_direction', 'ASC');
         }
         var d = [];
         if(page == 1) {
@@ -2538,20 +2540,20 @@ const ali = {
             }
             const sortLazy = $(['名称正序', '名称倒序', '时间正序', '时间倒序'], 1)
             .select(() => {
-                putVar("icy_ali_order",input);
+                setItem("icy_ali_order",input);
                 if(input.includes('名称')) {
-                    putVar('icy_ali_order_by', 'name');
+                    setItem('icy_ali_order_by', 'name');
                 } else {
-                    putVar('icy_ali_order_by', 'updated_at');
+                    setItem('icy_ali_order_by', 'updated_at');
                 }
                 if(input.includes('正序')) {
-                    putVar('icy_ali_order_direction', 'ASC');
+                    setItem('icy_ali_order_direction', 'ASC');
                 } else {
-                    putVar('icy_ali_order_direction', 'DESC');
+                    setItem('icy_ali_order_direction', 'DESC');
                 }
                 refreshPage(false);
             });
-            var sort = getVar('icy_ali_order', '名称正序');
+            var sort = getItem('icy_ali_order', '名称正序');
 
             d.push({
                 title: '⇅' + sort,
@@ -2565,14 +2567,14 @@ const ali = {
             // this.rendererFilter(d, order_direction_arr, 'icy_ali_order_direction');
             const viewLazy = $(['列表模式', '图文模式', '全文件名模式'], 1)
             .select(() => {
-                putVar("icy_ali_view",input);
+                setItem("icy_ali_view",input);
                 refreshPage(false);
                 return "hiker://empty"
             });
-            var viewName = getVar('icy_ali_view', '列表模式');
+            var viewName = getItem('icy_ali_view', '列表模式');
             if(!viewName.includes('模式')) {
                 viewName = '列表模式';
-                putVar("icy_ali_view",'列表模式');
+                setItem("icy_ali_view",'列表模式');
             }
             d.push({
                 title: '👀' + viewName,
@@ -2656,7 +2658,7 @@ const ali = {
                 col_type: "text_center_1"
             });
         }
-        const col_type = getVar('icy_ali_view', '列表模式') == '列表模式' ? 'avatar' : (getVar('icy_ali_view', '列表模式') == '全文件名模式' ? 'text_1' :'movie_3_marquee');
+        const col_type = getItem('icy_ali_view', '列表模式') == '列表模式' ? 'avatar' : (getItem('icy_ali_view', '列表模式') == '全文件名模式' ? 'text_1' :'movie_3_marquee');
         // 如果只包含一个文件夹， 直接取内容
         if(rescod.items.length === 1 && rescod.items[0].type == 'folder') {
             const folderItem = rescod.items[0];
@@ -2902,8 +2904,8 @@ const ali = {
             return 'toast://到底了！';
         }
         const getFileList = (access_token, drive_id, folderID, next_marker) => {
-            var order_by = getVar('icy_ali_order_by', 'name');
-            var order_direction = getVar('icy_ali_order_direction', 'ASC');
+            var order_by = getItem('icy_ali_order_by', 'name');
+            var order_direction = getItem('icy_ali_order_direction', 'ASC');
             var folderRes = null;
             // if(folderID) {
             //     let [_myUrl, _fypage] = MY_URL.split('??');
@@ -2951,11 +2953,11 @@ const ali = {
             });
         }
 
-        if(!getVar('icy_ali_order_by')) {
-            putVar('icy_ali_order_by', 'name');
+        if(!getItem('icy_ali_order_by')) {
+            setItem('icy_ali_order_by', 'name');
         }
-        if(!getVar('icy_ali_order_direction')) {
-            putVar('icy_ali_order_direction', 'ASC');
+        if(!getItem('icy_ali_order_direction')) {
+            setItem('icy_ali_order_direction', 'ASC');
         }
         if(page == 1) {
             if(!folderID) {
@@ -3027,20 +3029,20 @@ const ali = {
             }
             const sortLazy = $(['名称正序', '名称倒序', '时间正序', '时间倒序'], 1)
             .select(() => {
-                putVar("icy_ali_order",input);
+                setItem("icy_ali_order",input);
                 if(input.includes('名称')) {
-                    putVar('icy_ali_order_by', 'name');
+                    setItem('icy_ali_order_by', 'name');
                 } else {
-                    putVar('icy_ali_order_by', 'updated_at');
+                    setItem('icy_ali_order_by', 'updated_at');
                 }
                 if(input.includes('正序')) {
-                    putVar('icy_ali_order_direction', 'ASC');
+                    setItem('icy_ali_order_direction', 'ASC');
                 } else {
-                    putVar('icy_ali_order_direction', 'DESC');
+                    setItem('icy_ali_order_direction', 'DESC');
                 }
                 refreshPage(false);
             });
-            var sort = getVar('icy_ali_order', '名称正序');
+            var sort = getItem('icy_ali_order', '名称正序');
 
             d.push({
                 title: '⇅' + sort,
@@ -3054,14 +3056,14 @@ const ali = {
             // this.rendererFilter(d, order_direction_arr, 'icy_ali_order_direction');
             const viewLazy = $(['列表模式', '图文模式', '全文件名模式'], 1)
             .select(() => {
-                putVar("icy_ali_view",input);
+                setItem("icy_ali_view",input);
                 refreshPage(false);
                 return "hiker://empty"
             });
-            var viewName = getVar('icy_ali_view', '列表模式');
+            var viewName = getItem('icy_ali_view', '列表模式');
             if(!viewName.includes('模式')) {
                 viewName = '列表模式';
-                putVar("icy_ali_view",'列表模式');
+                setItem("icy_ali_view",'列表模式');
             }
             d.push({
                 title: '👀' + viewName,
@@ -3124,7 +3126,7 @@ const ali = {
                 col_type: "text_center_1"
             });
         }
-        const col_type = getVar('icy_ali_view', '列表模式') == '列表模式' ? 'avatar' : (getVar('icy_ali_view', '列表模式') == '全文件名模式' ? 'text_1' :'movie_3_marquee');
+        const col_type = getItem('icy_ali_view', '列表模式') == '列表模式' ? 'avatar' : (getItem('icy_ali_view', '列表模式') == '全文件名模式' ? 'text_1' :'movie_3_marquee');
         // 如果只包含一个文件夹， 直接取内容
         // if(rescod.items.length === 1 && rescod.items[0].type == 'folder') {
         //     const folderItem = rescod.items[0];
