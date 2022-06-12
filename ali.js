@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220609',
+    version: '20220610',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -1923,9 +1923,11 @@ const ali = {
                     let playLink = ''
                     if(share_id) {
                         let _d = base64Encode(encodeURI(JSON.stringify(file_data))).replace(/\//g,'$');
-                        playLink = 'http://116.85.31.19:3000/apis/yun-play/'+_d+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
+                        log(_d)
+
+                        playLink = 'http://116.85.31.19:4000/apis/yun-play/'+_d+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
                     } else if(drive_id) {
-                        playLink = 'http://116.85.31.19:3000/apis/my-yun-play/'+file_id+'/'+drive_id+'/'+access_token+'/'+value+'/index.m3u8';
+                        playLink = 'http://116.85.31.19:4000/apis/my-yun-play/'+file_id+'/'+drive_id+'/'+access_token+'/'+value+'/index.m3u8';
                     }
                     result.urls.push(playLink);
                     result.headers.push({'Referer': 'https://www.aliyundrive.com/'})
