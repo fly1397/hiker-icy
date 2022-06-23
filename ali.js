@@ -1925,9 +1925,9 @@ const ali = {
                         let _d = base64Encode(encodeURI(JSON.stringify(file_data))).replace(/\//g,'$');
                         log(_d)
 
-                        playLink = 'http://116.85.31.19:4000/apis/yun-play/'+_d+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
+                        playLink = 'http://116.85.31.19:3000/apis/yun-play/'+_d+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
                     } else if(drive_id) {
-                        playLink = 'http://116.85.31.19:4000/apis/my-yun-play/'+file_id+'/'+drive_id+'/'+access_token+'/'+value+'/index.m3u8';
+                        playLink = 'http://116.85.31.19:3000/apis/my-yun-play/'+file_id+'/'+drive_id+'/'+access_token+'/'+value+'/index.m3u8';
                     }
                     result.urls.push(playLink);
                     result.headers.push({'Referer': 'https://www.aliyundrive.com/'})
