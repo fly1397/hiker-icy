@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220610',
+    version: '20220729',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -240,7 +240,7 @@ const ali = {
     },
     update: function(){
         const version = getItem('icy_ali_version');
-        if(!version || version != this.version) {
+        if(version !== null && !version && version != this.version) {
             var js = $.toString(() => {
                 eval(fetch("hiker://files/rules/icy/ali.js"));
                 ali.initConfig(true);
@@ -254,7 +254,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,增加原始文件模式的字幕支持',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复个人云盘页面播放失败的问题 \n2,修复部分字幕文件加载问题',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -1856,7 +1856,7 @@ const ali = {
         if(json.code && json.message) {
             if(json.code.includes('AccessTokenInvalid')) {
                 this.getAliToken(true);
-                return this.videoProxy(file_id, share_id, share_token, drive_id);
+                return this.videoProxy(file_id, share_id, share_token,zimuItem, drive_id);
                 // eval(fetch('hiker://files/rules/icy/ali.js'));
                 // var access_token = ali.getAliToken(true);
                 // // confirm({
@@ -1923,9 +1923,9 @@ const ali = {
                     let playLink = ''
                     if(share_id) {
 
-                        playLink = 'http://116.85.31.19:3000/apis/yun-play/'+share_id+'/'+file_id+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
+                        playLink = 'http://116.85.31.19:5000/apis/yun-play/'+share_id+'/'+file_id+'/'+access_token+'/'+share_token+'/'+value+'/index.m3u8';
                     } else if(drive_id) {
-                        playLink = 'http://116.85.31.19:3000/apis/my-yun-play/'+file_id+'/'+drive_id+'/'+access_token+'/'+value+'/index.m3u8';
+                        playLink = 'http://116.85.31.19:5000/apis/my-yun-play/'+file_id+'/'+drive_id+'/'+access_token+'/'+value+'/index.m3u8';
                     }
                     result.urls.push(playLink);
                     result.headers.push({'Referer': 'https://www.aliyundrive.com/'})
@@ -1933,6 +1933,7 @@ const ali = {
                     if(zimu && (zimu.startsWith('http') || zimu.includes('icy/cache'))) {
                         result.subtitle = zimu;
                     }
+                    return playLink;
                 }
             });
         } catch (err) {
@@ -2709,6 +2710,7 @@ const ali = {
                     }
                     let videolazy = '';
                     let _zimuList = (zimuItemList && !!zimuItemList.length) ? zimuItemList : zimuList;
+
                     if(fnName == 'rule') {
                         videolazy = $('hiker://empty' + file_id).rule(() => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
@@ -2718,7 +2720,7 @@ const ali = {
                             }
                             return "toast://登录后需要重新刷新页面哦！"
                         })
-                    } else if(_zimuList && !!_zimuList.length && !zimuItemList.length) {
+                    } else if(_zimuList && !!_zimuList.length  && (zimuItemList.length > 1 || !zimuItemList.length)) {
                         videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
                         .select((file_id, shareId, sharetoken, list, videoName) => {
                             showLoading('加载中');
@@ -2733,7 +2735,6 @@ const ali = {
                                     }
                                     zimuItem = list.find(_zimu => _zimu.name == name);
                                 }
-
                                 return ali.videoProxy(file_id, shareId, sharetoken, zimuItem, null);
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
@@ -2747,7 +2748,7 @@ const ali = {
                             var access_token = ali.getAliToken();
                             if(access_token) {
                                 let zimuItem = null;
-                                if(zimuItemList && zimuItemList.length == 1) {
+                                if(zimuItemList && zimuItemList.length) {
                                     zimuItem = zimuItemList[0]
                                 }
                                 return ali.videoProxy(file_id, shareId, sharetoken, zimuItem, null);
@@ -3169,6 +3170,7 @@ const ali = {
                     }
                     let videolazy = '';
                     let _zimuList = (zimuItemList && zimuItemList.length) ? zimuItemList : zimuList;
+
                     if(fnName == 'rule') {
                         videolazy = $('hiker://empty' + file_id).rule(() => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
@@ -3178,10 +3180,10 @@ const ali = {
                             }
                             return "toast://登录后需要重新刷新页面哦！"
                         })
-                    } else if(_zimuList  && !!_zimuList.length && zimuItemList.length !== 1) {
+                    } else if(_zimuList  && !!_zimuList.length && (zimuItemList.length > 1 || !zimuItemList.length)) {
                         videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
                         .select((file_id, drive_id, list, videoName) => {
-                            showLoading('加载中');
+                            // showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
                             if(access_token) {
@@ -3193,7 +3195,10 @@ const ali = {
                                     }
                                     zimuItem = list.find(_zimu => _zimu.name == name);
                                 }
-                                return ali.videoProxy(file_id, '', '', zimuItem, drive_id);
+                                return $('hiker://empty' + file_id).lazyRule((file_id , zimuItem, drive_id) => {
+                                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                                    return ali.videoProxy(file_id, '', '', zimuItem, drive_id);
+                                },file_id , zimuItem, drive_id)
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
@@ -3205,7 +3210,7 @@ const ali = {
                             var access_token = ali.getAliToken();
                             if(access_token) {
                                 let zimuItem = null;
-                                if(zimuItemList && zimuItemList.length == 1) {
+                                if(zimuItemList && zimuItemList.length) {
                                     zimuItem = zimuItemList[0]
                                 }
                                 return ali.videoProxy(file_id, '', '', zimuItem, drive_id);
