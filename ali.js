@@ -240,7 +240,7 @@ const ali = {
     },
     update: function(){
         const version = getItem('icy_ali_version');
-        if(version !== null && !version && version != this.version) {
+        if(version !== null && Number(version) !== 0 && !version && version != this.version) {
             var js = $.toString(() => {
                 eval(fetch("hiker://files/rules/icy/ali.js"));
                 ali.initConfig(true);
