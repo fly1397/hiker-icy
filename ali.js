@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220729',
+    version: '20220807',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -38,6 +38,27 @@ const ali = {
     // 颜色
     primaryColor: '#f47983',
     
+    update: function(){
+        const version = getItem('icy_ali_version');
+        if(version !== null && Number(version) !== 0 && version != this.version) {
+            var js = $.toString(() => {
+                eval(fetch("hiker://files/rules/icy/ali.js"));
+                ali.initConfig(true);
+                setItem("icy_ali_version", ali.version);
+                refreshPage();
+                confirm({
+                    title:"更新成功",
+                    content:"最新版本：" + ali.version
+                })
+            })
+            // eval(js)
+            confirm({
+                title: '版本更新 ',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,对无法预览文件增加下载支持\n2,更新阿里小站地址',
+                confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
+            })
+        }
+    },
     formatBytes: function(a, b) { 
         if (0 == a) return "0 B"; 
         var c = 1024, d = b || 2, e = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"], f = Math.floor(Math.log(a) / Math.log(c)); 
@@ -237,27 +258,6 @@ const ali = {
         Object.keys(targt).forEach(key => {
             source[key] = targt[key];
         })
-    },
-    update: function(){
-        const version = getItem('icy_ali_version');
-        if(version !== null && Number(version) !== 0 && !version && version != this.version) {
-            var js = $.toString(() => {
-                eval(fetch("hiker://files/rules/icy/ali.js"));
-                ali.initConfig(true);
-                setItem("icy_ali_version", ali.version);
-                refreshPage();
-                confirm({
-                    title:"更新成功",
-                    content:"最新版本：" + ali.version
-                })
-            })
-            // eval(js)
-            confirm({
-                title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复个人云盘页面播放失败的问题 \n2,修复部分字幕文件加载问题',
-                confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
-            })
-        }
     },
     updateRule: function(){
         let ruleCode = "海阔视界规则分享，当前分享的是：小程序￥home_rule_v2￥base64://@云盘汇影@eyJsYXN0X2NoYXB0ZXJfcnVsZSI6IiIsInRpdGxlIjoi5LqR55uY5rGH5b2xIiwiYXV0aG9yIjoiTXJGbHkiLCJ1cmwiOiJoaWtlcjovL2VtcHR5JCQkZnlwYWdlIiwidmVyc2lvbiI6NiwiY29sX3R5cGUiOiJ0ZXh0XzEiLCJjbGFzc19uYW1lIjoiIiwidHlwZSI6ImFsbCIsImNsYXNzX3VybCI6IiIsImFyZWFfbmFtZSI6IiIsImFyZWFfdXJsIjoiIiwic29ydF9uYW1lIjoiIiwieWVhcl9uYW1lIjoiIiwic29ydF91cmwiOiIiLCJ5ZWFyX3VybCI6IiIsImZpbmRfcnVsZSI6ImpzOlxuZXZhbChmZXRjaCgnaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzJykpO1xuYWxpLmhvbWVQYWdlKCk7Iiwic2VhcmNoX3VybCI6Imhpa2VyOi8vZW1wdHkkJCQqKiQkJGZ5cGFnZSQkJCIsImdyb3VwIjoi4pGg5o6o6I2QIiwic2VhcmNoRmluZCI6ImpzOlxuZXZhbChmZXRjaCgnaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzJykpO1xuYWxpLnNlYXJjaFBhZ2UodHJ1ZSk7XG4iLCJkZXRhaWxfY29sX3R5cGUiOiJtb3ZpZV8xIiwiZGV0YWlsX2ZpbmRfcnVsZSI6ImpzOlxuZXZhbChmZXRjaCgnaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzJykpO1xuYWxpLmRldGFpbFBhZ2UoKTsiLCJzZGV0YWlsX2NvbF90eXBlIjoibW92aWVfMSIsInNkZXRhaWxfZmluZF9ydWxlIjoiIiwidWEiOiJtb2JpbGUiLCJwcmVSdWxlIjoidmFyIGFsaWpzID0gZmV0Y2goJ2h0dHBzOi8vZ2l0ZWUuY29tL2ZseTEzOTcvaGlrZXItaWN5L3Jhdy9tYXN0ZXIvYWxpLmpzJyk7XG5pZighYWxpanMgfHwgIWFsaWpzLmluY2x1ZGVzKCdhbGknKSl7XG5cdGFsaWpzID0gZmV0Y2goJ2h0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9naC9mbHkxMzk3L2hpa2VyLWljeS9hbGkuanMnKVxufVxuaWYoIWFsaWpzIHx8ICFhbGlqcy5pbmNsdWRlcygnYWxpJykpe1xuXHRhbGlqcyA9IGZldGNoKCdodHRwOi8vbGZpY3kuY29tOjMwMDAwL21yZmx5L2hpa2VyLWljeS9yYXcvbWFzdGVyL2FsaS5qcycpXG59XG5pZihhbGlqcykge1xuXHR3cml0ZUZpbGUoXCJoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanNcIixhbGlqcyk7XG5cdGV2YWwoYWxpanMpO1xuXHRhbGkucHJlUnVsZSgpO1xufVxuIiwicGFnZXMiOiJbe1wiY29sX3R5cGVcIjpcIm1vdmllXzNcIixcIm5hbWVcIjpcIue9keebmOivpuaDhVwiLFwicGF0aFwiOlwiZGV0YWlsXCIsXCJydWxlXCI6XCJqczpcXG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XFxuYWxpLmluaXRDb25maWcoKTtcXG5hbGkuYWxpUnVsZSgpO1wifSx7XCJjb2xfdHlwZVwiOlwibW92aWVfMV9sZWZ0X3BpY1wiLFwibmFtZVwiOlwi6LWE5rqQ572R6aG16K+m5oOFXCIsXCJwYXRoXCI6XCJzaXRlLWRldGFpbFwiLFwicnVsZVwiOlwianM6XFxuZXZhbChmZXRjaCgnaGlrZXI6Ly9maWxlcy9ydWxlcy9pY3kvYWxpLmpzJykpO1xcbmFsaS5kZXRhaWxQYWdlKCk7XCJ9LHtcImNvbF90eXBlXCI6XCJtb3ZpZV8zXCIsXCJuYW1lXCI6XCLkuKrkurrnvZHnm5jor6bmg4VcIixcInBhdGhcIjpcImRyaXZlXCIsXCJydWxlXCI6XCJqczpcXG5ldmFsKGZldGNoKCdoaWtlcjovL2ZpbGVzL3J1bGVzL2ljeS9hbGkuanMnKSk7XFxuYWxpLmluaXRDb25maWcoKTtcXG5hbGkubXlBbGlSdWxlKCk7XCJ9XSIsImljb24iOiJodHRwczovL2dpdGVlLmNvbS9mbHkxMzk3L2hpa2VyLWljeS9yYXcvbWFzdGVyL2FsaXl1bi5wbmcifQ==";
@@ -1748,9 +1748,17 @@ const ali = {
             redirect: false,
             withStatusCode: true
         })).headers;
-
         if(_play && _play.location && _play.location[0]) {
-            const cookie = _play['set-cookie'].join(';')
+            let cookie = _play['set-cookie'] ? _play['set-cookie'].join(';') : getVar('oneDriverCookie','');
+            if(!cookie) {
+                let _cookie = fetchCookie(_play.location[0]);
+                if(_cookie && _cookie.length) {
+                    cookie = _cookie.join(';')
+                }
+            }
+            if(cookie){
+                putVar('oneDriverCookie', cookie);
+            }
             var pageUrl = _play.location[0];
             const _page_query = {};
             const [pageHost ,pageQuery] = pageUrl.split('?');
@@ -1778,6 +1786,15 @@ const ali = {
             const folder = _names.slice(0, _names.length - 1).join('.');
             graphql.variables.renderListDataAsStreamParameters.folderServerRelativeUrl = decodeURIComponent(_page_query.id);
             graphql.variables.renderListDataAsStreamQueryString = "@a1='"+document+"'&RootFolder="+_page_query.id+"&TryNewExperienceSingle=TRUE";
+            const postDataUrl = "https://dbdc-my.sharepoint.com/personal/"+user+"/_api/web/GetListUsingPath(DecodedUrl=@a1)/RenderListDataAsStream?@a1="+decodeURIComponent("'"+document+"'")+"&RootFolder="+decodeURIComponent(_page_query.id)+"&TryNewExperienceSingle=TRUE";
+            const postData = {
+                "parameters": {
+                    "RenderOptions": 5707527,
+                    "AllowMultipleValueFilterForTaxonomyFields": true,
+                    "AddRequiredFields": true,
+                    "FilterOutChannelFoldersInDefaultDocLib": true
+                }
+            }
             const graphqlUrl = "https://dbdc-my.sharepoint.com/personal/"+user+"/_api/v2.1/graphql";
             const pageResult = JSON.parse(fetch(graphqlUrl, {
                 headers: {
@@ -1790,6 +1807,16 @@ const ali = {
                 method: 'POST',
                 withStatusCode: true
             }));
+            // const pageResult = JSON.parse(fetch(postDataUrl, {
+            //     headers: {
+            //         'User-Agent': MOBILE_UA,
+            //         'Referer': pageHost,
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify(postData),
+            //     method: 'POST',
+            //     withStatusCode: true
+            // }));
             const correlationid = pageResult.headers['sprequestguid'];
             const json = JSON.parse(pageResult.body);
             // const Row = json.data.legacy.renderListDataAsStream.ListData.Row;
@@ -2246,7 +2273,7 @@ const ali = {
         if(json && json.url) {
             return json.url;
         } else {
-            return "toast://" + _play.body;
+            return "toast://没有获取到下载地址";
         }
     },
     lazyAliAudio: function(shareId, sharetoken, file_id, drive_id){
@@ -2836,11 +2863,13 @@ const ali = {
                     } else {
                         _title = '❓ ' + title;
                     }
+                    let download = this.get_share_link_download_url(shareId,sharetoken,file_id);
+                    download = download.startsWith('toast') ? download : 'download://' + download;
                     d.push({
                         title: _title,
                         pic_url: thumbnail || pic_url,
                         desc: desc,
-                        url: category != 'doc' ? 'toast://该文件不支持在线预览！' : $('hiker://empty'+file_id).rule((shareId, sharetoken, file_id) => {
+                        url: category != 'doc' ? download : $('hiker://empty'+file_id).rule((shareId, sharetoken, file_id) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             ali.lazyAliDoc(shareId, sharetoken, file_id);
                         }, shareId, sharetoken, file_id),
@@ -3283,11 +3312,13 @@ const ali = {
                     } else {
                         _title = '❓ ' + title;
                     }
+                    let download = this.get_download_url(drive_id ,file_id);
+                    download = download.startsWith('toast') ? download : 'download://' + download;
                     d.push({
                         title: _title,
                         pic_url: thumbnail || pic_url,
                         desc: desc,
-                        url: category != 'doc' ? 'toast://该文件不支持在线预览！' : $('hiker://empty'+file_id).rule((drive_id, file_id) => {
+                        url: category != 'doc' ? download : $('hiker://empty'+file_id).rule((drive_id, file_id) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             ali.lazyAliDoc('', '', file_id, drive_id);
                         }, drive_id, file_id),
