@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220824',
+    version: '2022082414',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更改资源站登录方式',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,更改资源站登录方式,\n2,增加搜索站点--易搜',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -3607,8 +3607,8 @@ const ali = {
                 let title = this.objData(dataitem, titlePath) || '';
                 let _link = this.objData(dataitem, linkPath) || '';
                 let link = (detailLinkPre || '') + _link;
-                if(itemsExcloudByLink) {
-                    if(new RegExp(itemsExcloudByLink).test(_link)) {
+                if(itemsExcloudByLink && itemsExcloudByLink !== '') {
+                    if(new RegExp(itemsExcloudByLink).test(_link) && !_link.startsWith('https://www.aliyundrive.com/s/')) {
                         return false;
                     }
                 }
@@ -3812,7 +3812,7 @@ const ali = {
                 const _link = parseDomForHtml(dataitem, linkPath);
                 let link = detailLinkPre + _link;
                 if(itemsExcloudByLink) {
-                    if(new RegExp(itemsExcloudByLink).test(_link)) {
+                    if(new RegExp(itemsExcloudByLink).test(_link) && !_link.startsWith('https://www.aliyundrive.com/s/')) {
                         return false;
                     }
                 }
