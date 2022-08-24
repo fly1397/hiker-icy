@@ -303,7 +303,7 @@
     },
     {
       "name": "🔍 易搜",
-      "index": 10,
+      "index": 11,
       "val": "https://yiso.fun/api/search?name=%E6%9C%80%E6%96%B0&pageNo=fypage&type=fyclass&from=ali",
       "key": "yiso",
       "desc": "努力做最好用的云盘资源搜索引擎！",
@@ -326,7 +326,7 @@
     },
     {
       "name": "🔍 阿里盘搜",
-      "index": 11,
+      "index": 12,
       "val": "https://www.alipansou.com/search?k=%E5%BD%B1%E8%A7%86&s=0&t=-1&page=fypage",
       "key": "pansou",
       "desc": "阿里盘搜,支持阿里云盘搜索,可快速搜索阿里云盘资源中的有效连接,每天更新海量资源",
@@ -351,7 +351,7 @@
     },
     {
       "name": "🔍 优聚搜",
-      "index": 12,
+      "index": 13,
       "val": "https://api.ujuso.com/v1/api_search/vite?page=fypage&size=15&kid=LWsgYmiMxSVPpmwodIlkonoFPmYbcVJl&time=fysort&type=ALY&kw=%E5%BD%B1%E8%A7%86",
       "key": "ujuso",
       "desc": "优聚搜 ujuso.com",
