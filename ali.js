@@ -656,10 +656,15 @@ const ali = {
                     alert('没有cookie')
                 }
             }
+            var doButton = false
             const insertFN = function() {
                 var loginButton = document.querySelector('#getCookie');
                 if(loginButton) {
-                    loginButton.addEventListener('click', tokenFunction);
+                    if(!doButton) {
+                        alert('登录完成后点击底部获取cookie按钮')
+                        loginButton.addEventListener('click', tokenFunction);
+                        doButton = true;
+                    }
                 } else {
 
                     HTMLElement.prototype.appendHTML = function(html) {
@@ -697,11 +702,12 @@ const ali = {
                     token_timer();
                 }
             }
+            var token_timer= function(){
+                setTimeout(insertFN, 1000)
+            };
+            insertFN();
             document.onreadystatechange = function() {
                 if(document.readyState == 'complete') {
-                    var token_timer= function(){
-                        setTimeout(insertFN, 1000)
-                    };
                     token_timer();
                     insertFN();
                 }
@@ -1327,7 +1333,6 @@ const ali = {
     homeData: function(d) {
         const activeModel = this.activeModel();
         const {val, cats, key, cookie, username, password, loginError, filterTags, needKey} = activeModel;
-
         var cat = getVar('icy_ali_cat') || cats[0].val;
         var subcat = getVar('icy_ali_subcat') || '';
         var sort = getVar('icy_ali_sort') || '';
@@ -1339,6 +1344,7 @@ const ali = {
 
             headers['cookie'] = _cookie;
         }
+        log(headers)
         const res = fetch(url, {headers: headers});
         if(res.includes('complete a CAPTCHA') || res.includes('Checking your browser before accessing')) {
             d.push({
@@ -1353,30 +1359,29 @@ const ali = {
             return;
         }
         if(page == 1 && (res.includes('l2sp'))) {
-            if(username && password && !loginError) {
-                d.push({
-                    title: '““””需要登录才能查看链接<b><span style="color: '+ this.primaryColor +'">🔑 点击登录</span></b>',
-                    url: $("hiker://empty").rule((key)=>{
-                        eval(fetch('hiker://files/rules/icy/ali.js'));
-                        ali.manualLogin(key);
-                        // refreshPage(false);
-                        
-                        // return 'hiker://empty';
-                    }, key),
-                    col_type: 'text_1'
-                })
-            } else {
-                let loginTitle = loginError ? '用户名密码错误' : '需要登录才能查看链接';
-                d.push({
-                    title: '““””'+loginTitle+'<b><span style="color: '+ this.primaryColor +'">🔒 点击配置用户名密码</span></b>',
-                    url: $("hiker://empty").rule((key)=>{
-                        eval(fetch('hiker://files/rules/icy/ali.js'));
-                        ali.settingPage(key);
-                    }, key),
+            d.push({
+                title: '““””需要登录才能查看链接<b><span style="color: '+ this.primaryColor +'">🔑 点击登录</span></b>',
+                url: $("hiker://empty").rule((key)=>{
+                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                    ali.manualLogin(key);
+                    // refreshPage(false);
+                    
+                    // return 'hiker://empty';
+                }, key),
+                col_type: 'text_1'
+            })
+            //  else {
+            //     let loginTitle = loginError ? '用户名密码错误' : '需要登录才能查看链接';
+            //     d.push({
+            //         title: '““””'+loginTitle+'<b><span style="color: '+ this.primaryColor +'">🔒 点击配置用户名密码</span></b>',
+            //         url: $("hiker://empty").rule((key)=>{
+            //             eval(fetch('hiker://files/rules/icy/ali.js'));
+            //             ali.settingPage(key);
+            //         }, key),
 
-                    col_type: 'text_1'
-                })
-            }
+            //         col_type: 'text_1'
+            //     })
+            // }
         }
         var result = {
             data: [],
@@ -1559,30 +1564,41 @@ const ali = {
                     } else {
                         const searchResult = this.searchFetch(activeModel.val, activeModel.searchUrl,keyword, page, cookie);
                         if(page == 1 && searchResult.includes('l2sp')) {
-                            if(username && password && !loginError) {
-                                d.push({
-                                    title: !fromHikerSearch ? '““””需要登录才能查看链接<b><span style="color: '+ this.primaryColor +'">🔑 点击登录</span></b>' : '需要登录才能查看链接 🔑 点击登录',
-                                    url: $("hiker://empty").lazyRule((key)=>{
-                                        eval(fetch('hiker://files/rules/icy/ali.js'));
-                                        ali.login(key);
-                                        refreshPage(false);
+                            d.push({
+                                title: '““””需要登录才能查看链接<b><span style="color: '+ this.primaryColor +'">🔑 点击登录</span></b>',
+                                url: $("hiker://empty").rule((key)=>{
+                                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                                    ali.manualLogin(key);
+                                    // refreshPage(false);
+                                    
+                                    // return 'hiker://empty';
+                                }, key),
+                                col_type: 'text_1'
+                            })
+                            // if(username && password && !loginError) {
+                            //     d.push({
+                            //         title: !fromHikerSearch ? '““””需要登录才能查看链接<b><span style="color: '+ this.primaryColor +'">🔑 点击登录</span></b>' : '需要登录才能查看链接 🔑 点击登录',
+                            //         url: $("hiker://empty").lazyRule((key)=>{
+                            //             eval(fetch('hiker://files/rules/icy/ali.js'));
+                            //             ali.login(key);
+                            //             refreshPage(false);
                                         
-                                        return 'hiker://empty';
-                                    }, key),
-                                    col_type: 'text_1'
-                                })
-                            } else {
-                                let loginTitle = loginError ? '用户名密码错误' : '需要登录才能查看链接';
-                                d.push({
-                                    title: !fromHikerSearch ? '““””'+loginTitle+'<b><span style="color: '+ this.primaryColor +'">🔒 点击配置用户名密码</span></b>' : loginTitle + '🔒 点击配置用户名密码',
-                                    url: $("hiker://empty").rule((key)=>{
-                                        eval(fetch('hiker://files/rules/icy/ali.js'));
-                                        ali.settingPage(key);
-                                    }, key),
+                            //             return 'hiker://empty';
+                            //         }, key),
+                            //         col_type: 'text_1'
+                            //     })
+                            // } else {
+                            //     let loginTitle = loginError ? '用户名密码错误' : '需要登录才能查看链接';
+                            //     d.push({
+                            //         title: !fromHikerSearch ? '““””'+loginTitle+'<b><span style="color: '+ this.primaryColor +'">🔒 点击配置用户名密码</span></b>' : loginTitle + '🔒 点击配置用户名密码',
+                            //         url: $("hiker://empty").rule((key)=>{
+                            //             eval(fetch('hiker://files/rules/icy/ali.js'));
+                            //             ali.settingPage(key);
+                            //         }, key),
                 
-                                    col_type: 'text_1'
-                                })
-                            }
+                            //         col_type: 'text_1'
+                            //     })
+                            // }
                         }
                         if(searchResult.includes('complete a CAPTCHA') || searchResult.includes('Checking your browser before accessing')) {
                             d.push({
