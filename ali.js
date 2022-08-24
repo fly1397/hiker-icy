@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220807',
+    version: '20220824',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,对无法预览文件增加下载支持\n2,更新阿里小站地址',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,更改资源站登录方式',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -622,6 +622,107 @@ const ali = {
             putVar('icy_ali_setting', settingPath)
         }
     },
+    manualLogin: function(key){
+
+        const { customerSettingPath} = this.urls;
+        let activeModel = this.activeModel();
+        const haveCustomerSetting = fileExist(customerSettingPath) == 'true' || fileExist(customerSettingPath) == true;
+        if(haveCustomerSetting) {
+            const customerSetting = JSON.parse(fetch(getVar('icy_ali_customer')));
+            if(customerSetting.customerResouce) {
+                activeModel = customerSetting.customerResouce.find(item => item.key == activeModel.key) || activeModel;
+            }
+        } else {
+            this.getConfig();
+        }
+        var host = activeModel.val;
+        setPageTitle('资源站登录');
+        let d = [];
+        var js = $.toString((key)=> {
+            const tokenFunction = function () {
+                var cookie = null;
+                cookie = fy_bridge_app.getCookie(location.href);
+                if(cookie){
+                    let customer_url = 'hiker://files/rules/icy/icy-ali-customer.json';
+                    let customerSetting = JSON.parse(request(customer_url) || '[]');
+                    let activeModel = customerSetting.customerResouce.find(item => item.key == key);
+                    activeModel.cookie = cookie;
+                    alert(cookie)
+                    fy_bridge_app.writeFile(customer_url,JSON.stringify(customerSetting));
+                    alert('COOKIE获取成功,请返回后刷新页面重试');
+                    fy_bridge_app.back();
+                    return;
+                }else{
+                    alert('没有cookie')
+                }
+            }
+            const insertFN = function() {
+                var loginButton = document.querySelector('#getCookie');
+                if(loginButton) {
+                    loginButton.addEventListener('click', tokenFunction);
+                } else {
+
+                    HTMLElement.prototype.appendHTML = function(html) {
+                        var divTemp = document.createElement("div"), nodes = null
+                            , fragment = document.createDocumentFragment();
+                        divTemp.innerHTML = html;
+                        nodes = divTemp.childNodes;
+                        for (var i=0, length=nodes.length; i<length; i+=1) {
+                            fragment.appendChild(nodes[i].cloneNode(true));
+                        }
+                        this.appendChild(fragment);
+                        nodes = null;
+                        fragment = null;
+                    };
+                    document.body.appendHTML(`<div style="
+                        position: fixed;
+                        z-index: 10000;
+                        height: 50px;
+                        bottom: 0;
+                        width: 100%;
+                        text-align: center;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    "><button id="getCookie" style="
+                        background: #67C23A;
+                        border: 0;
+                        border-radius: 10px;
+                        line-height: 40px;
+                        padding: 0 20px;
+                        min-width: 200px;
+                        color: #fff;
+                    ">获取cookie</button></div>`);
+
+                    token_timer();
+                }
+            }
+            document.onreadystatechange = function() {
+                if(document.readyState == 'complete') {
+                    var token_timer= function(){
+                        setTimeout(insertFN, 1000)
+                    };
+                    token_timer();
+                    insertFN();
+                }
+            }
+            
+
+        }, key)
+        d.push({
+            url: host,
+            col_type: 'x5_webview_single',
+            desc: '100%&&float',
+            extra: {
+                canBack: true,
+                js: js,
+            }
+        })
+        setHomeResult({
+            data: d
+        })
+
+    },
     login: function (key){
         const { customerSettingPath} = this.urls;
         let activeModel = this.activeModel();
@@ -666,6 +767,7 @@ const ali = {
             body: '{"identification": "'+username+'","password": "'+password+'","remember":true}',
             withHeaders: true
         }));
+        log(login)
         if(login.body && login.body.includes('errors') && login.body.includes('not_authenticated')) {
             confirm({
                 title: '登录失败',
@@ -796,66 +898,66 @@ const ali = {
         d.push({
             col_type: "line_blank"
         });
-        const loginlazy = $(loginList, 2)
-            .select(() => {
-                putVar("login",input);
-                refreshPage(false);
-        });
-        d.push({
-            title: '🔓 资源网站登录设置',
-            desc: (selectLoginName || '⛏️ 请选择资源网站') + '   ❗保存时会重置登录信息',
-            url: loginlazy,
-            col_type: 'text_1'
-        })
-        if(selectLogin) {
-            d.push({
-                title: "用户名",
-                desc: "请输入用户名",
-                col_type: 'input',
-                extra: {
-                    titleVisible: false,
-                    defaultValue: selectLogin.username,
-                    type: '',
-                    onChange: 'putVar("' + selectLogin.key + '_username", input)'
-                }
-            })
-            d.push({
-                title: "密码",
-                desc: "请输入密码",
-                col_type: 'input',
-                extra: {
-                    titleVisible: false,
-                    defaultValue: selectLogin.password,
-                    type: '',
-                    onChange: 'putVar("' + selectLogin.key + '_password", input)'
-                }
-            })
-            d.push({
-                title: '保存账号',
-                col_type: 'text_center_1',
-                url: $()
-                    .lazyRule((key, customerSettings) => {
-                    const item = customerSettings.customerResouce.find(item => item.key == key);
-                    item.username = getVar(key + '_username','');
-                    item.password = getVar(key + '_password','');
-                    item.loginError = false;
-                    item.cookie = '';
-                    writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
-                    return 'toast://保存成功，需要返回刷新登录'
-                }, selectLogin.key, customerSettings)
-            })
-            d.push({
-                col_type: "blank_block"
-            });
-            d.push({
-                title: '““””<small><span style="color:#4395FF;">资源站账号注册 >></span></small>',
-                url: 'web://' + selectLogin.val,
-                col_type: 'text_center_1'
-            })
-        }
-        d.push({
-            col_type: "line_blank"
-        });
+        // const loginlazy = $(loginList, 2)
+        //     .select(() => {
+        //         putVar("login",input);
+        //         refreshPage(false);
+        // });
+        // d.push({
+        //     title: '🔓 资源网站登录设置',
+        //     desc: (selectLoginName || '⛏️ 请选择资源网站') + '   ❗保存时会重置登录信息',
+        //     url: loginlazy,
+        //     col_type: 'text_1'
+        // })
+        // if(selectLogin) {
+        //     d.push({
+        //         title: "用户名",
+        //         desc: "请输入用户名",
+        //         col_type: 'input',
+        //         extra: {
+        //             titleVisible: false,
+        //             defaultValue: selectLogin.username,
+        //             type: '',
+        //             onChange: 'putVar("' + selectLogin.key + '_username", input)'
+        //         }
+        //     })
+        //     d.push({
+        //         title: "密码",
+        //         desc: "请输入密码",
+        //         col_type: 'input',
+        //         extra: {
+        //             titleVisible: false,
+        //             defaultValue: selectLogin.password,
+        //             type: '',
+        //             onChange: 'putVar("' + selectLogin.key + '_password", input)'
+        //         }
+        //     })
+        //     d.push({
+        //         title: '保存账号',
+        //         col_type: 'text_center_1',
+        //         url: $()
+        //             .lazyRule((key, customerSettings) => {
+        //             const item = customerSettings.customerResouce.find(item => item.key == key);
+        //             item.username = getVar(key + '_username','');
+        //             item.password = getVar(key + '_password','');
+        //             item.loginError = false;
+        //             item.cookie = '';
+        //             writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
+        //             return 'toast://保存成功，需要返回刷新登录'
+        //         }, selectLogin.key, customerSettings)
+        //     })
+        //     d.push({
+        //         col_type: "blank_block"
+        //     });
+        //     d.push({
+        //         title: '““””<small><span style="color:#4395FF;">资源站账号注册 >></span></small>',
+        //         url: 'web://' + selectLogin.val,
+        //         col_type: 'text_center_1'
+        //     })
+        // }
+        // d.push({
+        //     col_type: "line_blank"
+        // });
         d.push({
             title: '““””🔥 热门搜索词  <b><span style="color: '+ primaryColor +'">' + (customerSettings.useSuggestQuery ? '启用' : '不启用') + '</span></b>',
             desc: '数据来源：360影视',
@@ -1254,12 +1356,12 @@ const ali = {
             if(username && password && !loginError) {
                 d.push({
                     title: '““””需要登录才能查看链接<b><span style="color: '+ this.primaryColor +'">🔑 点击登录</span></b>',
-                    url: $("hiker://empty").lazyRule((key)=>{
+                    url: $("hiker://empty").rule((key)=>{
                         eval(fetch('hiker://files/rules/icy/ali.js'));
-                        ali.login(key);
-                        refreshPage(false);
+                        ali.manualLogin(key);
+                        // refreshPage(false);
                         
-                        return 'hiker://empty';
+                        // return 'hiker://empty';
                     }, key),
                     col_type: 'text_1'
                 })
@@ -3482,12 +3584,18 @@ const ali = {
         }
     },
     listPageJSON: function(items, dataPath, d, activeModel, page, keyword, fromHikerSearch) {
-        const {name, detailLinkPre, key} = activeModel;
+        const {name, detailLinkPre, key, itemsExcloudByLink} = activeModel;
         const [, titlePath, linkPath, descPath] = dataPath.split(';')
         if(!!items && !!items.length) {
             items.forEach((dataitem) => {
                 let title = this.objData(dataitem, titlePath) || '';
-                let link = (detailLinkPre || '') + (this.objData(dataitem, linkPath) || '');
+                let _link = this.objData(dataitem, linkPath) || '';
+                let link = (detailLinkPre || '') + _link;
+                if(itemsExcloudByLink) {
+                    if(new RegExp(itemsExcloudByLink).test(_link)) {
+                        return false;
+                    }
+                }
                 const desc = this.objData(dataitem, descPath) || '';
                 const contentDome = '<div class="fortext">' + desc || '' + '</div>';
                 const pic = parseDomForHtml(contentDome, '.fortext&&img&&src') || '';
