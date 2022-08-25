@@ -21,10 +21,10 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '2022082414',
+    version: '20220825',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
-    isDev: false,
+    isDev: true,
 
     // 强制更新config
     forceConfigUpdate: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更改资源站登录方式,\n2,增加搜索站点--易搜',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,增加搜索站点--找资源',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -3887,14 +3887,16 @@ const ali = {
                         setHomeResult({data: d});
                     }, title, detailPath, key, needcookie)
                 }
-                d.push({
-                    title: title,
-                    pic_url: pic,
-                    url: link + lazy,
-                    content: desc,
-                    desc:  fromHikerSearch ? name : desc,
-                    col_type: pic ? "movie_1_left_pic" : 'text_1'
-                })
+                if(title) {
+                    d.push({
+                        title: title,
+                        pic_url: pic,
+                        url: link + lazy,
+                        content: desc,
+                        desc:  fromHikerSearch ? name : desc,
+                        col_type: pic ? "movie_1_left_pic" : 'text_1'
+                    })
+                }
             })
         } else if(page == 1) {
             this.rendererEmpty(d, keyword, fromHikerSearch);
@@ -3911,7 +3913,7 @@ const ali = {
         const contentDome = '<div class="fortext">' + contentHtml || '' + '</div>';
         const texts = parseDomForHtml(contentDome, '.fortext&&Text');
 
-        const _links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net|pan\.quark\.cn\/s)\/\w*/g) || [];
+        const _links = texts.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net|pan\.quark\.cn\/s)\/\w*/g) || contentDome.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net|pan\.quark\.cn\/s)\/\w*/g) || [];
         const codes = texts.split(/(?:https:\/\/www\.aliyundrive\.com\/s[\/\w*]*)|(?:https:\/\/alywp\.net[\/\w*]*)|(?:https:\/\/pan\.quark\.cn\/s[\/\w*]*)/ig) || [];
         _links.forEach((link, index) => {
             let code = '';
@@ -3921,7 +3923,7 @@ const ali = {
                 if(code_match && code_match[0]) {
                     code = codes[index].split(/提取码|访问码/)[1].match(/[a-zA-z0-9]+/)[0];
                 }
-                item_title = this.getEmptyTitle('', codes[index]) || item_title || _title;
+                item_title = this.getEmptyTitle('', codes[index]) || item_title || title;
             }
             d.push({
                 // title: '🔗 ' + (_links.length > 1 ? '链接'+(index+1)+'：' : '')  + link + (code ? '  提取码：' + code : ''),
