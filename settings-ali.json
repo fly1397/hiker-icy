@@ -325,11 +325,27 @@
       ]
     },
     {
-      "name": "🔍 阿里盘搜",
+      "name": "🔍 找资源",
       "index": 12,
+      "val": "https://zhaoziyuan.me/",
+      "key": "zhaoziyuan",
+      "desc": "找资源，阿里云盘搜索引擎，快速搜索阿里云盘资源，24H不间断更新，24H自动检测失效链接，查看最新资源刷新首页即可！",
+      "dataType": "html",
+      "detailLinkPre": "https://zhaoziyuan.me/",
+      "itemsExcloudByLink": "",
+      "homeDataPath": ".newsList&&li:not(0);.news_text&&h3&&Text;a&&href;p&&Text;",
+      "searchUrl": "https://zhaoziyuan.me/so?filename=**&page=fypage",
+      "searchDataPath": ".newsList&&li:not(0);.news_text&&h3&&Text;a&&href;p&&Text;",
+      "detailPath": ".news_box&&Html",
+      "cats": [
+      ]
+    },
+    {
+      "name": "🔍 猫狸盘搜",
+      "index": 13,
       "val": "https://www.alipansou.com/search?k=%E5%BD%B1%E8%A7%86&s=0&t=-1&page=fypage",
       "key": "pansou",
-      "desc": "阿里盘搜,支持阿里云盘搜索,可快速搜索阿里云盘资源中的有效连接,每天更新海量资源",
+      "desc": "猫狸云,最好用的阿里云盘资源搜索站,每天更新海量资源",
       "dataType": "html",
       "detailLinkPre": "https://www.alipansou.com",
       "itemsExcloudByLink": "#|https?",
@@ -351,7 +367,7 @@
     },
     {
       "name": "🔍 优聚搜",
-      "index": 13,
+      "index": 14,
       "val": "https://api.ujuso.com/v1/api_search/vite?page=fypage&size=15&kid=LWsgYmiMxSVPpmwodIlkonoFPmYbcVJl&time=fysort&type=ALY&kw=%E5%BD%B1%E8%A7%86",
       "key": "ujuso",
       "desc": "优聚搜 ujuso.com",
