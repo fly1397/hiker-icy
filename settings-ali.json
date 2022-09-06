@@ -297,8 +297,8 @@
       "searchUrl": "https://api.upyunso.com/search?keyword=**&page=fypage&s_type=fyclass",
       "searchDataPath": "result&&items;title;page_url;insert_time;",
       "cats": [
-        { "name": "标题", "val": "1", "withType": 1},
-        { "name": "标题+内容", "val": "2", "withType": 1}
+        { "name": "标题", "val": "1"},
+        { "name": "标题+内容", "val": "2"}
       ]
     },
     {
@@ -311,17 +311,17 @@
       "detailLinkPre": "",
       "itemsExcloudByLink": "",
       "homeDataPath": "data&&list;name;url;gmtCreate;",
-      "searchUrl": "https://yiso.fun/api/search?name=%E6%9C%80%E6%96%B0&pageNo=fypage&type=fyclass&from=ali",
+      "searchUrl": "https://yiso.fun/api/search?name=**&pageNo=fypage&type=fyclass&from=ali",
       "searchDataPath": "data&&list;name;url;gmtCreate;",
       "cats": [
-        { "name": "综合", "val": "", "withType": 1},
-        { "name": "文件夹", "val": "folder", "withType": 1},
-        { "name": "文档", "val": "doc", "withType": 1},
-        { "name": "视频", "val": "video", "withType": 1},
-        { "name": "图片", "val": "image", "withType": 1},
-        { "name": "压缩包", "val": "package", "withType": 1},
-        { "name": "音频", "val": "music", "withType": 1},
-        { "name": "其他", "val": "other", "withType": 1}
+        { "name": "综合", "val": ""},
+        { "name": "文件夹", "val": "folder"},
+        { "name": "文档", "val": "doc"},
+        { "name": "视频", "val": "video"},
+        { "name": "图片", "val": "image"},
+        { "name": "压缩包", "val": "package"},
+        { "name": "音频", "val": "music"},
+        { "name": "其他", "val": "other"}
       ]
     },
     {
@@ -353,16 +353,16 @@
       "searchUrl": "https://www.alipansou.com/search?k=**&s=fysort&t=fyclass&page=fypage",
       "searchDataPath": "body&&van-row,3:;template&&Text;a&&href;template,1&&Text;",
       "cats": [
-        { "name": "全部类别", "val": "-1", "withType": -1},
-        { "name": "视频", "val": "1", "withType": -1},
-        { "name": "音乐", "val": "2", "withType": -1},
-        { "name": "图片", "val": "3", "withType": -1},
-        { "name": "文档", "val": "4", "withType": -1}
+        { "name": "全部类别", "val": "-1"},
+        { "name": "视频", "val": "1"},
+        { "name": "音乐", "val": "2"},
+        { "name": "图片", "val": "3"},
+        { "name": "文档", "val": "4"}
       ],
       "sorts": [
-        { "name": "默认排序", "val": "0", "withType": -1},
-        { "name": "时间排序", "val": "1", "withType": -1},
-        { "name": "完全匹配", "val": "2", "withType": -1}
+        { "name": "默认排序", "val": "0"},
+        { "name": "时间排序", "val": "1"},
+        { "name": "完全匹配", "val": "2"}
       ]
     },
     {
