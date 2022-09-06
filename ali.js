@@ -21,10 +21,10 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220825',
+    version: '20220906',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
-    isDev: true,
+    isDev: false,
 
     // 强制更新config
     forceConfigUpdate: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,增加搜索站点--找资源',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复易搜搜索问题',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -268,6 +268,10 @@ const ali = {
         const {tokenPath} = this.urls;
         const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
         setPageTitle('阿里云盘');
+        addListener('onClose', () => {
+            saveFile('hiker://files/rules/icy/icy-ali-token.json', getVar('icy-ali-tokens'));
+            clearVar('icy-ali-tokens')
+        })
         let d = [];
         let url = _url || 'https://auth.aliyundrive.com/v2/oauth/authorize?login_type=custom&response_type=code&redirect_uri=https%3A%2F%2Fwww.aliyundrive.com%2Fsign%2Fcallback&client_id=25dzX3vbYqktVxyX&state=%7B%22origin%22%3A%22*%22%7D#/login';
         // if(getItem('haveShared', '') && !haveToken) {
@@ -343,7 +347,9 @@ const ali = {
                     } else {
                         tokens.push(token)
                     }
-                    fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify(tokens));
+                    // alert(JSON.stringify(tokens))
+                    fy_bridge_app.putVar('icy-ali-tokens', JSON.stringify(tokens))
+                    // fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify(tokens));
                     localStorage.clear();
                     alert('TOKEN获取成功，请勿泄漏个人隐私!退出该页面后刷新重试！');
                     // if(location.href.includes('auth.aliyundrive.com')) {
@@ -399,7 +405,7 @@ const ali = {
             const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
             
             if(haveToken) {
-                let _tokens = JSON.parse(fetch(tokenPath) || '[]');
+                let _tokens = JSON.parse(readFile(tokenPath) || '[]');
                 let tokens = _tokens.length ? _tokens : (_tokens && _tokens.user_id ? [_tokens] : [] );
                 let customerSettings = JSON.parse(fetch(customerSettingPath));
                 let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
@@ -430,7 +436,7 @@ const ali = {
                         } else {
                             tokens.push(tokenRes);
                         }
-                        writeFile(tokenPath,JSON.stringify(tokens));
+                        saveFile(tokenPath,JSON.stringify(tokens));
                         return access_token;
                     } else if(tokenRes.code && tokenRes.code.included('InvalidParameter.RefreshToken')) {
                         return 'toast://登录状态已经过期，需要重新登录'
@@ -511,8 +517,8 @@ const ali = {
                 col_type: 'text_1'
             })
         } else {
-            let _tokens = JSON.parse(fetch(tokenPath) || '[]');
-            let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
+            let _tokens = JSON.parse(readFile(tokenPath) || '[]');
+            let tokens = _tokens.length ? _tokens : (_tokens && _tokens.user_id ? [_tokens] : [] );
 
             let user_id = customerSettings.user_id || tokens[0].user_id;
             tokens.forEach((item, index) => {
@@ -536,10 +542,10 @@ const ali = {
                     title: '““””<small><span style="color: #999999">❌ 删除阿里云盘账号: <b>' + item.nick_name + '</b></span></small>',
                     url: $("确定要删除？")
                         .confirm((index) => {
-                            let _tokens = JSON.parse(fetch(getVar('icy_ali_tokenPath')) || '[]');
+                            let _tokens = JSON.parse(readFile(getVar('icy_ali_tokenPath')) || '[]');
                             let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
                             tokens.splice(index, 1);
-                            writeFile(getVar('icy_ali_tokenPath'), JSON.stringify(tokens));
+                            saveFile(getVar('icy_ali_tokenPath'), JSON.stringify(tokens));
                             refreshPage(false);
                             return 'toast://删除成功';
                     }, index),
@@ -1035,7 +1041,7 @@ const ali = {
                 }, customerSettings)
             })
         }
-        let _tokens = JSON.parse(fetch(tokenPath) || '[]');
+        let _tokens = JSON.parse(readFile(tokenPath) || '[]');
         let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
         let token = tokens.find(item => item.user_id == (customerSettings.user_id || (tokens[0] ? tokens[0].user_id : '')));
         d.push({
@@ -3017,7 +3023,7 @@ const ali = {
 
         var d = _d || [];
         const {tokenPath, customerSettingPath} = this.urls
-        let _tokens = JSON.parse(fetch(tokenPath) || '[]');
+        let _tokens = JSON.parse(readFile(tokenPath) || '[]');
         let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
         let customerSettings = JSON.parse(fetch(customerSettingPath));
         let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
@@ -3108,7 +3114,7 @@ const ali = {
                     img: token.avatar+'@Referer=https://www.aliyundrive.com/',
                     url: tokens.length > 1 ? $(tokens.map(item => item.nick_name), 2)
                         .select(() => {
-                            let _tokens = JSON.parse(fetch(getVar('icy_ali_tokenPath')) || '[]');
+                            let _tokens = JSON.parse(readFile(getVar('icy_ali_tokenPath')) || '[]');
                             let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
                             let token = tokens.find(item => item.nick_name == input);
                             let customerSettings = JSON.parse(fetch(getVar('icy_ali_customer')));
