@@ -333,9 +333,9 @@
       "dataType": "html",
       "detailLinkPre": "https://zhaoziyuan.me/",
       "itemsExcloudByLink": "",
-      "homeDataPath": ".newsList&&li:not(0);.news_text&&h3&&Text;a&&href;p&&Text;",
+      "homeDataPath": ".newsList&&li.clear:not(0);.news_text&&h3&&Text;a&&href;p&&Text;",
       "searchUrl": "https://zhaoziyuan.me/so?filename=**&page=fypage",
-      "searchDataPath": ".newsList&&li:not(0);.news_text&&h3&&Text;a&&href;p&&Text;",
+      "searchDataPath": ".newsList&&li.clear:not(0);.news_text&&h3&&Text;a&&href;p&&Text;",
       "detailPath": ".news_box&&Html",
       "cats": [
       ]
