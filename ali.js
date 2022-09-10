@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220908',
+    version: '20220910',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新阿里小站地址',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复登录bug',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -520,7 +520,7 @@ const ali = {
             let _tokens = JSON.parse(readFile(tokenPath) || '[]');
             let tokens = _tokens.length ? _tokens : (_tokens && _tokens.user_id ? [_tokens] : [] );
 
-            let user_id = customerSettings.user_id || tokens[0].user_id;
+            let user_id = customerSettings ? customerSettings.user_id || tokens[0].user_id : tokens[0].user_id;
             tokens.forEach((item, index) => {
                 let title = item.user_id == user_id ? "<b>当前登录："+'<span style="color: '+ this.primaryColor +'">⭐ '+item.nick_name+'</span></b>' : item.nick_name;
                 d.push({
@@ -1350,7 +1350,6 @@ const ali = {
 
             headers['cookie'] = _cookie;
         }
-        log(headers)
         const res = fetch(url, {headers: headers});
         if(res.includes('complete a CAPTCHA') || res.includes('Checking your browser before accessing')) {
             d.push({
