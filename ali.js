@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20220927',
+    version: '20221006',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新阿里小站地址',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,我的云盘页面支持云盘内文件搜索',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -3011,7 +3011,7 @@ const ali = {
             params.forEach(item => {
                 clearVar(item)
             })
-        }, ["folderName", 'icy_ali_next_marker', 'icy_ali_folder']))
+        }, ["folderName", 'icy_ali_next_marker', 'icy_ali_folder', 'icy_ali_searchKey']))
         this.getConfig();
         var access_token = this.getAliToken();
         if(!access_token) {
@@ -3035,6 +3035,7 @@ const ali = {
         }
         var folderID = (MY_URL.includes('$$$') ? MY_URL.split('$$$') : MY_URL.split('??'))[0].split('folder/')[1] || '';
         var page = MY_PAGE || (MY_URL.includes('$$$') ? MY_URL.split('$$$') : MY_URL.split('??'))[1] || 1;
+        let searchKey = getVar('icy_ali_searchKey', '');
         if(page == 1) {
             putVar('icy_ali_next_marker', '');
             putVar('icy_ali_folder', '');
@@ -3098,6 +3099,35 @@ const ali = {
                 method: 'POST'
             });
         }
+        const searchFileList = (access_token, drive_id, keyword, next_marker) => {
+            var order_by = getItem('icy_ali_order_by', 'name');
+            var category = getItem('icy_ali_category', '')
+            var order_direction = getItem('icy_ali_order_direction', 'ASC');
+            var folderRes = null;
+            const data = {
+                "drive_id": drive_id,
+                "limit":100,
+                "image_thumbnail_process": "image/resize,w_400/format,jpeg",
+                "image_url_process": "image/resize,w_1920/format,jpeg",
+                "video_thumbnail_process": "video/snapshot,t_1000,f_jpg,ar_auto,w_300",
+                "query": `name match "`+ keyword +`"`+ category,
+                "order_by": order_by+ ' ' + order_direction
+            }
+            if(next_marker) {
+                data.marker = next_marker;
+            }
+            // if(page > 1 && next_marker && folderRes) {
+            //     data.parent_file_id = folderRes.file_id;
+            // }
+            return fetch('https://api.aliyundrive.com/adrive/v3/file/search', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                },
+                body: JSON.stringify(data),
+                method: 'POST'
+            });
+        }
 
         if(!getItem('icy_ali_order_by')) {
             setItem('icy_ali_order_by', 'name');
@@ -3132,12 +3162,13 @@ const ali = {
                 })
             }
             if(!_d) {
-                const searchRule = getItem('icy_ali_searchRule', '青豆');
+                const searchRule = getItem('icy_ali_searchRule', '阿里云盘') || '阿里云盘';
                 let folderName = getVar('folderName', '');
+                const searchAli = searchRule == '阿里云盘' || !searchRule;
     
                 d.push({
-                    title: '““””使用小程序：<b><span style="color: '+ this.primaryColor +'">' + searchRule + '</span></b> 搜索  <small><span style="color: #999999">点击设置</span></small>',
-                    url: $(searchRule, '请输入小程序名称 eq: 青豆')
+                    title: '““””' + (searchAli ? '' : '使用小程序：')+'<b><span style="color: '+ this.primaryColor +'">' + searchRule + '</span></b> 搜索  <small><span style="color: #999999">点击设置</span></small>',
+                    url: $(searchRule, '搜索个人云盘或用小程序搜索 eq: 青豆；阿里云盘')
                         .input(() => {
                         setItem('icy_ali_searchRule', input);
                         refreshPage();
@@ -3149,28 +3180,42 @@ const ali = {
                     // }),
                     col_type: 'text_1'
                 })
-                if(searchRule) {
-                    d.push({
-                        title: '搜索',
-                        // url: "'hiker://search?s=' + input + '&rule='" + searchRule,
-                        url: $.toString((searchRule)=> {
-                            if(searchRule) {
-                                if(input.trim()) {
-                                    var link = 'hiker://search?s=' + input + '&rule=' + searchRule;
-                                    return link;
-                                } else {
-                                    return 'toast://请输入影片名称';
-                                }
+                d.push({
+                    title: '搜索',
+                    // url: "'hiker://search?s=' + input + '&rule='" + searchRule,
+                    url: $.toString((searchRule, searchAli)=> {
+                        if(input.trim()) {
+                            if(searchAli) {
+                                putVar('icy_ali_searchKey', input.trim());
+                                refreshPage();
                             } else {
-                                return 'toast://请先设置小程序吧';
+                                var link = 'hiker://search?s=' + input.trim() + '&rule=' + searchRule;
+                                return link;
                             }
-                        }, searchRule),
-                        col_type: "input",
-                        desc: '使用其他规则搜索影片信息',
-                        extra: {
-                            defaultValue: folderName,
+                        } else {
+                            return 'toast://'+ searchAli ? '请输入关键字' : '请输入影片名称';
                         }
-                    });
+                    }, searchRule, searchAli),
+                    col_type: "input",
+                    desc: searchAli ? '搜索网盘内文件' : '使用其他规则搜索影片信息',
+                    extra: {
+                        defaultValue: searchKey,
+                    }
+                });
+                if(searchAli) {
+                    ['全部,', '图片, and category = "image"', '视频, and category = "video"', '文件夹, and category = "folder"','文档, and category = "doc"','音频, and category = "audio"'].forEach((item) => {
+                        const [_title,value] = item.split(',')
+                        var title = value == getItem('icy_ali_category', '') ? "““””<b>"+'<span style="color: '+ this.primaryColor +'">'+_title+'</span></b>' : _title;
+                        d.push({
+                            title: title,
+                            url: $("#noLoading#").lazyRule((value)=>{
+                                setItem("icy_ali_category",value);
+                                refreshPage(false);
+                                return "hiker://empty"
+                            },value),
+                            col_type: 'scroll_button'
+                        })
+                    })
                 }
             }
             const sortLazy = $(['名称正序', '名称倒序', '时间正序', '时间倒序'], 1)
@@ -3234,7 +3279,11 @@ const ali = {
 
         var rescod = null;
         try {
-            rescod = JSON.parse(getFileList(access_token, drive_id, folderID, next_marker));
+            if(searchKey) {
+                rescod = JSON.parse(searchFileList(access_token, drive_id, searchKey, next_marker));
+            } else {
+                rescod = JSON.parse(getFileList(access_token, drive_id, folderID, next_marker));
+            }
         } catch (e){
             confirm({
                 title: '出错了',
