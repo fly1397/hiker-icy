@@ -3193,7 +3193,7 @@ const ali = {
                                 return link;
                             }
                         } else {
-                            return 'toast://'+ searchAli ? '请输入关键字' : '请输入影片名称';
+                            return 'toast://'+ (searchAli ? '请输入关键字' : '请输入影片名称');
                         }
                     }, searchRule, searchAli),
                     col_type: "input",
