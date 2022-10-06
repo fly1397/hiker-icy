@@ -3168,7 +3168,7 @@ const ali = {
     
                 d.push({
                     title: '““””' + (searchAli ? '' : '使用小程序：')+'<b><span style="color: '+ this.primaryColor +'">' + searchRule + '</span></b> 搜索  <small><span style="color: #999999">点击设置</span></small>',
-                    url: $(searchRule, '搜索个人云盘或用小程序搜索 eq: 青豆；阿里云盘')
+                    url: $(searchRule, '搜索个人云盘或用小程序搜索\neq: 青豆；阿里云盘')
                         .input(() => {
                         setItem('icy_ali_searchRule', input);
                         refreshPage();
@@ -3193,11 +3193,17 @@ const ali = {
                                 return link;
                             }
                         } else {
-                            return 'toast://'+ (searchAli ? '请输入关键字' : '请输入影片名称');
+                            if(getVar('icy_ali_searchKey','')){
+                                clearVar('icy_ali_searchKey');
+                                refreshPage();
+                                return 'toast://退出搜索';
+                            } else {
+                                return 'toast://'+ (searchAli ? '请输入关键字' : '请输入影片名称');
+                            }
                         }
                     }, searchRule, searchAli),
                     col_type: "input",
-                    desc: searchAli ? '搜索网盘内文件' : '使用其他规则搜索影片信息',
+                    desc: searchAli ? '搜索网盘内文件,留空则退出搜索模式' : '使用其他规则搜索影片信息',
                     extra: {
                         defaultValue: searchKey,
                     }
