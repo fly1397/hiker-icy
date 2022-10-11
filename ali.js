@@ -3439,13 +3439,14 @@ const ali = {
                         if(input.trim()) {
                             if(searchAli) {
                                 putVar('icy_ali_searchKey', input.trim());
+                                putVar('icy_ali_folder', '');
                                 refreshPage();
                             } else {
                                 var link = 'hiker://search?s=' + input.trim() + '&rule=' + searchRule;
                                 return link;
                             }
                         } else {
-                            if(getVar('icy_ali_searchKey','')){
+                            if(searchAli){
                                 clearVar('icy_ali_searchKey');
                                 refreshPage();
                                 return 'toast://退出搜索';
@@ -3537,7 +3538,7 @@ const ali = {
 
         var rescod = null;
         try {
-            if(searchKey) {
+            if(searchKey && !folderID) {
                 rescod = JSON.parse(searchFileList(access_token, drive_id, searchKey, next_marker));
             } else {
                 rescod = JSON.parse(getFileList(access_token, drive_id, folderID, next_marker));
