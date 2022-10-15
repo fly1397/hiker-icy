@@ -297,8 +297,8 @@
       "searchUrl": "https://api.upyunso.com/search?keyword=**&page=fypage&s_type=fyclass",
       "searchDataPath": "result&&items;title;page_url;insert_time;",
       "cats": [
-        { "name": "标题", "val": "1"},
-        { "name": "标题+内容", "val": "2"}
+        { "name": "标题", "val": "2"},
+        { "name": "标题+内容", "val": "1"}
       ]
     },
     {
