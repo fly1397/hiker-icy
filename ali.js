@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20221007',
+    version: '20221015',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,我的云盘页面支持云盘内文件搜索,海阔搜索默认加上云盘内文件搜索',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复UP云搜链接问题',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -1366,6 +1366,30 @@ const ali = {
         if(page == 1 && (res.includes('l2sp'))) {
             d.push({
                 title: '““””需要登录才能查看链接<b><span style="color: '+ this.primaryColor +'">🔑 点击登录</span></b>',
+                url: $("hiker://empty").rule((key)=>{
+                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                    ali.manualLogin(key);
+                    // refreshPage(false);
+                    
+                    // return 'hiker://empty';
+                }, key),
+                col_type: 'text_1'
+            })
+            //  else {
+            //     let loginTitle = loginError ? '用户名密码错误' : '需要登录才能查看链接';
+            //     d.push({
+            //         title: '““””'+loginTitle+'<b><span style="color: '+ this.primaryColor +'">🔒 点击配置用户名密码</span></b>',
+            //         url: $("hiker://empty").rule((key)=>{
+            //             eval(fetch('hiker://files/rules/icy/ali.js'));
+            //             ali.settingPage(key);
+            //         }, key),
+
+            //         col_type: 'text_1'
+            //     })
+            // }
+        } else if(page == 1 && (res.includes('Checking if the site connection is secure'))) {
+            d.push({
+                title: '““””需要获取cookie才可访问<b><span style="color: '+ this.primaryColor +'">🔑 点击获取Cookie</span></b>',
                 url: $("hiker://empty").rule((key)=>{
                     eval(fetch('hiker://files/rules/icy/ali.js'));
                     ali.manualLogin(key);
@@ -3942,9 +3966,16 @@ const ali = {
                 if(key == 'upsou') {
                     link = link.replace('download.html?url=', 'download?url=');
                     lazy = $(link).lazyRule(() => {
-                        let result = fetch(input);
+                        let result = fetch(input, {
+                            headers: {
+                                'Referer': 'https://upyunso.com/',
+                                'Origin': 'https://upyunso.com',
+                                'User-Agent': MOBILE_UA
+                            },
+                        });
                         result = JSON.parse(base64Decode(result));
-                        return 'hiker://page/detail?url=' + result.result.res_url + '??fypage'
+                        const isShareLink = result.result.res_url.startsWith('https://www.aliyundrive.com/s/');
+                        return isShareLink ? 'hiker://page/detail?url=' + result.result.res_url + '??fypage' : result.result.res_url
                     })
                 }
                 d.push({
