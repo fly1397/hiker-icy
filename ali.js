@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20221015',
+    version: '20221107',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -3964,19 +3964,22 @@ const ali = {
                     })
                 }, title, link, desc)
                 if(key == 'upsou') {
-                    link = link.replace('download.html?url=', 'download?url=');
-                    lazy = $(link).lazyRule(() => {
-                        let result = fetch(input, {
-                            headers: {
-                                'Referer': 'https://upyunso.com/',
-                                'Origin': 'https://upyunso.com',
-                                'User-Agent': MOBILE_UA
-                            },
-                        });
-                        result = JSON.parse(base64Decode(result));
-                        const isShareLink = result.result.res_url.startsWith('https://www.aliyundrive.com/s/');
-                        return isShareLink ? 'hiker://page/detail?url=' + result.result.res_url + '??fypage' : result.result.res_url
-                    })
+                    if(dataitem && dataitem.id == '-1') {
+                        return false
+                    }
+                //     link = link.replace('download.html?url=', 'download?url=');
+                //     lazy = $(link).lazyRule(() => {
+                //         let result = fetch(input, {
+                //             headers: {
+                //                 'Referer': 'https://upyunso.com/',
+                //                 'Origin': 'https://upyunso.com',
+                //                 'User-Agent': MOBILE_UA
+                //             },
+                //         });
+                //         result = JSON.parse(base64Decode(result));
+                //         const isShareLink = result.result.res_url.startsWith('https://www.aliyundrive.com/s/');
+                //         return isShareLink ? 'hiker://page/detail?url=' + result.result.res_url + '??fypage' : result.result.res_url
+                //     })
                 }
                 d.push({
                     title: title,
