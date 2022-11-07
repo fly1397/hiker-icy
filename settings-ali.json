@@ -291,7 +291,7 @@
       "key": "upsou",
       "desc": "UP云搜,最早提供阿里云盘搜索服务的平台,收集各类阿里云盘资源提供一站式搜索功能,推动互联网优质资源的高效传递!",
       "dataType": "json",
-      "detailLinkPre": "https://api.upyunso.com/",
+      "detailLinkPre": "",
       "itemsExcloudByLink": "#|https?",
       "homeDataPath": "result&&items;title;page_url;insert_time;",
       "searchUrl": "https://api.upyunso.com/search?keyword=**&page=fypage&s_type=fyclass",
