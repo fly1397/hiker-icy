@@ -3562,7 +3562,7 @@ const ali = {
 
         var rescod = null;
         try {
-            if(searchKey && !folderID) {
+            if(searchKey) {
                 rescod = JSON.parse(searchFileList(access_token, drive_id, searchKey, next_marker));
             } else {
                 rescod = JSON.parse(getFileList(access_token, drive_id, folderID, next_marker));
