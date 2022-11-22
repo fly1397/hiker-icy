@@ -3,7 +3,7 @@
   {
     "name": "🔥 阿里小站",
     "index": 0,
-    "val": "https://newxiaozhan.com",
+    "val": "https://pan666.cn",
     "key": "xiaozhan",
     "desc": "阿里云盘资源共享站",
     "needKey": true,
@@ -11,7 +11,7 @@
     "password": "",
     "cookie": "",
     "loginError": false,
-    "searchUrl": "https://newxiaozhan.com/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
+    "searchUrl": "https://pan666.cn/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**%20tag%3Avideo&filter%5Btag%5D=video&sort=fysort&page%5Boffset%5D=fypage",
     "cats": [
       { "name": "影视", "val": "video", "withType": 1},
       { "name": "动漫", "val": "comic", "withType": 1 },
@@ -179,7 +179,7 @@
     {
       "name": "🔑 爱盼小站",
       "index": 5,
-      "val": "https://aipanxiaozhan.com",
+      "val": "https://bbs.aipans.com",
       "key": "unilei",
       "desc": "阿里云盘资源分享站，网盘资源资源分享与互助的社区",
       "needKey": true,
@@ -187,7 +187,7 @@
       "password": "",
       "cookie": "",
       "loginError": false,
-      "searchUrl": "https://aipanxiaozhan.com/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CrecipientUsers%2CrecipientGroups%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
+      "searchUrl": "https://bbs.aipans.com/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
       "cats": [
         { "name": "电影", "val": "movie", "withType": 1 },
         { "name": "剧集", "val": "tv", "withType": 1 },
