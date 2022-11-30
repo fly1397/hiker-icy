@@ -451,7 +451,6 @@ const ali = {
             } else {
                 this.aliLogin();
                 return false;
-
             }
         } catch (e) {
             log(JSON.stringify(e));
@@ -520,7 +519,7 @@ const ali = {
             let _tokens = JSON.parse(readFile(tokenPath) || '[]');
             let tokens = _tokens.length ? _tokens : (_tokens && _tokens.user_id ? [_tokens] : [] );
 
-            let user_id = customerSettings ? customerSettings.user_id || tokens[0].user_id : tokens[0].user_id;
+            let user_id = customerSettings && tokens[0] ? customerSettings.user_id || tokens[0].user_id : '';
             tokens.forEach((item, index) => {
                 let title = item.user_id == user_id ? "<b>当前登录："+'<span style="color: '+ this.primaryColor +'">⭐ '+item.nick_name+'</span></b>' : item.nick_name;
                 d.push({
@@ -2253,7 +2252,7 @@ const ali = {
         if(!access_token) {
             return 'toast://还没登录？';
         }
-        if(access_token.startsWith('toast')) {
+        if(access_token && access_token.startsWith('toast')) {
             return access_token;
         }
         var json = null;
@@ -2369,7 +2368,7 @@ const ali = {
     },
     lazyAli: function(shareId, sharetoken, input){
         var access_token = this.getAliToken();
-        if(access_token.startsWith('toast')) {
+        if(access_token && access_token.startsWith('toast')) {
             return access_token;
         }
         if(!access_token) {
@@ -2496,7 +2495,7 @@ const ali = {
     },
     lazyAliImage: function(shareId, sharetoken, input){
         var access_token = this.getAliToken();
-        if(access_token.startsWith('toast')) {
+        if(access_token && access_token.startsWith('toast')) {
             return access_token;
         }
         if(!access_token) {
@@ -2541,7 +2540,7 @@ const ali = {
     },
     lazyAliDoc: function(shareId, sharetoken, file_id, drive_id){
         var access_token = this.getAliToken();
-        if(access_token.startsWith('toast')) {
+        if(access_token && access_token.startsWith('toast')) {
             return access_token;
         }
         if(!access_token) {
@@ -2596,7 +2595,7 @@ const ali = {
     },
     get_share_link_download_url: function(shareId, sharetoken, file_id){
         var access_token = this.getAliToken();
-        if(access_token.startsWith('toast')) {
+        if(access_token && access_token.startsWith('toast')) {
             return access_token;
         }
         if(!access_token) {
@@ -2642,7 +2641,7 @@ const ali = {
     },
     get_download_url: function(drive_id, file_id){
         var access_token = this.getAliToken();
-        if(access_token.startsWith('toast')) {
+        if(access_token && access_token.startsWith('toast')) {
             return access_token;
         }
         if(!access_token) {
@@ -2677,7 +2676,7 @@ const ali = {
     },
     lazyAliAudio: function(shareId, sharetoken, file_id, drive_id){
         var access_token = this.getAliToken();
-        if(access_token.startsWith('toast')) {
+        if(access_token && access_token.startsWith('toast')) {
             return access_token;
         }
         if(!access_token) {
