@@ -384,6 +384,45 @@
       ]
     },
     {
+      "name": "🔍 千帆搜索",
+      "index": 15,
+      "val": "https://pan.qianfan.app/search/?pan=aliyundrive&type=video&q=%E5%BD%B1%E8%A7%86&page=fypage",
+      "key": "qianfan",
+      "desc": "千帆搜索 - 资源超丰富的聚合网盘搜索引擎！",
+      "dataType": "html",
+      "detailLinkPre": "https://pan.qianfan.app",
+      "itemsExcloudByLink": "",
+      "homeDataPath": "body&&.search-item;.search-title&&Text;a&&href;.search-file-size&&Text;",
+      "searchUrl": "https://pan.qianfan.app/search/?pan=aliyundrive&type=fyclass&q=**&page=fypage",
+      "searchDataPath": "body&&.search-item;.search-title&&Text;a&&href;.search-file-size&&Text;",
+      "cats": [
+        { "name": "综合", "val": "all"},
+        { "name": "文件夹", "val": "folder"},
+        { "name": "视频", "val": "video"},
+        { "name": "音频", "val": "audio"},
+        { "name": "图片", "val": "image"},
+        { "name": "电子书", "val": "doc"},
+        { "name": "软件", "val": "app"},
+        { "name": "压缩包", "val": "zip"},
+        { "name": "其他", "val": "others"}
+      ]
+    },
+    {
+      "name": "🔍 YaPan",
+      "index": 16,
+      "val": "https://pan.ccof.cc",
+      "key": "yapan",
+      "desc": "Yapan - 网盘检索工具",
+      "dataType": "json",
+      "method": "POST",
+      "postUrl": "https://pan.ccof.cc/api/search",
+      "postData": "{\"pageSize\":20,\"pageNum\":fypage,\"keyword\": \"**\",\"fromMobile\":true}",
+      "detailLinkPre": "",
+      "homeDataPath": "data&&rows;fileName;url;;",
+      "searchUrl": "https://pan.ccof.cc/search?keyword=**&p=fypage",
+      "searchDataPath": "data&&rows;fileName;url;;"
+    },
+    {
       "name": "☁️ R酱-OneDriver",
       "index": 20,
       "key": "rjiang",
