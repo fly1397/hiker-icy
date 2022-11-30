@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20221122',
+    version: '20221130',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,更新阿里小站，爱盼小站地址',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,新增2个资源搜索站点：千帆搜索，YaPan',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -2746,7 +2746,7 @@ const ali = {
             params.forEach(item => {
                 clearVar(item)
             })
-        }, ["folderName"]))
+        }, ["folderName", "icy_ali_folder", "icy_ali_next_marker"]))
         this.getConfig();
         const [shareLink, _page] = MY_URL.split(/[?|$|#]{2}/).filter(item => !!item);
         const [link, _share_pwd] = shareLink.split('?share_pwd=');
@@ -2757,7 +2757,7 @@ const ali = {
         var page = _page || 1;
         if(page == 1) {
             putVar('icy_ali_next_marker', '');
-            putVar('icy_ali_folder', '');
+            putVar('icy_ali_folder', folderID);
         } else {
             folderID = getVar('icy_ali_folder', '')
         }
@@ -3810,7 +3810,7 @@ const ali = {
     homeDataJSON: function(d) {
 
         const activeModel = this.activeModel();
-        const {val, homeDataPath, key} = activeModel;
+        const {val, homeDataPath, key, method, postUrl, postData} = activeModel;
         var page = Number(MY_URL.split('$$$')[1]);
         
         try {
@@ -3825,7 +3825,22 @@ const ali = {
                     setItem('ujuso', kid);
                 }
             }
-            let result = fetch(url);
+            let result = '';
+            if(method && method == 'POST') {
+                let data = postData.replace('**', '最新').replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page);
+                
+                result = fetch(postUrl, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "User-Agent": MOBILE_UA,
+                        "Referer": url,
+                    },
+                    method: 'POST',
+                    body: JSON.parse(data),
+                });
+            } else {
+                result = fetch(url);
+            }
             if(key == 'upsou') {
                 result = base64Decode(result);
 
@@ -3896,7 +3911,7 @@ const ali = {
     },
     searchJSON: function(activeModel, fromHikerSearch, keyword, page, d) {
         try {
-            const {searchUrl, searchDataPath, key, val} = activeModel;
+            const {searchUrl, searchDataPath, key, val, method, postUrl, postData} = activeModel;
             const [listPath, , , ] = searchDataPath.split(';')
             const {fyarea, fyclass, fyyear, fysort} = this.getFilter(true);
             let url = searchUrl.replace('**', keyword).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page);
@@ -3907,7 +3922,21 @@ const ali = {
                     setItem('ujuso', kid);
                 }
             }
-            let result = fetch(url);
+            let result = '';
+            if(method && method == 'POST') {
+                let data = postData.replace('**', keyword).replace('fyarea', fyarea).replace('fyclass', fyclass).replace('fyyear', fyyear).replace('fysort', fysort).replace('fypage', page);
+                result = fetch(postUrl, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "User-Agent": MOBILE_UA,
+                        "Referer": url,
+                    },
+                    method: 'POST',
+                    body: JSON.parse(data),
+                });
+            } else {
+                result = fetch(url);
+            }
             if(key == 'upsou') {
                 result = base64Decode(result);
             }
@@ -4194,6 +4223,33 @@ const ali = {
                         return "toast://好像出错了！"
                     }
                 })
+                if(key == 'qianfan') {
+                    lazy = $('').lazyRule(() => {
+                        const res = JSON.parse(fetch(input, {
+                            headers: {'User-Agent': MOBILE_UA, 'Referer': input},
+                            withHeaders: true
+                        }));
+                        let url = parseDomForHtml(res.body, ".item-detail-info&&.copy-al-file-url&&data-url");
+                        let flag = parseDomForHtml(res.body, ".item-detail-info&&.copy-al-file-url&&id");
+                        let folder = parseDomForHtml(res.body, ".item-detail-info&&.copy-al-file-url&&data-parent-id");
+                        for (let obj of flag) {
+                            if (isNaN(parseInt(obj))) {
+                                let flagNum = parseInt(obj, 16);
+                                url = url.substring(0, flagNum) + url.substring(flagNum + 1, flagNum + 10000)
+                            }
+                        }
+                        url = base64Decode(url);
+                        if(folder) {
+                            url += '/folder/' + folder;
+                        }
+                        let _links = url.match(/https:\/\/(www\.aliyundrive\.com\/s|alywp\.net)(\/\w*)*/g) || [];
+                        if (_links.length > 0){
+                            return 'hiker://page/detail?url=' + _links[0] + '??fypage';
+                        } else {
+                            return "toast://好像出错了！"
+                        }
+                    })
+                }
                 if(!!detailPath) {
                     lazy = $('').rule((_title, _detailPath, key, needcookie) => {
                         let _url = MY_URL;
