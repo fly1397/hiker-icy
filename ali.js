@@ -3027,7 +3027,7 @@ const ali = {
                     expiration_text = '有效期限：' + (expiration ? getDateDiff(expiration) +'，请尽快保存！' : '永久有效');
                 }
                 d.push({
-                    title: '““””<b>✨✨<span style="color: '+ this.primaryColor +'">保存到我的阿里云盘</span>✨✨</b>\n' + "““””<small>"+'<span style="color: #999999">'+expiration_text+'</span></small>',
+                    title: '““””<b>✨✨✨✨<span style="color: '+ this.primaryColor +'">保存到我的阿里云盘</span>✨✨✨✨</b>\n' + "““””<small>"+'<span style="color: #999999">'+expiration_text+'</span></small>',
                     url: saveLink,
                     col_type: "text_center_1"
                 });
