@@ -327,16 +327,15 @@
     {
       "name": "🔍 找资源",
       "index": 12,
-      "val": "https://zhaoziyuan.me/",
+      "val": "https://zhaoziyuan.la/",
       "key": "zhaoziyuan",
       "desc": "找资源，阿里云盘搜索引擎，快速搜索阿里云盘资源，24H不间断更新，24H自动检测失效链接，查看最新资源刷新首页即可！",
       "dataType": "html",
-      "detailLinkPre": "https://zhaoziyuan.me/",
+      "detailLinkPre": "https://zhaoziyuan.la/",
       "itemsExcloudByLink": "",
-      "homeDataPath": ".newsList&&li.clear:not(0);.news_text&&h3&&Text;a&&href;p&&Text;",
-      "searchUrl": "https://zhaoziyuan.me/so?filename=**&page=fypage",
-      "searchDataPath": ".newsList&&li.clear:not(0);.news_text&&h3&&Text;a&&href;p&&Text;",
-      "detailPath": ".news_box&&Html",
+      "homeDataPath": ".newsList&&.li_con:not(0);.news_text&&h3&&Text;a&&href;p&&Text;",
+      "searchUrl": "https://zhaoziyuan.la/so?filename=**&page=fypage",
+      "searchDataPath": ".newsList&&.li_con:not(0);.news_text&&h3&&Text;a&&href;p&&Text;",
       "cats": [
       ]
     },
