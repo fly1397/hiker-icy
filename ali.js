@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20221130',
+    version: '20221202',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,新增2个资源搜索站点：千帆搜索，YaPan',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复千帆搜索，更新找资源地址',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -778,7 +778,6 @@ const ali = {
             body: '{"identification": "'+username+'","password": "'+password+'","remember":true}',
             withHeaders: true
         }));
-        log(login)
         if(login.body && login.body.includes('errors') && login.body.includes('not_authenticated')) {
             confirm({
                 title: '登录失败',
@@ -1194,22 +1193,27 @@ const ali = {
                 eval(fetch('hiker://files/rules/icy/ali.js'));
                 const activeModel = ali.activeModel();
                 if(activeModel) {
-                    const {areas, cats, years, sorts} = activeModel;
+                    const {areas, cats, years, sorts, val} = activeModel;
+                    putVar('icy_ali_model_search', val)
                     if(areas) {
                         const _areas = areas.filter(item => item.withType != -1);
                         putVar('icy_ali_area', _areas[0] ? _areas[0].val : '');
+                        putVar('icy_ali_area_search', _areas[0] ? _areas[0].val : '');
                     }
                     if(cats) {
                         const _cats = cats.filter(item => item.withType != -1);
                         putVar('icy_ali_cat', _cats[0] ? _cats[0].val : '');
+                        putVar('icy_ali_cat_search', _cats[0] ? _cats[0].val : '');
                     }
                     if(years) {
                         const _years = years.filter(item => item.withType != -1);
                         putVar('icy_ali_year', _years[0] ? _years[0].val : '');
+                        putVar('icy_ali_year_search', _years[0] ? _years[0].val : '');
                     }
                     if(sorts) {
                         const _sorts = sorts.filter(item => item.withType != -1);
                         putVar('icy_ali_sort' , _sorts[0] ? _sorts[0].val : '')
+                        putVar('icy_ali_sort_search' , _sorts[0] ? _sorts[0].val : '')
                     }
                 }
             });
@@ -4228,9 +4232,9 @@ const ali = {
                             headers: {'User-Agent': MOBILE_UA, 'Referer': input},
                             withHeaders: true
                         }));
-                        let url = parseDomForHtml(res.body, ".item-detail-info&&.copy-al-file-url&&data-url");
-                        let flag = parseDomForHtml(res.body, ".item-detail-info&&.copy-al-file-url&&id");
-                        let folder = parseDomForHtml(res.body, ".item-detail-info&&.copy-al-file-url&&data-parent-id");
+                        let url = parseDomForHtml(res.body, ".item-detail-info&&.pan-url&&data-url");
+                        let flag = parseDomForHtml(res.body, ".item-detail-info&&.pan-url&&id");
+                        let folder = parseDomForHtml(res.body, ".item-detail-info&&.pan-url&&data-parent-id");
                         for (let obj of flag) {
                             if (isNaN(parseInt(obj))) {
                                 let flagNum = parseInt(obj, 16);
