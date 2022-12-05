@@ -454,8 +454,8 @@ const ali = {
             }
         } catch (e) {
             log(JSON.stringify(e));
-            deleteFile(tokenPath);
-            return 'toast://TOKEN获取失败，已经删除阿里登录信息，重新登录试试'
+            // deleteFile(tokenPath);
+            return 'toast://TOKEN获取失败，重新登录试试'
         }
 
     },
@@ -1697,9 +1697,7 @@ const ali = {
         access_token = token.access_token;
         var drive_id = token.default_drive_id;
         if(!drive_id) {
-            deleteFile(this.urls.tokenPath);
-            refreshPage();
-            return false;
+            return 'toast://TOKEN获取失败，重新登录试试'
         }
         if(page == 1) {
             putVar('icy_ali_next_marker', '');
@@ -3308,9 +3306,7 @@ const ali = {
         access_token = token.access_token;
         var drive_id = token.default_drive_id;
         if(!drive_id) {
-            deleteFile(this.urls.tokenPath);
-            refreshPage();
-            return false;
+            return 'toast://TOKEN获取失败，重新登录试试'
         }
         var folderID = (MY_URL.includes('$$$') ? MY_URL.split('$$$') : MY_URL.split('??'))[0].split('folder/')[1] || '';
         var page = MY_PAGE || (MY_URL.includes('$$$') ? MY_URL.split('$$$') : MY_URL.split('??'))[1] || 1;
