@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20221202',
+    version: '20221220',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复千帆搜索，更新找资源地址',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,云盘页面支持长按下载操作',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -1785,7 +1785,14 @@ const ali = {
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
             let pic_url = thumbnail;
-
+            let _download = download_url || this.get_download_url(drive_id ,file_id)
+            let longClick = [{
+                title: '下载',
+                js: $.toString((_download) => {
+                    log('download://' + _download)
+                    return 'download://' + _download
+                }, _download)
+            }]
             switch(category || type){
                 case 'video':
                     let zimuItemList = null;
@@ -1850,7 +1857,8 @@ const ali = {
                         desc: desc,
                         url: videolazy,
                         extra: {
-                            id: drive_id + file_id
+                            id: drive_id + file_id,
+                            longClick: longClick
                         },
                         col_type: col_type
 
@@ -1862,6 +1870,9 @@ const ali = {
                         desc: desc,
                         pic_url: pic_url || this.images.img,
                         url: download_url,
+                        extra: {
+                            longClick: longClick
+                        },
                         col_type: col_type
 
                     });
@@ -1893,6 +1904,9 @@ const ali = {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
                         }, drive_id, file_id, fnName),
+                        extra: {
+                            longClick: longClick
+                        },
                         col_type: col_type
 
                     });
@@ -1918,6 +1932,9 @@ const ali = {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             ali.lazyAliDoc('', '', file_id, drive_id);
                         }, drive_id, file_id),
+                        extra: {
+                            longClick: longClick
+                        },
                         col_type: col_type
 
                     });
@@ -3127,7 +3144,13 @@ const ali = {
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
             let pic_url = thumbnail || this.randomPic +'?t='+new Date().getTime() + '' +index;
-
+            let _download = this.get_share_link_download_url(shareId,sharetoken,file_id)
+            let longClick = [{
+                title: '下载',
+                js: $.toString((_download) => {
+                    return _download.startsWith('toast') ? _download : 'download://' + _download
+                }, _download)
+            }]
             switch(category || type){
                 case 'video':
                     let zimuItemList = null;
@@ -3190,7 +3213,8 @@ const ali = {
                         desc: desc,
                         url: videolazy,
                         extra: {
-                            id: shareId + file_id
+                            id: shareId + file_id,
+                            longClick: longClick
                         },
                         col_type: col_type
 
@@ -3213,6 +3237,9 @@ const ali = {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
                         }, shareId, sharetoken, file_id, fnName),
+                        extra: {
+                            longClick: longClick
+                        },
                         col_type: col_type
 
                     });
@@ -3244,6 +3271,9 @@ const ali = {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
                         }, shareId, sharetoken, file_id, fnName),
+                        extra: {
+                            longClick: longClick
+                        },
                         col_type: col_type
 
                     });
@@ -3273,6 +3303,9 @@ const ali = {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             ali.lazyAliDoc(shareId, sharetoken, file_id);
                         }, shareId, sharetoken, file_id),
+                        extra: {
+                            longClick: longClick
+                        },
                         col_type: col_type
 
                     });
@@ -3643,7 +3676,14 @@ const ali = {
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
             let pic_url = thumbnail;
-
+            let _download = download_url || this.get_download_url(drive_id ,file_id)
+            let longClick = [{
+                title: '下载',
+                js: $.toString((_download) => {
+                    log('download://' + _download)
+                    return 'download://' + _download
+                }, _download)
+            }]
             switch(category || type){
                 case 'video':
                     let zimuItemList = null;
@@ -3708,7 +3748,8 @@ const ali = {
                         desc: desc,
                         url: videolazy,
                         extra: {
-                            id: drive_id + file_id
+                            id: drive_id + file_id,
+                            longClick: longClick
                         },
                         col_type: col_type
 
@@ -3720,6 +3761,9 @@ const ali = {
                         desc: desc,
                         pic_url: pic_url || this.images.img,
                         url: download_url,
+                        extra: {
+                            longClick: longClick
+                        },
                         col_type: col_type
 
                     });
@@ -3751,6 +3795,9 @@ const ali = {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
                         }, drive_id, file_id, fnName),
+                        extra: {
+                            longClick: longClick
+                        },
                         col_type: col_type
 
                     });
@@ -3776,6 +3823,9 @@ const ali = {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             ali.lazyAliDoc('', '', file_id, drive_id);
                         }, drive_id, file_id),
+                        extra: {
+                            longClick: longClick
+                        },
                         col_type: col_type
 
                     });
