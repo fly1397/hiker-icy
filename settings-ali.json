@@ -54,31 +54,6 @@
       ]
     },
     {
-      "name": "🔥 三角体",
-      "index": 8,
-      "val": "https://www.ood.one/api/v3/thread.list?perPage=10&page=fypage&fyclass&fysort",
-      "key": "ood",
-      "desc": "三角体阿里云网盘资源共享",
-      "dataType": "json",
-      "detailLinkPre": "https://www.ood.one/thread/",
-      "homeDataPath": "Data&&pageData;title;threadId;content&&text;",
-      "searchUrl": "https://www.ood.one/api/v3/thread.list?perPage=10&page=fypage&filter[search]=**&scope=2",
-      "searchDataPath": "Data&&pageData;title;threadId;content&&text;",
-      "cats": [
-        { "name": "影视", "val": "filter[categoryids][0]=1", "withType": 1},
-        { "name": "动漫", "val": "filter[categoryids][0]=7", "withType": 1},
-        { "name": "音乐", "val": "filter[categoryids][0]=2", "withType": 1},
-        { "name": "图书", "val": "filter[categoryids][0]=3", "withType": 1}
-      ],
-      "sorts": [
-        { "name": "全部", "val": "filter[essence]=0&filter[attention]=0&filter[sort]=1&scope=0", "withType": 1},
-        { "name": "推荐", "val": "filter[essence]=0&filter[attention]=0&filter[sort]=1&scope=1", "withType": 1},
-        { "name": "精华", "val": "filter[essence]=1&filter[attention]=0&filter[sort]=1&scope=0", "withType": 1},
-        { "name": "评论时间", "val": "filter[essence]=0&filter[attention]=0&filter[sort]=2&scope=0", "withType": 1},
-        { "name": "热门内容", "val": "filter[essence]=0&filter[attention]=0&filter[sort]=3&scope=0", "withType": 1}
-      ]
-    },
-    {
       "name": "🔑 阿里云盘小站",
       "index": 4,
       "val": "https://wpxz.org",
@@ -174,37 +149,6 @@
         { "name": "热门主题", "val": "-commentCount"},
         { "name": "新鲜出炉", "val": "-createdAt"},
         { "name": "陈年旧帖", "val": "createdAt"}
-      ]
-    },
-    {
-      "name": "🔑 爱盼小站",
-      "index": 5,
-      "val": "https://bbs.aipans.com",
-      "key": "unilei",
-      "desc": "阿里云盘资源分享站，网盘资源资源分享与互助的社区",
-      "needKey": true,
-      "username": "",
-      "password": "",
-      "cookie": "",
-      "loginError": false,
-      "searchUrl": "https://bbs.aipans.com/api/discussions?include=user%2ClastPostedUser%2CmostRelevantPost%2CmostRelevantPost.user%2Ctags%2Ctags.parent%2CfirstPost&filter%5Bq%5D=**&sort=fysort&page%5Boffset%5D=fypage",
-      "cats": [
-        { "name": "电影", "val": "movie", "withType": 1 },
-        { "name": "剧集", "val": "tv", "withType": 1 },
-        { "name": "资源合集", "val": "ziyuanheji", "withType": 1 },
-        { "name": "动漫", "val": "dongman", "withType": 1 },
-        { "name": "图片", "val": "picture", "withType": 1 },
-        { "name": "音乐", "val": "music", "withType": 1 },
-        { "name": "Netflix", "val": "netflix", "withType": 1 }
-      ],
-      "sorts": [
-        { "name": "相关推荐", "val": "", "withType": -1},
-        { "name": "最新回复", "val": "-lastPostedAt" },
-        { "name": "热门主题", "val": "-commentCount" },
-        { "name": "新鲜出炉", "val": "-createdAt" },
-        { "name": "陈年旧帖", "val": "createdAt" },
-        { "name": "最多人看", "val": "-view_count" },
-        { "name": "最少人看", "val": "view_count" }
       ]
     },
     {
