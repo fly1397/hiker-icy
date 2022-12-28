@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20221220',
+    version: '20221228',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,云盘页面支持长按下载操作',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复页面加载缓慢问题',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -1785,13 +1785,17 @@ const ali = {
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
             let pic_url = thumbnail;
-            let _download = download_url || this.get_download_url(drive_id ,file_id)
             let longClick = [{
                 title: '下载',
-                js: $.toString((_download) => {
-                    log('download://' + _download)
-                    return 'download://' + _download
-                }, _download)
+                js: $.toString((_download,drive_id ,file_id) => {
+                    if(_download) {
+                        return 'download://' + _download
+                    } else {
+                        eval(fetch('hiker://files/rules/icy/ali.js'));
+                        return 'download://' + ali.get_download_url(drive_id ,file_id);
+                    }
+                    
+                }, download_url ,drive_id ,file_id)
             }]
             switch(category || type){
                 case 'video':
@@ -1922,13 +1926,11 @@ const ali = {
                     } else {
                         _title = '❓ ' + title;
                     }
-                    let download = this.get_download_url(drive_id ,file_id);
-                    download = download.startsWith('toast') ? download : 'download://' + download;
                     d.push({
                         title: _title,
                         pic_url: thumbnail || pic_url,
                         desc: desc,
-                        url: category != 'doc' ? download : $('hiker://empty'+file_id).rule((drive_id, file_id) => {
+                        url: category != 'doc' ? 'toast://不支持预览，请长按下载后查看' : $('hiker://empty'+file_id).rule((drive_id, file_id) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             ali.lazyAliDoc('', '', file_id, drive_id);
                         }, drive_id, file_id),
@@ -3144,12 +3146,12 @@ const ali = {
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
             let pic_url = thumbnail || this.randomPic +'?t='+new Date().getTime() + '' +index;
-            let _download = this.get_share_link_download_url(shareId,sharetoken,file_id)
             let longClick = [{
                 title: '下载',
-                js: $.toString((_download) => {
-                    return _download.startsWith('toast') ? _download : 'download://' + _download
-                }, _download)
+                js: $.toString((shareId,sharetoken,file_id) => {
+                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                    return 'download://' + ali.get_share_link_download_url(shareId,sharetoken,file_id);
+                },shareId,sharetoken,file_id)
             }]
             switch(category || type){
                 case 'video':
@@ -3293,13 +3295,11 @@ const ali = {
                     } else {
                         _title = '❓ ' + title;
                     }
-                    let download = this.get_share_link_download_url(shareId,sharetoken,file_id);
-                    download = download.startsWith('toast') ? download : 'download://' + download;
                     d.push({
                         title: _title,
                         pic_url: thumbnail || pic_url,
                         desc: desc,
-                        url: category != 'doc' ? download : $('hiker://empty'+file_id).rule((shareId, sharetoken, file_id) => {
+                        url: category != 'doc' ? 'toast://不支持预览，请长按下载后查看' : $('hiker://empty'+file_id).rule((shareId, sharetoken, file_id) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             ali.lazyAliDoc(shareId, sharetoken, file_id);
                         }, shareId, sharetoken, file_id),
@@ -3676,13 +3676,18 @@ const ali = {
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
             let pic_url = thumbnail;
-            let _download = download_url || this.get_download_url(drive_id ,file_id)
+            
             let longClick = [{
                 title: '下载',
-                js: $.toString((_download) => {
-                    log('download://' + _download)
-                    return 'download://' + _download
-                }, _download)
+                js: $.toString((_download,drive_id ,file_id) => {
+                    if(_download) {
+                        return 'download://' + _download
+                    } else {
+                        eval(fetch('hiker://files/rules/icy/ali.js'));
+                        return 'download://' + ali.get_download_url(drive_id ,file_id);
+                    }
+                    
+                }, download_url ,drive_id ,file_id)
             }]
             switch(category || type){
                 case 'video':
@@ -3813,13 +3818,11 @@ const ali = {
                     } else {
                         _title = '❓ ' + title;
                     }
-                    let download = this.get_download_url(drive_id ,file_id);
-                    download = download.startsWith('toast') ? download : 'download://' + download;
                     d.push({
                         title: _title,
                         pic_url: thumbnail || pic_url,
                         desc: desc,
-                        url: category != 'doc' ? download : $('hiker://empty'+file_id).rule((drive_id, file_id) => {
+                        url: category != 'doc' ? 'toast://不支持预览，请长按下载后查看' : $('hiker://empty'+file_id).rule((drive_id, file_id) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             ali.lazyAliDoc('', '', file_id, drive_id);
                         }, drive_id, file_id),
