@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20221228',
+    version: '20221230',
     randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复页面加载缓慢问题',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,新增首次使用未登录时要求登录的功能',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -147,7 +147,12 @@ const ali = {
         if(searchPage) {
             model_search = getVar('icy_ali_model_search');
         }
-        return searchModel ? searchModel.find(item => item.val == model_search) || (searchPage ? searchModel[0] : null): null;
+        let deafultModel = searchModel[0];
+        const hasToken = fileExist(this.urls.tokenPath) == 'true' || fileExist(this.urls.tokenPath) == true;
+        if(hasToken) {
+            deafultModel = null;
+        }
+        return searchModel ? searchModel.find(item => item.val == model_search) || (searchPage ? searchModel[0] : deafultModel): null;
     },
     objData: function(obj, path){
         let _obj = obj;
@@ -506,7 +511,7 @@ const ali = {
             putVar('icy_ali_tokenPath', tokenPath)
         }
 
-        let customerSettings = JSON.parse(fetch(getVar('icy_ali_customer')));
+        let customerSettings = JSON.parse(fetch(getVar('icy_ali_customer')) || '{}');
         const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
         if(!haveToken) {
             d.push({
@@ -1158,7 +1163,7 @@ const ali = {
             d.push({
                 col_type: "blank_block"
             });
-        } else {
+        } else if(fileExist(this.urls.tokenPath) == 'true' || fileExist(this.urls.tokenPath) == true){
             this.myAliRule(d);
         }
         setResult(d);
@@ -1173,6 +1178,7 @@ const ali = {
         }
     },
     rendererFilterList: function(d, isSearchPage){
+        const hasToken = fileExist(this.urls.tokenPath) == 'true' || fileExist(this.urls.tokenPath) == true
         const activeModel = this.activeModel(isSearchPage);
         const {searchModel} = this;
         const withoutType = isSearchPage ? 1 : -1;
@@ -1182,12 +1188,16 @@ const ali = {
         }
         if(!isSearchPage) {
             // home page
-            var title = !activeModel ? "““””<b>"+'<span style="color: '+ this.primaryColor +'">⭐ 🦄 我的云盘</span></b>' : '🦄 我的云盘';
-            d.push({
-                title: title,
-                url: "hiker://page/drive?url=https://www.aliyundrive.com/drive/??fypage",
-                col_type:'scroll_button'
-            })
+            if(hasToken) {
+                var title = !activeModel ? "““””<b>"+'<span style="color: '+ this.primaryColor +'">⭐ 🦄 我的云盘</span></b>' : '🦄 我的云盘';
+
+                d.push({
+                    title: title,
+                    url: "hiker://page/drive?url=https://www.aliyundrive.com/drive/??fypage",
+                    col_type:'scroll_button'
+                })
+            }
+            
             this.rendererFilter(d, searchModel, 'icy_ali_model', () => {
                 // callback
                 eval(fetch('hiker://files/rules/icy/ali.js'));
@@ -1811,9 +1821,6 @@ const ali = {
                         videolazy = $('hiker://empty' + file_id).rule(() => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
-                            if(access_token) {
-                                back(true);
-                            }
                             return "toast://登录后需要重新刷新页面哦！"
                         })
                     } else if(_zimuList  && !!_zimuList.length && (zimuItemList.length > 1 || !zimuItemList.length)) {
@@ -3167,9 +3174,6 @@ const ali = {
                         videolazy = $('hiker://empty' + file_id).rule(() => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
-                            if(access_token) {
-                                back(true);
-                            }
                             return "toast://登录后需要重新刷新页面哦！"
                         })
                     } else if(_zimuList && !!_zimuList.length  && (zimuItemList.length > 1 || !zimuItemList.length)) {
@@ -3703,9 +3707,6 @@ const ali = {
                         videolazy = $('hiker://empty' + file_id).rule(() => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
-                            if(access_token) {
-                                back(true);
-                            }
                             return "toast://登录后需要重新刷新页面哦！"
                         })
                     } else if(_zimuList  && !!_zimuList.length && (zimuItemList.length > 1 || !zimuItemList.length)) {
