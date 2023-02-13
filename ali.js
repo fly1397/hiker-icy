@@ -21,8 +21,8 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '20221230',
-    randomPic: 'https://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
+    version: '2023/20/13',
+    randomPic: 'htt/ps://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
 
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,新增首次使用未登录时要求登录的功能',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,先修复了分享链接观看问题，个人网盘页面暂时还无法播放',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -278,7 +278,7 @@ const ali = {
             clearVar('icy-ali-tokens')
         })
         let d = [];
-        let url = _url || 'https://auth.aliyundrive.com/v2/oauth/authorize?login_type=custom&response_type=code&redirect_uri=https%3A%2F%2Fwww.aliyundrive.com%2Fsign%2Fcallback&client_id=25dzX3vbYqktVxyX&state=%7B%22origin%22%3A%22*%22%7D#/login';
+        let url = _url || 'https://www.aliyundrive.com/drive';
         // if(getItem('haveShared', '') && !haveToken) {
         //     // url = 'https://pages.aliyundrive.com/mobile-page/web/beinvited.html?code=8281833';
         //     // url = 'https://www.aliyundrive.com/s/BFiLLN5Uu58';
@@ -290,6 +290,7 @@ const ali = {
             var click = false;
             const tokenFunction = function () {
                 var token = null;
+                var deviceID = "";
                 if(isShare) {
                     try{
                         if(!click){
@@ -338,15 +339,17 @@ const ali = {
                     }
                 } else {
                     token = JSON.parse(localStorage.getItem('token'));
-                    if(!location.href.startsWith('https://auth.aliyundrive.com')) {
-                        location.replace('https://auth.aliyundrive.com/v2/oauth/authorize?login_type=custom&response_type=code&redirect_uri=https%3A%2F%2Fwww.aliyundrive.com%2Fsign%2Fcallback&client_id=25dzX3vbYqktVxyX&state=%7B%22origin%22%3A%22*%22%7D#/login')
-                    }
+                    deviceID = localStorage.getItem('APLUS_CNA').includes('_') ? localStorage.getItem('APLUS_CNA').split('_')[1] : '';
+                    // if(!location.href.startsWith('https://auth.aliyundrive.com') || !location.href.startsWith('https://www.aliyundrive.com/sign/callback')) {
+                    //     location.replace('https://auth.aliyundrive.com/v2/oauth/authorize?login_type=custom&response_type=code&redirect_uri=https%3A%2F%2Fwww.aliyundrive.com%2Fsign%2Fcallback&client_id=25dzX3vbYqktVxyX&state=%7B%22origin%22%3A%22*%22%7D#/login')
+                    // }
                 }
-                if(token && token.user_id){
+                if(token && token.user_id && deviceID){
                     let token_url = 'hiker://files/rules/icy/icy-ali-token.json';
                     let _tokens = JSON.parse(request(token_url) || '[]');
                     let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
                     let _token = tokens.find(item => item.user_id == token.user_id);
+                    token.deviceID = deviceID
                     if(_token) {
                         _token = token;
                     } else {
@@ -356,6 +359,7 @@ const ali = {
                     fy_bridge_app.putVar('icy-ali-tokens', JSON.stringify(tokens))
                     // fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify(tokens));
                     localStorage.clear();
+                    alert(deviceID)
                     alert('TOKEN获取成功，请勿泄漏个人隐私!退出该页面后刷新重试！');
                     // if(location.href.includes('auth.aliyundrive.com')) {
                     //     fy_bridge_app.back();
@@ -414,6 +418,7 @@ const ali = {
                 let tokens = _tokens.length ? _tokens : (_tokens && _tokens.user_id ? [_tokens] : [] );
                 let customerSettings = JSON.parse(fetch(customerSettingPath));
                 let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
+                let deviceID = token.deviceID;
                 if((token && (!token.access_token || !token.refresh_token)) || !token) {
                     deleteFile(tokenPath);
                     return 'toast://TOKEN获取失败，已经删除阿里登录信息，重新登录试试'
@@ -428,6 +433,7 @@ const ali = {
                         body: '{"refresh_token":"'+token.refresh_token+'","grant_type":"refresh_token"}',
                     }));
                     if(tokenRes && tokenRes.user_id) {
+                        tokenRes.deviceID = deviceID;
                         var access_token = tokenRes.access_token;
                         putVar("access_token", access_token);
                         let _token = tokens.find(item => item.user_id == tokenRes.user_id);
@@ -1706,6 +1712,7 @@ const ali = {
         let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
         access_token = token.access_token;
         var drive_id = token.default_drive_id;
+        var deviceID = token.deviceID;
         if(!drive_id) {
             return 'toast://TOKEN获取失败，重新登录试试'
         }
@@ -1840,7 +1847,7 @@ const ali = {
                                 }
                                 return $('hiker://empty' + file_id).lazyRule((file_id , zimuItem, drive_id) => {
                                     eval(fetch('hiker://files/rules/icy/ali.js'));
-                                    return ali.videoProxy(file_id, '', '', zimuItem, drive_id);
+                                    return ali.videoProxy(file_id, '', '', zimuItem, drive_id, deviceID);
                                 },file_id , zimuItem, drive_id)
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
@@ -2275,7 +2282,7 @@ const ali = {
             setHomeResult(res);
         }
     },
-    videoProxy: function(file_id, share_id, share_token, zimuItem, drive_id){
+    videoProxy: function(file_id, share_id, share_token, zimuItem, drive_id, deviceID){
         var access_token = this.getAliToken();
         if(!access_token) {
             return 'toast://还没登录？';
@@ -2289,7 +2296,8 @@ const ali = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
-                    'X-Share-Token': share_token
+                    'X-Share-Token': share_token,
+                    'x-device-id': deviceID || drive_id
                 },
                 body: '{"share_id":"' + share_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":""}',
                 method: 'POST',
@@ -2299,8 +2307,9 @@ const ali = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
+                    'x-device-id': deviceID || drive_id
                 },
-                body: '{"drive_id":"' + drive_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":""}',
+                body: '{"drive_id":"' + drive_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":"", get_subtitle_info:true}',
                 method: 'POST',
             }));
         }
@@ -2406,7 +2415,8 @@ const ali = {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': access_token,
-                'X-Share-Token': sharetoken
+                'X-Share-Token': sharetoken,
+                'x-device-id': drive_id
             },
             body: '{"share_id":"' + shareId + '","category":"live_transcoding","file_id":"' + input + '","template_id":""}',
             method: 'POST',
@@ -2580,7 +2590,8 @@ const ali = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
-                    'X-Share-Token': sharetoken
+                    'X-Share-Token': sharetoken,
+                    'x-device-id': drive_id
                 },
                 body: '{"share_id":"' + shareId + '","file_id":"' + file_id + '"}',
                 method: 'POST'
@@ -2590,6 +2601,7 @@ const ali = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
+                    'x-device-id': drive_id
                 },
                 body: '{"drive_id":"' + drive_id + '","file_id":"' + file_id + '"}',
                 method: 'POST'
@@ -2680,6 +2692,7 @@ const ali = {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': access_token,
+                'x-device-id': drive_id
             },
             body: JSON.stringify(data),
             method: 'POST'
@@ -2717,7 +2730,8 @@ const ali = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
-                    'X-Share-Token': sharetoken
+                    'X-Share-Token': sharetoken,
+                    'x-device-id': drive_id
                 },
                 body: '{"share_id":"' + shareId + '","get_audio_play_info":true,"file_id":"' + file_id + '"}',
                 method: 'POST'
@@ -2728,6 +2742,7 @@ const ali = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
+                    'x-device-id': drive_id
                 },
                 body: '{"drive_id":"' + drive_id + '","file_id":"' + file_id + '"}',
                 method: 'POST'
@@ -2774,7 +2789,25 @@ const ali = {
                 clearVar(item)
             })
         }, ["folderName", "icy_ali_folder", "icy_ali_next_marker"]))
+        
         this.getConfig();
+        var access_token = this.getAliToken();
+        if(!access_token) {
+            return 'toast://还没登录？';
+        } else if(access_token.startsWith('toast')) {
+            return access_token;
+        }
+
+        const {tokenPath, customerSettingPath} = this.urls
+        let _tokens = JSON.parse(readFile(tokenPath) || '[]');
+        let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
+        let customerSettings = JSON.parse(fetch(customerSettingPath));
+        let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
+        access_token = token.access_token;
+        var drive_id = token.default_drive_id;
+        if(!drive_id) {
+            return 'toast://TOKEN获取失败，重新登录试试'
+        }
         const [shareLink, _page] = MY_URL.split(/[?|$|#]{2}/).filter(item => !!item);
         const [link, _share_pwd] = shareLink.split('?share_pwd=');
         const [_link, _folderID] = link.split('/folder/');
@@ -2823,7 +2856,8 @@ const ali = {
         var expiration = undefined;
         var shareInfo_res = JSON.parse(fetch('https://api.aliyundrive.com/adrive/v3/share_link/get_share_by_anonymous?share_id=' + shareId, {
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'x-device-id': drive_id
             },
             body: '{"share_id":"' + shareId + '"}',
             method: 'POST'
@@ -2831,7 +2865,8 @@ const ali = {
 
         var sharetoken_res = JSON.parse(fetch('https://api.aliyundrive.com/v2/share_link/get_share_token', {
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'x-device-id': drive_id
             },
             body: '{"share_pwd":"'+share_pwd+'","share_id":"' + shareId + '"}',
             method: 'POST'
@@ -2904,7 +2939,7 @@ const ali = {
             });
             return false;
         }
-        const getFileList = (sharetoken, shareId, folderID, next_marker) => {
+        const getFileList = (sharetoken, shareId, folderID, next_marker, drive_id) => {
             var order_by = getItem('icy_ali_order_by', 'name');
             var order_direction = getItem('icy_ali_order_direction', 'ASC');
             var folderRes = null;
@@ -2912,10 +2947,11 @@ const ali = {
                 let [_myUrl, _fypage] = MY_URL.split('??');
                 MY_URL = _myUrl.split('/folder')[0] + '/folder/' + folderID + '??' +_fypage;
                 // MY_URL = MY_URL.split('/folder')[0] + '/folder/' + folderID;
-                folderRes = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get', {
+                folderRes = JSON.parse(fetch('https://api.aliyundrive.com/adrive/v2/file/get_by_share', {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Share-Token': sharetoken
+                        'X-Share-Token': sharetoken,
+                        'x-device-id': drive_id
                     },
                     body: '{"share_id": "'+shareId+'","file_id": "'+folderID+'","fields":"*","image_thumbnail_process":"image/resize,w_400/format,jpeg","image_url_process":"image/resize,w_375/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_375"}',
                     method: 'POST'
@@ -2934,10 +2970,11 @@ const ali = {
             if(page > 1 && next_marker && folderRes) {
                 data.parent_file_id = folderRes.file_id;
             }
-            return fetch('https://api.aliyundrive.com/adrive/v3/file/list', {
+            return fetch('https://api.aliyundrive.com/adrive/v2/file/list_by_share', {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Share-Token': sharetoken
+                    'X-Share-Token': sharetoken,
+                    'x-device-id': drive_id
                 },
                 body: JSON.stringify(data),
                 method: 'POST'
@@ -3061,10 +3098,9 @@ const ali = {
                 });
             }
         }
-
         var rescod = null;
         try {
-            rescod = JSON.parse(getFileList(sharetoken, shareId, folderID, next_marker));
+            rescod = JSON.parse(getFileList(sharetoken, shareId, folderID, next_marker, drive_id));
         } catch (e){
             confirm({
                 title: '出错了',
@@ -3342,6 +3378,7 @@ const ali = {
         let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
         access_token = token.access_token;
         var drive_id = token.default_drive_id;
+        var deviceID = token.deviceID;
         if(!drive_id) {
             return 'toast://TOKEN获取失败，重新登录试试'
         }
@@ -3406,6 +3443,7 @@ const ali = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
+                    'x-device-id': drive_id
                 },
                 body: JSON.stringify(data),
                 method: 'POST'
@@ -3435,6 +3473,7 @@ const ali = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
+                    'x-device-id': drive_id
                 },
                 body: JSON.stringify(data),
                 method: 'POST'
@@ -3711,7 +3750,7 @@ const ali = {
                         })
                     } else if(_zimuList  && !!_zimuList.length && (zimuItemList.length > 1 || !zimuItemList.length)) {
                         videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
-                        .select((file_id, drive_id, list, videoName) => {
+                        .select((file_id, drive_id, list, videoName, deviceID) => {
                             // showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
@@ -3724,17 +3763,17 @@ const ali = {
                                     }
                                     zimuItem = list.find(_zimu => _zimu.name == name);
                                 }
-                                return $('hiker://empty' + file_id).lazyRule((file_id , zimuItem, drive_id) => {
+                                return $('hiker://empty' + file_id).lazyRule((file_id , zimuItem, drive_id, deviceID) => {
                                     eval(fetch('hiker://files/rules/icy/ali.js'));
-                                    return ali.videoProxy(file_id, '', '', zimuItem, drive_id);
-                                },file_id , zimuItem, drive_id)
+                                    return ali.videoProxy(file_id, '', '', zimuItem, drive_id, deviceID);
+                                },file_id , zimuItem, drive_id, deviceID)
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
 
-                        }, file_id, drive_id, _zimuList, videoName);
+                        }, file_id, drive_id, _zimuList, videoName, deviceID);
                     } else {
-                        videolazy = $('hiker://empty' + file_id).lazyRule((drive_id, file_id, fnName, zimuItemList) => {
+                        videolazy = $('hiker://empty' + file_id).lazyRule((drive_id, file_id, fnName, zimuItemList, deviceID) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
                             if(access_token) {
@@ -3742,11 +3781,11 @@ const ali = {
                                 if(zimuItemList && zimuItemList.length) {
                                     zimuItem = zimuItemList[0]
                                 }
-                                return ali.videoProxy(file_id, '', '', zimuItem, drive_id);
+                                return ali.videoProxy(file_id, '', '', zimuItem, drive_id, deviceID);
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
-                        }, drive_id, file_id, fnName, zimuItemList)
+                        }, drive_id, file_id, fnName, zimuItemList, deviceID)
                     }
                     d.push({
                         title: '🎬 ' + title,
