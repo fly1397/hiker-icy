@@ -1801,7 +1801,7 @@ const ali = {
                 title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
-            let pic_url = thumbnail + '@headers={"Referer":"https://www.aliyundrive.com/"}';
+            let pic_url = thumbnail+'#.jpg' + '@headers={"Referer":"https://www.aliyundrive.com/"}';
             let longClick = [{
                 title: '下载',
                 js: $.toString((_download,drive_id ,file_id) => {
@@ -2570,7 +2570,7 @@ const ali = {
             withStatusCode: true
         })).headers;
         if(_play && _play.location) {
-            return 'pics://'+_play.location[0] + '@headers={"Referer":"https://www.aliyundrive.com/"}';
+            return 'pics://'+_play.location[0]+'#.jpg' + '@headers={"Referer":"https://www.aliyundrive.com/"}';
         } else {
             return "toast://" + _play.body;
         }
@@ -3187,7 +3187,7 @@ const ali = {
                 title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
-            let pic_url = thumbnail + '@headers={"Referer":"https://www.aliyundrive.com/"}' || this.randomPic +'?t='+new Date().getTime() + '' +index;
+            let pic_url = thumbnail+'#.jpg' + '@headers={"Referer":"https://www.aliyundrive.com/"}' || this.randomPic +'?t='+new Date().getTime() + '' +index;
             let longClick = [{
                 title: '下载',
                 js: $.toString((shareId,sharetoken,file_id) => {
@@ -3715,7 +3715,7 @@ const ali = {
                 title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
-            let pic_url = thumbnail + '@headers={"Referer":"https://www.aliyundrive.com/"}';
+            let pic_url = thumbnail+'#.jpg' + '@headers={"Referer":"https://www.aliyundrive.com/"}';
             
             let longClick = [{
                 title: '下载',
@@ -3802,7 +3802,7 @@ const ali = {
                         title: '🖼 ' + title,
                         desc: desc,
                         pic_url: pic_url || this.images.img,
-                        url: 'pics://'+pic_url,
+                        url: pic_url,
                         extra: {
                             longClick: longClick
                         },
