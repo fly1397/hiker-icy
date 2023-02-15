@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '2023/20/13',
+    version: '2023/02/15',
     randomPic: 'htt/ps://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,先修复了分享链接观看问题，个人网盘页面暂时还无法播放',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,暂时修复阿里云盘播放功能，不知道哪天会被干掉，（个人云盘暂时不能下载）',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -1801,7 +1801,7 @@ const ali = {
                 title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
-            let pic_url = thumbnail;
+            let pic_url = thumbnail + '@headers={"Referer":"https://www.aliyundrive.com/"}';
             let longClick = [{
                 title: '下载',
                 js: $.toString((_download,drive_id ,file_id) => {
@@ -1887,7 +1887,7 @@ const ali = {
                         title: '🖼 ' + title,
                         desc: desc,
                         pic_url: pic_url || this.images.img,
-                        url: download_url,
+                        url: pic_url,
                         extra: {
                             longClick: longClick
                         },
@@ -2282,7 +2282,7 @@ const ali = {
             setHomeResult(res);
         }
     },
-    videoProxy: function(file_id, share_id, share_token, zimuItem, drive_id, deviceID){
+    videoProxy: function(file_id, share_id, share_token, zimuItem, drive_id, deviceID, download_url){
         var access_token = this.getAliToken();
         if(!access_token) {
             return 'toast://还没登录？';
@@ -2303,13 +2303,12 @@ const ali = {
                 method: 'POST',
             }));
         } else if(drive_id) {
-            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_video_preview_play_info', {
+            json = JSON.parse(fetch('https://api.aliyundrive.com/adrive/v2/file/get_video_preview_play_info', {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
-                    'x-device-id': deviceID || drive_id
                 },
-                body: '{"drive_id":"' + drive_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":"", get_subtitle_info:true}',
+                body: '{"drive_id":"' + drive_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":""}',
                 method: 'POST',
             }));
         }
@@ -2365,7 +2364,7 @@ const ali = {
         var link = "";
         var result = {urls: [], headers:[], names: [], subtitle: ''};
         if(this.sourcePlay) {
-            result.urls.push((drive_id ? this.get_download_url(drive_id, file_id) : this.get_share_link_download_url(share_id, share_token, file_id)) + '#isVideo=true#');
+            result.urls.push((drive_id ? download_url : this.get_share_link_download_url(share_id, share_token, file_id)) + '#isVideo=true#');
             result.headers.push({'Referer': 'https://www.aliyundrive.com/'})
             result.names.push('原始文件播放');
             if(zimu && (zimu.startsWith('http') || zimu.includes('icy/cache'))) {
@@ -2571,7 +2570,7 @@ const ali = {
             withStatusCode: true
         })).headers;
         if(_play && _play.location) {
-            return 'pics://'+_play.location[0]
+            return 'pics://'+_play.location[0] + '@headers={"Referer":"https://www.aliyundrive.com/"}';
         } else {
             return "toast://" + _play.body;
         }
@@ -2679,7 +2678,7 @@ const ali = {
             return "toast://" + _play.body;
         }
     },
-    get_download_url: function(drive_id, file_id){
+    get_download_url: function(drive_id, file_id, deviceID){
         var access_token = this.getAliToken();
         if(access_token && access_token.startsWith('toast')) {
             return access_token;
@@ -2692,7 +2691,7 @@ const ali = {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': access_token,
-                'x-device-id': drive_id
+                'x-device-id': deviceID
             },
             body: JSON.stringify(data),
             method: 'POST'
@@ -3188,7 +3187,7 @@ const ali = {
                 title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
-            let pic_url = thumbnail || this.randomPic +'?t='+new Date().getTime() + '' +index;
+            let pic_url = thumbnail + '@headers={"Referer":"https://www.aliyundrive.com/"}' || this.randomPic +'?t='+new Date().getTime() + '' +index;
             let longClick = [{
                 title: '下载',
                 js: $.toString((shareId,sharetoken,file_id) => {
@@ -3422,13 +3421,12 @@ const ali = {
             const data = {
                 "drive_id": drive_id,
                 "parent_file_id": (folderID ? folderID : 'root'),
-                "limit":100,
-                "all": false,
-                "url_expire_sec": 1600,
+                "limit":200,
+                "all": true,
+                "url_expire_sec": 86400,
                 "image_thumbnail_process": "image/resize,w_400/format,jpeg",
                 "image_url_process": "image/resize,w_1920/format,jpeg",
                 "video_thumbnail_process": "video/snapshot,t_1000,f_jpg,ar_auto,w_300",
-                "fields": "*",
                 "order_by": order_by,
                 "order_direction": order_direction
             }
@@ -3443,7 +3441,6 @@ const ali = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
-                    'x-device-id': drive_id
                 },
                 body: JSON.stringify(data),
                 method: 'POST'
@@ -3718,7 +3715,7 @@ const ali = {
                 title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
             }
             let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
-            let pic_url = thumbnail;
+            let pic_url = thumbnail + '@headers={"Referer":"https://www.aliyundrive.com/"}';
             
             let longClick = [{
                 title: '下载',
@@ -3750,7 +3747,7 @@ const ali = {
                         })
                     } else if(_zimuList  && !!_zimuList.length && (zimuItemList.length > 1 || !zimuItemList.length)) {
                         videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
-                        .select((file_id, drive_id, list, videoName, deviceID) => {
+                        .select((file_id, drive_id, list, videoName, deviceID, download_url) => {
                             // showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
@@ -3763,17 +3760,17 @@ const ali = {
                                     }
                                     zimuItem = list.find(_zimu => _zimu.name == name);
                                 }
-                                return $('hiker://empty' + file_id).lazyRule((file_id , zimuItem, drive_id, deviceID) => {
+                                return $('hiker://empty' + file_id).lazyRule((file_id , zimuItem, drive_id, deviceID, download_url) => {
                                     eval(fetch('hiker://files/rules/icy/ali.js'));
-                                    return ali.videoProxy(file_id, '', '', zimuItem, drive_id, deviceID);
-                                },file_id , zimuItem, drive_id, deviceID)
+                                    return ali.videoProxy(file_id, '', '', zimuItem, drive_id, deviceID, download_url);
+                                },file_id , zimuItem, drive_id, deviceID, download_url)
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
 
-                        }, file_id, drive_id, _zimuList, videoName, deviceID);
+                        }, file_id, drive_id, _zimuList, videoName, deviceID, download_url);
                     } else {
-                        videolazy = $('hiker://empty' + file_id).lazyRule((drive_id, file_id, fnName, zimuItemList, deviceID) => {
+                        videolazy = $('hiker://empty' + file_id).lazyRule((drive_id, file_id, fnName, zimuItemList, deviceID, download_url) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
                             if(access_token) {
@@ -3781,11 +3778,11 @@ const ali = {
                                 if(zimuItemList && zimuItemList.length) {
                                     zimuItem = zimuItemList[0]
                                 }
-                                return ali.videoProxy(file_id, '', '', zimuItem, drive_id, deviceID);
+                                return ali.videoProxy(file_id, '', '', zimuItem, drive_id, deviceID, download_url);
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
-                        }, drive_id, file_id, fnName, zimuItemList, deviceID)
+                        }, drive_id, file_id, fnName, zimuItemList, deviceID, download_url)
                     }
                     d.push({
                         title: '🎬 ' + title,
@@ -3805,7 +3802,7 @@ const ali = {
                         title: '🖼 ' + title,
                         desc: desc,
                         pic_url: pic_url || this.images.img,
-                        url: download_url,
+                        url: 'pics://'+pic_url,
                         extra: {
                             longClick: longClick
                         },
