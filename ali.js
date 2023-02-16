@@ -274,7 +274,10 @@ const ali = {
         const haveToken = fileExist(tokenPath) == 'true' || fileExist(tokenPath) == true;
         setPageTitle('阿里云盘');
         addListener('onClose', () => {
-            saveFile('hiker://files/rules/icy/icy-ali-token.json', getVar('icy-ali-tokens'));
+            let token = getVar('icy-ali-tokens');
+            if(token) {
+                saveFile('hiker://files/rules/icy/icy-ali-token.json', token);
+            }
             clearVar('icy-ali-tokens')
         })
         let d = [];
