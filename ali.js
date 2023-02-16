@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '2023/02/15',
+    version: '2023/02/16',
     randomPic: 'htt/ps://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,暂时修复阿里云盘播放功能，不知道哪天会被干掉，（个人云盘暂时不能下载）',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,分享链接暂时不能转码播放了，只有2分钟，先播放原始文件吧',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -2292,14 +2292,14 @@ const ali = {
         }
         var json = null;
         if(share_id) {
-            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_video_preview_play_info', {
+            json = JSON.parse(fetch('https://api.aliyundrive.com/adrive/v2/file/get_video_preview_play_info_by_share', {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': access_token,
                     'X-Share-Token': share_token,
                     'x-device-id': deviceID || drive_id
                 },
-                body: '{"share_id":"' + share_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":""}',
+                body: '{"share_id":"' + share_id + '","category":"live_transcoding","file_id":"' + file_id + '","template_id":"", "get_preview_url":true,"get_subtitle_info":true}',
                 method: 'POST',
             }));
         } else if(drive_id) {
@@ -2804,6 +2804,7 @@ const ali = {
         let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
         access_token = token.access_token;
         var drive_id = token.default_drive_id;
+        var deviceID = token.deviceID;
         if(!drive_id) {
             return 'toast://TOKEN获取失败，重新登录试试'
         }
@@ -3213,7 +3214,7 @@ const ali = {
                         })
                     } else if(_zimuList && !!_zimuList.length  && (zimuItemList.length > 1 || !zimuItemList.length)) {
                         videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
-                        .select((file_id, shareId, sharetoken, list, videoName) => {
+                        .select((file_id, shareId, sharetoken, list, videoName, deviceID) => {
                             showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
@@ -3226,15 +3227,15 @@ const ali = {
                                     }
                                     zimuItem = list.find(_zimu => _zimu.name == name);
                                 }
-                                return ali.videoProxy(file_id, shareId, sharetoken, zimuItem, null);
+                                return ali.videoProxy(file_id, shareId, sharetoken, zimuItem, null, deviceID);
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
 
 
-                        }, file_id, shareId, sharetoken, _zimuList, videoName);
+                        }, file_id, shareId, sharetoken, _zimuList, videoName, deviceID);
                     } else {
-                        videolazy = $('hiker://empty' + file_id).lazyRule((shareId, sharetoken, file_id, fnName, zimuItemList) => {
+                        videolazy = $('hiker://empty' + file_id).lazyRule((shareId, sharetoken, file_id, fnName, zimuItemList, deviceID) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
                             if(access_token) {
@@ -3242,11 +3243,11 @@ const ali = {
                                 if(zimuItemList && zimuItemList.length) {
                                     zimuItem = zimuItemList[0]
                                 }
-                                return ali.videoProxy(file_id, shareId, sharetoken, zimuItem, null);
+                                return ali.videoProxy(file_id, shareId, sharetoken, zimuItem, null, deviceID);
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
-                        }, shareId, sharetoken, file_id, fnName, zimuItemList)
+                        }, shareId, sharetoken, file_id, fnName, zimuItemList, deviceID)
                     }
                     d.push({
                         title: '🎬 ' + title,
