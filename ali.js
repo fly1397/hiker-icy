@@ -347,7 +347,7 @@ const ali = {
                     //     location.replace('https://auth.aliyundrive.com/v2/oauth/authorize?login_type=custom&response_type=code&redirect_uri=https%3A%2F%2Fwww.aliyundrive.com%2Fsign%2Fcallback&client_id=25dzX3vbYqktVxyX&state=%7B%22origin%22%3A%22*%22%7D#/login')
                     // }
                 }
-                if(token && token.user_id && deviceID){
+                if(token && token.user_id){
                     let token_url = 'hiker://files/rules/icy/icy-ali-token.json';
                     let _tokens = JSON.parse(request(token_url) || '[]');
                     let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
@@ -362,7 +362,6 @@ const ali = {
                     fy_bridge_app.putVar('icy-ali-tokens', JSON.stringify(tokens))
                     // fy_bridge_app.writeFile('hiker://files/rules/icy/icy-ali-token.json',JSON.stringify(tokens));
                     localStorage.clear();
-                    alert(deviceID)
                     alert('TOKEN获取成功，请勿泄漏个人隐私!退出该页面后刷新重试！');
                     // if(location.href.includes('auth.aliyundrive.com')) {
                     //     fy_bridge_app.back();
