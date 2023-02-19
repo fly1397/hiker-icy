@@ -21,7 +21,7 @@ const ali = {
         view: 'https://lanmeiguojiang.com/tubiao/more/213.png',
         source: 'https://lanmeiguojiang.com/tubiao/movie/16.svg',
     },
-    version: '2023/02/18',
+    version: '2023/02/19',
     randomPic: 'htt/ps://api.lmrjk.cn/mt', //二次元 http://api.lmrjk.cn/img/api.php 美女 https://api.lmrjk.cn/mt
     // dev 模式优先从本地git获取
     isDev: false,
@@ -54,7 +54,7 @@ const ali = {
             // eval(js)
             confirm({
                 title: '版本更新 ',
-                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复分享链接转码播放',
+                content: (version || 'N/A') +'=>'+ this.version + '\n1,修复登录及播放的问题',
                 confirm: 'eval(fetch("hiker://files/rules/icy/ali.js"));ali.initConfig(true);setItem("icy_ali_version", ali.version);refreshPage();confirm({title:"更新成功",content:"最新版本：" + ali.version})'
             })
         }
@@ -2369,7 +2369,7 @@ const ali = {
         var link = "";
         var result = {urls: [], headers:[], names: [], subtitle: ''};
         if(this.sourcePlay) {
-            result.urls.push((drive_id ? download_url : this.get_share_link_download_url(share_id, share_token, file_id)) + '#isVideo=true#');
+            result.urls.push((share_id ? this.get_share_link_download_url(share_id, share_token, file_id) : download_url) + '#isVideo=true#');
             result.headers.push({'Referer': 'https://www.aliyundrive.com/'})
             result.names.push('原始文件播放');
             if(zimu && (zimu.startsWith('http') || zimu.includes('icy/cache'))) {
