@@ -4520,4 +4520,712 @@ const ali = {
             }
         } catch(e) {}
     },
-}
+}//     return "toast://" + _play.body;
+        // }
+    },
+    lazyAliImage: function(shareId, sharetoken, input){
+        var access_token = this.getAliToken();
+        if(access_token && access_token.startsWith('toast')) {
+            return access_token;
+        }
+        if(!access_token) {
+            return 'toast://还没登录？';
+        }
+        var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_download_url', {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': access_token,
+                'X-Share-Token': sharetoken
+            },
+            body: '{"share_id":"' + shareId + '","expire_sec":600,"file_id":"' + input + '"}',
+            method: 'POST'
+        }));
+        if(json.code && json.message) {
+            if(json.code.includes('AccessTokenInvalid')) {
+                this.getAliToken(true);
+                return this.lazyAliImage(shareId, sharetoken, input);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken(true);
+                // refreshPage();
+                // return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
+            } else {
+                return "toast://" + json.message;
+            }
+        }
+        var link = json.url;
+        var _play = JSON.parse(fetch(link, {
+            headers: {
+                'User-Agent': MOBILE_UA,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Referer': 'https://www.aliyundrive.com/'
+            },
+            redirect: false,
+            withStatusCode: true
+        })).headers;
+        if(_play && _play.location) {
+            return 'pics://'+_play.location[0]+'#.jpg' + '@headers={"Referer":"https://www.aliyundrive.com/"}';
+        } else {
+            return "toast://" + _play.body;
+        }
+    },
+    lazyAliDoc: function(shareId, sharetoken, file_id, drive_id){
+        var access_token = this.getAliToken();
+        if(access_token && access_token.startsWith('toast')) {
+            return access_token;
+        }
+        if(!access_token) {
+            return 'toast://还没登录？';
+        }
+        var json = null;
+        if(shareId) {
+            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_office_preview_url', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                    'X-Share-Token': sharetoken,
+                    'x-device-id': drive_id
+                },
+                body: '{"share_id":"' + shareId + '","file_id":"' + file_id + '"}',
+                method: 'POST'
+            }));
+        } else if(drive_id){
+            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_office_preview_url', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                    'x-device-id': drive_id
+                },
+                body: '{"drive_id":"' + drive_id + '","file_id":"' + file_id + '"}',
+                method: 'POST'
+            }));
+        }
+        if(json.code && json.message) {
+            if(json.code.includes('AccessTokenInvalid')) {
+                this.getAliToken(true);
+                return this.lazyAliDoc(shareId, sharetoken, file_id, drive_id);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken(true);
+                // refreshPage();
+                // return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
+            } else {
+                return "toast://" + json.message;
+            }
+        }
+        let d = [];
+        d.push({
+            url: json.preview_url + '??' +json.access_token,
+            col_type: 'x5_webview_single',
+            desc: '100%&&float',
+            extra: {
+                canBack: true,
+                js: "var token =location.href.split('??')[1]; if(!document.cookie.includes(token)) {document.cookie = 'wwo_token=' + location.href.split('??')[1];location.reload();}"
+            }
+        })
+        setHomeResult({
+            data: d
+        })
+    },
+    get_share_link_download_url: function(shareId, sharetoken, file_id){
+        var access_token = this.getAliToken();
+        if(access_token && access_token.startsWith('toast')) {
+            return access_token;
+        }
+        if(!access_token) {
+            return 'toast://还没登录？';
+        }
+        const data = {"expire_sec":600,"file_id":file_id ,"share_id": shareId};
+        var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_download_url', {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': access_token,
+                'X-Share-Token': sharetoken
+            },
+            body: JSON.stringify(data),
+            method: 'POST'
+        }));
+        if(json.code && json.message) {
+            if(json.code.includes('AccessTokenInvalid')) {
+                this.getAliToken(true);
+                return this.get_share_link_download_url(shareId, sharetoken, input);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken(true);
+                // refreshPage();
+                // return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
+            } else {
+                return "toast://" + json.message;
+            }
+        }
+        var link = json.download_url;
+        var _play = JSON.parse(fetch(link, {
+            headers: {
+                'User-Agent': MOBILE_UA,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Referer': 'https://www.aliyundrive.com/'
+            },
+            redirect: false,
+            withStatusCode: true
+        })).headers;
+        if(_play && _play.location) {
+            return _play.location[0]
+        } else {
+            return "toast://" + _play.body;
+        }
+    },
+    get_download_url: function(drive_id, file_id, deviceID){
+        var access_token = this.getAliToken();
+        if(access_token && access_token.startsWith('toast')) {
+            return access_token;
+        }
+        if(!access_token) {
+            return 'toast://还没登录？';
+        }
+        const data = {"expire_sec":115200,"file_id":file_id ,"drive_id": drive_id};
+        var json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_download_url', {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': access_token,
+                'x-device-id': deviceID
+            },
+            body: JSON.stringify(data),
+            method: 'POST'
+        }));
+        if(json.code && json.message) {
+            if(json.code.includes('AccessTokenInvalid')) {
+                this.getAliToken(true);
+                return this.get_download_url(drive_id, file_id);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken(true);
+                // refreshPage();
+                // return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
+            } else {
+                return "toast://" + json.message;
+            }
+        }
+        if(json && json.url) {
+            return json.url;
+        } else {
+            return "toast://没有获取到下载地址";
+        }
+    },
+    lazyAliAudio: function(shareId, sharetoken, file_id, drive_id){
+        var access_token = this.getAliToken();
+        if(access_token && access_token.startsWith('toast')) {
+            return access_token;
+        }
+        if(!access_token) {
+            return 'toast://还没登录？';
+        }
+        var json = null;
+        var link = '';
+        if(shareId) {
+            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/file/get_share_link_download_url', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                    'X-Share-Token': sharetoken,
+                    'x-device-id': drive_id
+                },
+                body: '{"share_id":"' + shareId + '","get_audio_play_info":true,"file_id":"' + file_id + '"}',
+                method: 'POST'
+            }));  
+            link = json.download_url;
+        } else if (drive_id) {
+            json = JSON.parse(fetch('https://api.aliyundrive.com/v2/databox/get_audio_play_info', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': access_token,
+                    'x-device-id': drive_id
+                },
+                body: '{"drive_id":"' + drive_id + '","file_id":"' + file_id + '"}',
+                method: 'POST'
+            }));  
+        }
+        if(json.code && json.message) {
+            if(json.code.includes('AccessTokenInvalid')) {
+                this.getAliToken(true);
+                return this.lazyAliAudio(shareId, sharetoken, file_id, drive_id);
+                // eval(fetch('hiker://files/rules/icy/ali.js'));
+                // var access_token = ali.getAliToken(true);
+                // refreshPage();
+                // return "toast://TOKEN失效了， 请重新试试！错误信息：" + json.message;
+            } else {
+                return "toast://" + json.message;
+            }
+        }
+
+        if(json.audio_template_list) {
+            link = json.audio_template_list[json.audio_template_list.length-1].url
+        }
+        if(drive_id) {
+            link = json.template_list[json.template_list.length-1].url;
+            return link + '#isMusic=true#;{Referer@https://www.aliyundrive.com/}'
+        }
+        var _play = JSON.parse(fetch(link, {
+            headers: {
+                'User-Agent': MOBILE_UA,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Referer': 'https://www.aliyundrive.com/'
+            },
+            redirect: false,
+            withStatusCode: true
+        })).headers;
+        if(_play && _play.location) {
+            return _play.location[0] + '#isMusic=true#;{Referer@https://www.aliyundrive.com/}'
+        } else {
+            return "toast://" + _play.body;
+        }
+    },
+    aliRule: function() {
+        addListener('onClose', $.toString((params) => {
+            params.forEach(item => {
+                clearVar(item)
+            })
+        }, ["folderName", "icy_ali_folder", "icy_ali_next_marker"]))
+        
+        this.getConfig();
+        var access_token = this.getAliToken();
+        if(!access_token) {
+            return 'toast://还没登录？';
+        } else if(access_token.startsWith('toast')) {
+            return access_token;
+        }
+
+        const {tokenPath, customerSettingPath} = this.urls
+        let _tokens = JSON.parse(readFile(tokenPath) || '[]');
+        let tokens = _tokens.length ? _tokens : (_tokens.user_id ? [_tokens] : [] );
+        let customerSettings = JSON.parse(fetch(customerSettingPath));
+        let token = tokens.find(item => item.user_id == customerSettings.user_id) || tokens[0];
+        access_token = token.access_token;
+        var drive_id = token.default_drive_id;
+        var device_id = token.device_id;
+        var user_id = token.user_id;
+        var deviceID = token.deviceID;
+        if(!drive_id) {
+            return 'toast://TOKEN获取失败，重新登录试试'
+        }
+        const [shareLink, _page] = MY_URL.split(/[?|$|#]{2}/).filter(item => !!item);
+        const [link, _share_pwd] = shareLink.split('?share_pwd=');
+        const [_link, _folderID] = link.split('/folder/');
+        var shareId = '';
+        var share_pwd = (_share_pwd || '').split('#name=')[0] || '';
+        var folderID = _folderID || '';
+        var page = _page || 1;
+        if(page == 1) {
+            putVar('icy_ali_next_marker', '');
+            putVar('icy_ali_folder', folderID);
+        } else {
+            folderID = getVar('icy_ali_folder', '')
+        }
+        var next_marker = getVar('icy_ali_next_marker', '');
+        if(page != 1 && !next_marker) {
+            setHomeResult({
+                data: [{title: "““””<center><small>"+'<span style="color: #999999">～～～我是有底线的～～～</span></small></center>', url: this.emptyRule, col_type: 'text_center_1'}]
+            });
+            return 'toast://到底了！';
+        }
+        if (/aliyundrive/.test(_link)) {
+            shareId = _link.split('com/s/')[1];
+        } else if (/alywp/.test(_link)) {
+            var result_link = JSON.parse(fetch(_link, {
+                headers: {
+                    'User-Agent': MOBILE_UA,
+                },
+                redirect: false,
+                withHeaders: true
+            })).headers.location[0];
+            shareId = result_link.split('com/s/')[1];
+        }
+        let _name = MY_URL.split('#name=')[1];
+        let parentName = _name ? base64Decode(_name.split('??')[0]) : '';
+        const _data = {
+            parent_name: parentName,
+            folder_id: folderID,
+            file_id: '',
+            file_name: '',
+            share_id: shareId,
+            share_pwd: share_pwd,
+            expiration: '',
+        };
+        var saveLink = 'smartdrive://share/browse?shareId='+shareId+'&sharePwd='+share_pwd;
+        var sharetoken = '';
+        var expiration = undefined;
+        var shareInfo_res = JSON.parse(fetch('https://api.aliyundrive.com/adrive/v3/share_link/get_share_by_anonymous?share_id=' + shareId, {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-device-id': drive_id
+            },
+            body: '{"share_id":"' + shareId + '"}',
+            method: 'POST'
+        }));
+
+        var sharetoken_res = JSON.parse(fetch('https://api.aliyundrive.com/v2/share_link/get_share_token', {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-device-id': drive_id
+            },
+            body: '{"share_pwd":"'+share_pwd+'","share_id":"' + shareId + '"}',
+            method: 'POST'
+        }));
+        var getDateDiff = (expiration) => {
+            var minute = 1000 * 60;
+            var hour = minute * 60;
+            var day = hour * 24;
+            var month = day * 30;
+    
+            var now = new Date().getTime();
+            var diffValue = new Date(expiration).getTime() - now;
+            var monthC =diffValue/month;
+            var dayC =diffValue/day;
+            var hourC =diffValue/hour;
+            var minC =diffValue/minute;
+            if(minC<=60){
+                result = Math.ceil(minC) + '分钟内有效';
+            } else if(hourC<=24){
+                 result = Math.ceil(hourC) + '小时内有效';
+             } else if(dayC<=30){
+                 result = Math.ceil(dayC) +"天内有效";
+             } else {
+                result = Math.ceil(monthC) +"月内有效";
+             }
+            return result;
+        }
+        if(shareInfo_res && !!shareInfo_res.display_name) {
+            expiration = shareInfo_res.expiration;
+            setPageTitle(shareInfo_res.display_name);
+        }
+        if(!!sharetoken_res.share_token) {
+            sharetoken = sharetoken_res.share_token;
+        } else if(sharetoken_res.code == 'InvalidResource.SharePwd') {
+            this.needSharePWD(link);
+            return false;
+        } else if(sharetoken_res.code.includes('Cancelled') || sharetoken_res.code.includes('Expired')) {
+            var d = [];
+            d.push({
+                title: "““””<center><small>"+'<span style="color: #999999">来晚啦，该分享已失效!</span></small></center>',
+                url: this.emptyRule,
+                col_type: "text_center_1"
+            });
+            setHomeResult({
+                data: d
+            });
+            return false;
+        } else if(sharetoken_res.code) {
+            var d = [];
+            let message = sharetoken_res.message;
+            if(sharetoken_res.code.includes('Forbidden')){
+                message = '文件违规\n根据相关法律法规要求，该文件已禁止访问';
+            } else if(sharetoken_res.code.includes('ShareLinkTokenInvalid')){
+                message = '你打开的链接有误，请重试';
+            }
+            d.push({
+                title: "““””<center><b>"+'<span style="color: '+ this.primaryColor +'">'+message+'</span></b></center>',
+                url: this.emptyRule,
+                col_type: "text_center_1"
+            });
+            setHomeResult({
+                data: d
+            });
+            return false;
+        }
+        if(!sharetoken) {
+            confirm({
+                title: '稍等一会儿',
+                content: 'TOKEN还没有获取到，重新刷新再试试！'
+            });
+            return false;
+        }
+        const getFileList = (sharetoken, shareId, folderID, next_marker, drive_id) => {
+            var order_by = getItem('icy_ali_order_by', 'name');
+            var order_direction = getItem('icy_ali_order_direction', 'ASC');
+            var folderRes = null;
+            if(folderID) {
+                let [_myUrl, _fypage] = MY_URL.split('??');
+                MY_URL = _myUrl.split('/folder')[0] + '/folder/' + folderID + '??' +_fypage;
+                // MY_URL = MY_URL.split('/folder')[0] + '/folder/' + folderID;
+                folderRes = JSON.parse(fetch('https://api.aliyundrive.com/adrive/v2/file/get_by_share', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Share-Token': sharetoken,
+                        'x-device-id': drive_id
+                    },
+                    body: '{"share_id": "'+shareId+'","file_id": "'+folderID+'","fields":"*","image_thumbnail_process":"image/resize,w_400/format,jpeg","image_url_process":"image/resize,w_375/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_375"}',
+                    method: 'POST'
+                }));
+                let folderName = folderRes.name;
+                putVar('icy_ali_folder', folderRes.file_id);
+                setPageTitle(folderName);
+
+                _data.folder_id = folderID;
+                _data.parent_name += ';' +folderName;
+            }
+            const data = {"share_id": shareId,"parent_file_id": (folderID ? folderID : 'root'),"limit":100,"image_thumbnail_process":"image/resize,w_160/format,jpeg","image_url_process":"image/resize,w_1920/format,jpeg","video_thumbnail_process":"video/snapshot,t_1000,f_jpg,ar_auto,w_300","order_by": order_by,"order_direction": order_direction}
+            if(next_marker) {
+                data.marker = next_marker;
+            }
+            if(page > 1 && next_marker && folderRes) {
+                data.parent_file_id = folderRes.file_id;
+            }
+            return fetch('https://api.aliyundrive.com/adrive/v2/file/list_by_share', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Share-Token': sharetoken,
+                    'x-device-id': drive_id
+                },
+                body: JSON.stringify(data),
+                method: 'POST'
+            });
+        }
+
+        if(!getItem('icy_ali_order_by')) {
+            setItem('icy_ali_order_by', 'name');
+        }
+        if(!getItem('icy_ali_order_direction')) {
+            setItem('icy_ali_order_direction', 'ASC');
+        }
+        var d = [];
+        if(page == 1) {
+            const searchRule = getItem('icy_ali_searchRule', '青豆');
+            let folderName = getVar('folderName', '');
+
+            d.push({
+                title: '““””使用小程序：<b><span style="color: '+ this.primaryColor +'">' + searchRule + '</span></b> 搜索  <small><span style="color: #999999">点击设置</span></small>',
+                url: $(searchRule, '请输入小程序名称 eq: 青豆')
+                    .input(() => {
+                    setItem('icy_ali_searchRule', input);
+                    refreshPage();
+                    return "toast://保存成功";
+                }),
+                // url: $('hiker://empty').rule(() => {
+                //     eval(fetch('hiker://files/rules/icy/ali.js'));
+                //     ali.settingPage();
+                // }),
+                col_type: 'text_1'
+            })
+            if(searchRule) {
+                d.push({
+                    title: '搜索',
+                    // url: "'hiker://search?s=' + input + '&rule='" + searchRule,
+                    url: $.toString((searchRule)=> {
+                        if(searchRule) {
+                            if(input.trim()) {
+                                var link = 'hiker://search?s=' + input + '&rule=' + searchRule;
+                                return link;
+                            } else {
+                                return 'toast://请输入影片名称';
+                            }
+                        } else {
+                            return 'toast://请先设置小程序吧';
+                        }
+                    }, searchRule),
+                    col_type: "input",
+                    desc: '使用其他规则搜索影片信息',
+                    extra: {
+                        defaultValue: folderName,
+                    }
+                });
+            }
+            const sortLazy = $(['名称正序', '名称倒序', '时间正序', '时间倒序'], 1)
+            .select(() => {
+                setItem("icy_ali_order",input);
+                if(input.includes('名称')) {
+                    setItem('icy_ali_order_by', 'name');
+                } else {
+                    setItem('icy_ali_order_by', 'updated_at');
+                }
+                if(input.includes('正序')) {
+                    setItem('icy_ali_order_direction', 'ASC');
+                } else {
+                    setItem('icy_ali_order_direction', 'DESC');
+                }
+                refreshPage(false);
+            });
+            var sort = getItem('icy_ali_order', '名称正序');
+
+            d.push({
+                title: '⇅' + sort,
+                pic_url: this.images.order,
+                url: sortLazy,
+                col_type: 'text_3'
+            })
+            // var order_by_arr = [{name: '名称', val: 'name'},{name: '修改时间', val: 'updated_at'}];
+            // var order_direction_arr = [{name: '升序', val: 'ASC'},{name: '降序', val: 'DESC'}];
+            // this.rendererFilter(d, order_by_arr, 'icy_ali_order_by');
+            // this.rendererFilter(d, order_direction_arr, 'icy_ali_order_direction');
+            const viewLazy = $(['列表模式', '图文模式', '全文件名模式'], 1)
+            .select(() => {
+                setItem("icy_ali_view",input);
+                refreshPage(false);
+                return "hiker://empty"
+            });
+            var viewName = getItem('icy_ali_view', '列表模式');
+            if(!viewName.includes('模式')) {
+                viewName = '列表模式';
+                setItem("icy_ali_view",'列表模式');
+            }
+            d.push({
+                title: '👀' + viewName,
+                pic_url: this.images.view,
+                url: viewLazy,
+                col_type: 'text_3'
+            })
+            d.push({
+                title: '🎬' + (this.sourcePlay ? '原始文件播放' : '转码播放'),
+                pic_url: this.images.source,
+                url: $("#noLoading#").lazyRule((sourcePlay)=>{
+                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                    customerSettings = JSON.parse(fetch(getVar('icy_ali_customer')));
+                    customerSettings.sourcePlay = !sourcePlay;
+                    writeFile(getVar('icy_ali_customer'), JSON.stringify(customerSettings));
+                    refreshPage(false);
+                    return "hiker://empty"
+                },this.sourcePlay),
+                col_type: 'text_3'
+            })
+            if(typeof saveLink != 'undefined' && !!saveLink) {
+                let expiration_text = '';
+                if(typeof expiration != 'undefined') {
+                    expiration_text = '有效期限：' + (expiration ? getDateDiff(expiration) +'，请尽快保存！' : '永久有效');
+                }
+                d.push({
+                    title: '““””<b>✨✨✨✨<span style="color: '+ this.primaryColor +'">保存到我的阿里云盘</span>✨✨✨✨</b>\n' + "““””<small>"+'<span style="color: #999999">'+expiration_text+'</span></small>',
+                    url: saveLink,
+                    col_type: "text_center_1"
+                });
+            }
+        }
+        var rescod = null;
+        try {
+            rescod = JSON.parse(getFileList(sharetoken, shareId, folderID, next_marker, drive_id));
+        } catch (e){
+            confirm({
+                title: '出错了',
+                content: '获取数据出了点问题, 刷新页面试试！',
+                confirm: 'refreshPage()'
+            })
+        }
+        // if((page != 1 && !next_marker) || !rescod) {
+        //     setHomeResult({
+        //         data: d
+        //     });
+        //     return 'toast://到底了！';
+        // }
+        if(rescod.code) {
+            if(rescod.code.includes('AccessTokenInvalid')) {
+                this.needSharePWD(link);
+            } else if(rescod.code.includes('ForbiddenNoPermission')) {
+                d.push({
+                    title: "““””<center><b>"+'<span style="color: #ff0000">打开的链接有误，请重试</span></b></center>',
+                    url: this.emptyRule,
+                    col_type: "text_center_1"
+                });
+                setHomeResult({
+                    data: d
+                });
+                return false;
+            } else {
+                d.push({
+                    title: "““””<center><b>"+'<span style="color: #ff0000">'+rescod.message+'</span></b></center>',
+                    url: this.emptyRule,
+                    col_type: "text_center_1"
+                });
+                setHomeResult({
+                    data: d
+                });
+                return false;
+            }
+        }
+
+        
+        if(!!rescod && (!rescod.items || !rescod.items.length)) {
+            d.push({
+                title: "““””<center><small>"+'<span style="color: #999999">空文件夹</span></small></center>',
+                url: this.emptyRule,
+                col_type: "text_center_1"
+            });
+        }
+        const col_type = getItem('icy_ali_view', '列表模式') == '列表模式' ? 'avatar' : (getItem('icy_ali_view', '列表模式') == '全文件名模式' ? 'text_1' :'movie_3_marquee');
+        // 如果只包含一个文件夹， 直接取内容
+        if(rescod.items.length === 1 && rescod.items[0].type == 'folder') {
+            const folderItem = rescod.items[0];
+            try {
+
+                _data.parent_name += ';' +folderItem.name;
+                rescod = JSON.parse(getFileList(sharetoken, shareId, folderItem.file_id, next_marker));
+                putVar('icy_ali_folder', folderItem.file_id);
+            } catch (e){
+                confirm({
+                    title: '出错了',
+                    content: '获取数据出了点问题, 刷新页面试试！',
+                    confirm: 'refreshPage()'
+                })
+            }
+            
+        }
+        putVar('icy_ali_next_marker', rescod.next_marker || '');
+
+        if(rescod.punished_file_count) {
+            d.push({
+                title: "““””<center><small>"+'<span style="color: #999999">⚠️ 部分文件由于违规，已封禁</span></small></center>',
+                url: this.emptyRule,
+                col_type: "text_center_1"
+            });
+        }
+
+        const fnName = (fileExist(this.urls.tokenPath) == 'true' || fileExist(this.urls.tokenPath) == true || this.usePublicToken) ? 'lazyRule' : 'rule';
+        const zimuExtension = ['srt', 'vtt', 'ass', 'ssa'];
+        const zimuList = rescod.items.filter(_item => zimuExtension.includes(_item.file_extension));
+        rescod.items.forEach((_item, index) => {
+            const {type, category, name, file_id, thumbnail, updated_at, size} = _item;
+            let title = name;
+            let len = 26;
+            let len2 = len / 2;
+            if(name.length >= len && col_type == 'avatar') {
+                title = name.substr(0, len2) + '...'+name.substr(name.length - len2);
+            }
+            let desc = this.formatDate(updated_at, 'MM/dd HH:mm') + '     ' + this.formatSize(size);
+            let pic_url = thumbnail+'#.jpg' + '@headers={"Referer":"https://www.aliyundrive.com/"}' || this.randomPic +'?t='+new Date().getTime() + '' +index;
+            let longClick = [{
+                title: '下载',
+                js: $.toString((shareId,sharetoken,file_id) => {
+                    eval(fetch('hiker://files/rules/icy/ali.js'));
+                    return 'download://' + ali.get_share_link_download_url(shareId,sharetoken,file_id);
+                },shareId,sharetoken,file_id)
+            }]
+            switch(category || type){
+                case 'video':
+                    let zimuItemList = null;
+                    let videoName = name.split('.'+_item.file_extension)[0];
+                    if(zimuList.length) {
+                        zimuItemList = zimuList.filter(_zimu => _zimu.name.startsWith(videoName));
+                    }
+                    let videolazy = '';
+                    let _zimuList = (zimuItemList && !!zimuItemList.length) ? zimuItemList : zimuList;
+
+                    if(fnName == 'rule') {
+                        videolazy = $('hiker://empty' + file_id).rule(() => {
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            return "toast://登录后需要重新刷新页面哦！"
+                        })
+                    } else if(_zimuList && !!_zimuList.length  && (zimuItemList.length > 1 || !zimuItemList.length)) {
+                        videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
+                        .select((file_id, shareId, sharetoken, list, videoName, deviceID, drive_id, user_id, device_id) => {
+                            showLoading('加载中');
+                            eval(fetch('hiker://files/rules/icy/ali.js'));
+                            var access_token = ali.getAliToken();
+                            if(access_token) {
+                                let name = input;
+                                let zimuItem = null;
+                                if(input != '不需要字幕') {
+                                    if(name.startsWith('字幕')){
+                                        name = name.replace('字幕', videoName);
+                                    }
+                                    zimuItem = list.find(_zimu => _zimu.name == name);
+                                }
+                                return ali.videoProxy({file_id:file_id, share_id: shareId, share_token:sharetoken, zimuItem:zimuItem, drive_id:drive_id, user_id:user_id, device_id: device_id});
+                            } else {
+                                return "toast://登录后需要重新刷新页面哦！"
+                            }
+
+
+                        }, file_id, shareId, sharetoken, _zimuList
