@@ -1797,7 +1797,7 @@ const ali = {
         const zimuExtension = ['srt', 'vtt', 'ass'];
         const zimuList = rescod.items.filter(_item => zimuExtension.includes(_item.file_extension));
         rescod.items.forEach((_item, index) => {
-            const {type, category, name, file_id, thumbnail, updated_at, download_url, size} = _item;
+            const {type, category, name, file_id, thumbnail, updated_at, url, size} = _item;
             let title = name;
             let len = 26;
             let len2 = len / 2;
@@ -1816,7 +1816,7 @@ const ali = {
                         return 'download://' + ali.get_download_url(drive_id ,file_id);
                     }
                     
-                }, download_url ,drive_id ,file_id)
+                }, url ,drive_id ,file_id)
             }]
             switch(category || type){
                 case 'video':
@@ -2347,7 +2347,7 @@ const ali = {
         let zimu = '';
         if(zimuItem) {
             try {
-                zimu = zimuItem.download_url || this.get_share_link_download_url(share_id, share_token, zimuItem.file_id);
+                zimu = zimuItem.download_url || zimuItem.url || this.get_share_link_download_url(share_id, share_token, zimuItem.file_id);
             } catch(e) {}
             let zimuStr = fetch(zimu, {
                 headers: {
@@ -3717,7 +3717,7 @@ const ali = {
         const zimuExtension = ['srt', 'vtt', 'ass'];
         const zimuList = rescod.items.filter(_item => zimuExtension.includes(_item.file_extension));
         rescod.items.forEach((_item, index) => {
-            const {type, category, name, file_id, thumbnail, updated_at, download_url, size} = _item;
+            const {type, category, name, file_id, thumbnail, updated_at, url, size} = _item;
             let title = name;
             let len = 26;
             let len2 = len / 2;
@@ -3737,7 +3737,7 @@ const ali = {
                         return 'download://' + ali.get_download_url(drive_id ,file_id);
                     }
                     
-                }, download_url ,drive_id ,file_id)
+                }, url ,drive_id ,file_id)
             }]
             switch(category || type){
                 case 'video':
@@ -3757,7 +3757,7 @@ const ali = {
                         })
                     } else if(_zimuList  && !!_zimuList.length && (zimuItemList.length > 1 || !zimuItemList.length)) {
                         videolazy = $(['不需要字幕'].concat(_zimuList.map(_zimu => _zimu.name.replace(videoName, '字幕'))), 1)
-                        .select((file_id, drive_id, list, videoName, deviceID, download_url) => {
+                        .select((file_id, drive_id, list, videoName, deviceID, url) => {
                             // showLoading('加载中');
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
@@ -3770,17 +3770,17 @@ const ali = {
                                     }
                                     zimuItem = list.find(_zimu => _zimu.name == name);
                                 }
-                                return $('hiker://empty' + file_id).lazyRule((file_id , zimuItem, drive_id, deviceID, download_url) => {
+                                return $('hiker://empty' + file_id).lazyRule((file_id , zimuItem, drive_id, deviceID, url) => {
                                     eval(fetch('hiker://files/rules/icy/ali.js'));
-                                    return ali.videoProxy({file_id:file_id, zimuItem: zimuItem, drive_id: drive_id, deviceID: deviceID, download_url: download_url});
-                                },file_id , zimuItem, drive_id, deviceID, download_url)
+                                    return ali.videoProxy({file_id:file_id, zimuItem: zimuItem, drive_id: drive_id, deviceID: deviceID, download_url: url});
+                                },file_id , zimuItem, drive_id, deviceID, url)
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
 
-                        }, file_id, drive_id, _zimuList, videoName, deviceID, download_url);
+                        }, file_id, drive_id, _zimuList, videoName, deviceID, url);
                     } else {
-                        videolazy = $('hiker://empty' + file_id).lazyRule((drive_id, file_id, fnName, zimuItemList, deviceID, download_url) => {
+                        videolazy = $('hiker://empty' + file_id).lazyRule((drive_id, file_id, fnName, zimuItemList, deviceID, url) => {
                             eval(fetch('hiker://files/rules/icy/ali.js'));
                             var access_token = ali.getAliToken();
                             if(access_token) {
@@ -3788,11 +3788,11 @@ const ali = {
                                 if(zimuItemList && zimuItemList.length) {
                                     zimuItem = zimuItemList[0]
                                 }
-                                return ali.videoProxy({file_id:file_id, zimuItem: zimuItem, drive_id: drive_id, deviceID: deviceID, download_url: download_url});
+                                return ali.videoProxy({file_id:file_id, zimuItem: zimuItem, drive_id: drive_id, deviceID: deviceID, download_url: url});
                             } else {
                                 return "toast://登录后需要重新刷新页面哦！"
                             }
-                        }, drive_id, file_id, fnName, zimuItemList, deviceID, download_url)
+                        }, drive_id, file_id, fnName, zimuItemList, deviceID, url)
                     }
                     d.push({
                         title: '🎬 ' + title,
